@@ -66,6 +66,7 @@
       <div>
         <h2 id="modalName" class="text-3xl font-bold"></h2>
         <p id="modalTags" class="text-xs text-zinc-400"></p>
+        <p id="modalOwner" class="text-xs text-zinc-400 mt-1"></p>
       </div>
     </div>
 
@@ -172,6 +173,10 @@ function renderServers() {
     let invite = s.invite || '';
     if (invite.startsWith('discord.gg/')) invite = 'https://' + invite;
 
+    const owner = s.submitterDiscord
+      ? `${s.submitterDiscord.username}${s.submitterDiscord.tag ? '#' + s.submitterDiscord.tag : ''}`
+      : 'Unknown';
+
     const card = document.createElement('div');
     card.className = 'group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:scale-[1.03] transition cursor-pointer';
 
@@ -180,8 +185,13 @@ function renderServers() {
         <img src="${s.logo}" class="w-full h-full object-contain p-2"/>
       </div>
 
-      <div class="p-5 space-y-3">
+      <div class="p-5 space-y-2">
         <h3 class="text-lg font-semibold">${s.name}</h3>
+
+        <p class="text-xs text-zinc-400">
+          Server Owner: <span class="text-zinc-200">${owner}</span>
+        </p>
+
         <p class="text-sm text-zinc-300 line-clamp-2">${s.description}</p>
 
         <div class="flex flex-wrap gap-1.5">
@@ -192,8 +202,9 @@ function renderServers() {
           `).join('')}
         </div>
 
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center pt-1">
           <span class="text-xs text-zinc-500">${s.members || 'N/A'} members</span>
+
           <a href="${invite}" target="_blank"
              class="px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-sm font-semibold hover:brightness-110">
              🚀 Join
@@ -217,10 +228,15 @@ async function openServerModal(id) {
   const res = await fetch(`${API_URL}/api/servers/${id}`);
   const server = await res.json();
 
+  const owner = server.submitterDiscord;
+
   document.getElementById('modalLogo').src = server.logo;
   document.getElementById('modalName').textContent = server.name;
   document.getElementById('modalDescription').textContent = server.description;
   document.getElementById('modalTags').textContent = 'Tags: ' + server.tags.join(', ');
+  document.getElementById('modalOwner').textContent = owner
+    ? `Server Owner: ${owner.username}${owner.tag ? '#' + owner.tag : ''} (${owner.userID})`
+    : 'Server Owner: Unknown';
   document.getElementById('modalInvite').href = server.invite;
 
   const comments = document.getElementById('modalComments');
