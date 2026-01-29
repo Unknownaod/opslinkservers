@@ -18,7 +18,7 @@
   </nav>
 
   <section class="px-10 py-10">
-    <h1 class="text-4xl font-bold mb-6">All Servers</h1>
+    <h1 class="text-4xl font-bold mb-6">All Server Submissions</h1>
 
     <!-- Search -->
     <input id="searchInput" type="text" placeholder="Search servers..." class="p-2 rounded bg-zinc-800 mb-6 w-full max-w-lg"/>
@@ -40,6 +40,7 @@
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
 
+    // --- Admin check ---
     async function checkAdmin() {
       if (!token || !userStr) {
         alert('You must be logged in as admin to access this page.');
@@ -55,6 +56,7 @@
       return true;
     }
 
+    // --- Load all submissions ---
     async function loadServers() {
       try {
         const res = await fetch(`${API_URL}/api/servers/all`, {
@@ -68,13 +70,17 @@
       }
     }
 
+    // --- Render servers ---
     function renderServers() {
       const container = document.getElementById('serversGrid');
       const search = document.getElementById('searchInput').value.toLowerCase();
       container.innerHTML = '';
 
       const filtered = servers.filter(s =>
-        s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search)
+        s.name.toLowerCase().includes(search) ||
+        s.description.toLowerCase().includes(search) ||
+        s.submitterDiscord.username.toLowerCase().includes(search) ||
+        s.submitterDiscord.tag.toLowerCase().includes(search)
       );
 
       if (filtered.length === 0) {
@@ -98,15 +104,25 @@
         card.innerHTML = `
           <h3 class="text-lg font-semibold mb-1">${s.name}</h3>
           <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
-          <p class="text-xs text-zinc-500 mb-2">Tags: ${s.tags.join(', ')}</p>
-          <p class="text-xs text-zinc-500 mb-2">Submitted by: ${s.discordUsername}</p>
+          <p class="text-xs text-zinc-500 mb-1">Tags: ${s.tags.join(', ')}</p>
+          <p class="text-xs text-zinc-500 mb-1">NSFW: ${s.nsfw ? 'Yes' : 'No'}</p>
+          <p class="text-xs text-zinc-500 mb-1">Server Type: ${s.type || 'N/A'}</p>
+          <p class="text-xs text-zinc-500 mb-1">Language: ${s.language || 'N/A'}</p>
+          <p class="text-xs text-zinc-500 mb-1">Members: ${s.members || 'N/A'}</p>
+          <p class="text-xs text-zinc-500 mb-1">Website/Social: ${s.website || 'N/A'}</p>
+          ${s.rules ? `<p class="text-xs text-zinc-500 mb-1">Rules: ${s.rules}</p>` : ''}
+          <p class="text-xs text-zinc-500 mb-1">Submitted by: ${s.submitterDiscord.username} (${s.submitterDiscord.tag})</p>
+          <p class="text-xs text-zinc-500 mb-1">UserID: ${s.submitterDiscord.userID}</p>
+          <p class="text-xs text-zinc-500 mb-1">Created: ${new Date(s.createdAt).toLocaleString()}</p>
+          <p class="text-xs text-zinc-500 mb-2">Updated: ${new Date(s.updatedAt).toLocaleString()}</p>
+          ${s.status === 'denied' ? `<p class="text-xs text-red-400 mb-2">Reason: ${s.rejectionReason}</p>` : ''}
           <p class="text-sm mb-2">Status: <span class="${statusColor} font-semibold">${s.status}</span></p>
           <div class="flex gap-2 flex-wrap"></div>
         `;
 
         const btnContainer = card.querySelector('div');
 
-        // Approve button (only if pending)
+        // Approve button (only pending)
         if (s.status === 'pending') {
           const approveBtn = document.createElement('button');
           approveBtn.className = 'bg-green-600 px-3 py-1 rounded hover:bg-green-700';
@@ -119,7 +135,7 @@
           btnContainer.appendChild(approveBtn);
         }
 
-        // Deny button (only if pending)
+        // Deny button (only pending)
         if (s.status === 'pending') {
           const denyBtn = document.createElement('button');
           denyBtn.className = 'bg-red-600 px-3 py-1 rounded hover:bg-red-700';
@@ -133,7 +149,7 @@
           btnContainer.appendChild(denyBtn);
         }
 
-        // View invite (approved)
+        // Join button (approved)
         if (s.status === 'approved') {
           const joinBtn = document.createElement('a');
           joinBtn.href = s.invite;
@@ -147,6 +163,7 @@
       });
     }
 
+    // --- Update server status ---
     async function updateServerStatus(serverId, status, reason = '') {
       try {
         const res = await fetch(`${API_URL}/api/servers/${serverId}/status`, {
@@ -160,7 +177,7 @@
 
         if (res.ok) {
           alert(`Server ${status}!`);
-          await loadServers(); // auto-refresh after status change
+          await loadServers(); // refresh
         } else {
           const err = await res.json();
           alert('Failed: ' + (err.error || err.message));
@@ -172,19 +189,19 @@
     }
 
     document.getElementById('searchInput').addEventListener('input', renderServers);
-
     document.getElementById('logoutBtn').addEventListener('click', () => {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login.html';
     });
 
-    // Initialize
+    // --- Init ---
     (async () => {
       if (await checkAdmin()) {
         await loadServers();
       }
     })();
+
   </script>
 </body>
 </html>
