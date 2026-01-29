@@ -6,81 +6,101 @@
   <title>Browse Servers - OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
-  <!-- Navbar -->
-  <nav class="flex items-center justify-between px-10 py-6">
-    <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
-    <div class="flex items-center gap-8 text-sm" id="navLinks">
-      <a href="index.html" class="hover:opacity-80">Home</a>
-      <a href="browse.html" class="hover:opacity-80">Browse</a>
-      <a href="submit.html" class="hover:opacity-80">Submit</a>
-      <a href="messages.html" class="hover:opacity-80">Messages</a>
-      <a href="login.html" id="loginBtn" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
-      <a href="#" id="adminBtn" class="hidden rounded-full bg-red-600 text-white px-4 py-2 hover:bg-red-700">Admin Dashboard</a>
-    </div>
-  </nav>
+<!-- NAVBAR -->
+<nav class="flex items-center justify-between px-10 py-6 border-b border-zinc-800">
+  <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
+  <div class="flex items-center gap-8 text-sm" id="navLinks">
+    <a href="index.html" class="hover:opacity-80">Home</a>
+    <a href="browse.html" class="hover:opacity-80">Browse</a>
+    <a href="submit.html" class="hover:opacity-80">Submit</a>
+    <a href="messages.html" class="hover:opacity-80">Messages</a>
+    <a href="login.html" id="loginBtn"
+      class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10 transition">
+      Login
+    </a>
+    <a href="#" id="adminBtn"
+      class="hidden rounded-full bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-2 hover:brightness-110 transition">
+      Admin Dashboard
+    </a>
+  </div>
+</nav>
 
-  <!-- Notification Banner -->
-  <div id="notificationBanner" class="fixed top-0 left-0 w-full bg-yellow-500 text-black text-center py-2 hidden">
-    <span id="notificationMessage" class="font-semibold">New System Message! Check now!</span>
-    <button id="dismissNotification" class="absolute right-5 top-1/2 transform -translate-y-1/2 text-black font-bold">X</button>
+<section class="px-10 py-10">
+
+  <h1 class="text-5xl font-bold mb-6">Browse Servers</h1>
+
+  <!-- SEARCH / FILTERS -->
+  <div class="flex flex-wrap gap-4 mb-6 items-center">
+    <input id="searchInput" type="text" placeholder="Search servers..."
+      class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 flex-grow outline-none focus:border-white/20"/>
+
+    <button class="filter-btn px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-white/20 transition" data-tag="all">All</button>
+    <button class="filter-btn px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-white/20 transition" data-tag="gaming">Gaming</button>
+    <button class="filter-btn px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-white/20 transition" data-tag="community">Community</button>
+    <button class="filter-btn px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-white/20 transition" data-tag="art">Art</button>
+    <button class="filter-btn px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-white/20 transition" data-tag="tech">Tech</button>
+
+    <label class="ml-auto flex items-center gap-2 text-sm">
+      <input type="checkbox" id="nsfwToggle"/> Show NSFW
+    </label>
   </div>
 
-  <section class="px-10 py-10">
-    <h1 class="text-5xl font-bold mb-6">Browse Servers</h1>
+  <!-- SERVERS GRID -->
+  <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
 
-    <!-- Search / Filters / NSFW -->
-    <div class="flex flex-wrap gap-4 mb-6 items-center">
-      <input id="searchInput" type="text" placeholder="Search servers..." class="p-2 rounded bg-zinc-800 flex-grow"/>
-      <button class="px-3 py-1 bg-zinc-800 rounded filter-btn" data-tag="all">All</button>
-      <button class="px-3 py-1 bg-zinc-800 rounded filter-btn" data-tag="gaming">Gaming</button>
-      <button class="px-3 py-1 bg-zinc-800 rounded filter-btn" data-tag="community">Community</button>
-      <button class="px-3 py-1 bg-zinc-800 rounded filter-btn" data-tag="art">Art</button>
-      <button class="px-3 py-1 bg-zinc-800 rounded filter-btn" data-tag="tech">Tech</button>
-      <label class="ml-auto flex items-center gap-2 text-sm">
-        <input type="checkbox" id="nsfwToggle"/> Show NSFW
-      </label>
-    </div>
+</section>
 
-    <!-- Servers Grid -->
-    <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-  </section>
+<!-- SERVER MODAL -->
+<div id="serverModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-6 z-50">
+  <div class="bg-zinc-900 rounded-2xl p-8 max-w-3xl w-full relative border border-zinc-800">
 
-  <!-- Server Modal -->
-  <div id="serverModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-6 z-50">
-    <div class="bg-zinc-900 rounded p-6 max-w-3xl w-full relative">
-      <button id="closeModal" class="absolute top-4 right-4 text-zinc-400 hover:text-white">&times;</button>
-      <div class="flex items-center gap-4 mb-4">
-        <img id="modalLogo" src="" alt="Server Logo" class="w-16 h-16 rounded-full border border-zinc-700"/>
-        <h2 id="modalName" class="text-3xl font-bold"></h2>
-      </div>
-      <p id="modalDescription" class="text-zinc-300 mb-2"></p>
-      <p id="modalTags" class="text-xs text-zinc-500 mb-4"></p>
-      <a id="modalInvite" href="#" target="_blank" class="text-blue-400 underline mb-4 inline-block">Join Server</a>
+    <button id="closeModal" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-2xl">&times;</button>
 
-      <hr class="border-zinc-700 my-4"/>
-
+    <div class="flex items-center gap-4 mb-4">
+      <img id="modalLogo" class="w-20 h-20 rounded-full border border-zinc-700 object-cover"/>
       <div>
-        <h3 class="font-semibold mb-2">Reviews & Comments</h3>
-        <div id="modalComments" class="flex flex-col gap-2 mb-4 max-h-60 overflow-y-auto"></div>
-
-        <form id="commentForm" class="flex flex-col gap-2">
-          <textarea name="comment" placeholder="Write a comment..." class="p-2 rounded bg-zinc-800" required></textarea>
-          <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">Post Comment</button>
-        </form>
-
-        <!-- Report Server Button -->
-        <button id="reportServerBtn" class="mt-4 bg-red-600 px-4 py-2 rounded hover:bg-red-700">Report Server</button>
+        <h2 id="modalName" class="text-3xl font-bold"></h2>
+        <p id="modalTags" class="text-xs text-zinc-400"></p>
       </div>
     </div>
-  </div>
 
-  <!-- Footer -->
-  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
-    <span>© 2026 OpsLink Servers</span>
-    <span>Not affiliated with Discord</span>
-  </footer>
+    <p id="modalDescription" class="text-zinc-300 mb-4"></p>
+
+    <a id="modalInvite" target="_blank"
+      class="inline-flex items-center justify-center px-8 py-3 rounded-xl font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 hover:brightness-110 hover:scale-105 transition shadow-lg">
+      🚀 Join Server
+    </a>
+
+    <hr class="border-zinc-800 my-6"/>
+
+    <h3 class="font-semibold mb-2">Reviews & Comments</h3>
+    <div id="modalComments" class="flex flex-col gap-2 mb-4 max-h-60 overflow-y-auto"></div>
+
+    <form id="commentForm" class="flex flex-col gap-3">
+      <textarea name="comment" placeholder="Write a comment..."
+        class="p-3 rounded-xl bg-zinc-800 border border-zinc-700 focus:border-white/20 outline-none"
+        required></textarea>
+      <button type="submit"
+        class="bg-white text-black px-4 py-2 rounded-xl hover:bg-zinc-200 transition">
+        Post Comment
+      </button>
+    </form>
+
+    <button id="reportServerBtn"
+      class="mt-4 bg-red-600 px-4 py-2 rounded-xl hover:bg-red-700 transition">
+      Report Server
+    </button>
+
+  </div>
+</div>
+
+<footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
+  <span>© 2026 OpsLink Servers</span>
+  <span>Not affiliated with Discord</span>
+</footer>
 
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
@@ -98,11 +118,11 @@ if (token && userStr) {
   const user = JSON.parse(userStr);
   loginBtn.textContent = 'Logout';
   loginBtn.href = '#';
-  loginBtn.addEventListener('click', () => {
+  loginBtn.onclick = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.reload();
-  });
+    location.reload();
+  };
 
   const welcomeSpan = document.createElement('span');
   welcomeSpan.textContent = `Welcome, ${user.discordUsername}`;
@@ -113,22 +133,13 @@ if (token && userStr) {
     adminBtn.classList.remove('hidden');
     adminBtn.href = 'dashboard.html';
   }
-} else {
-  adminBtn.classList.add('hidden');
-  loginBtn.textContent = 'Login';
-  loginBtn.href = 'login.html';
-  loginBtn.replaceWith(loginBtn.cloneNode(true));
 }
 
 // --- Load servers ---
 async function loadServers() {
-  try {
-    const res = await fetch(`${API_URL}/api/servers`);
-    servers = await res.json();
-    renderServers();
-  } catch (err) {
-    console.error(err);
-  }
+  const res = await fetch(`${API_URL}/api/servers`);
+  servers = await res.json();
+  renderServers();
 }
 
 // --- Render servers ---
@@ -144,120 +155,85 @@ function renderServers() {
     .filter(s => activeTag === 'all' || s.tags.includes(activeTag))
     .filter(s => s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search));
 
-  if (filtered.length === 0) {
-    const message = document.createElement('div');
-    message.className = 'col-span-full text-center text-zinc-400 mt-10';
-    message.textContent = 'No servers to show...';
-    container.appendChild(message);
+  if (!filtered.length) {
+    container.innerHTML = '<div class="col-span-full text-center text-zinc-400 mt-12">No servers to show...</div>';
     return;
   }
 
   filtered.forEach(s => {
-    const card = document.createElement('div');
-    card.className = 'bg-zinc-900/80 border border-zinc-800 rounded hover:scale-105 transition-transform cursor-pointer flex flex-col';
     let inviteLink = s.invite || '';
     if (inviteLink.startsWith('discord.gg/')) inviteLink = 'https://' + inviteLink;
 
+    const card = document.createElement('div');
+    card.className = 'group bg-zinc-900/80 border border-zinc-800 rounded-2xl overflow-hidden hover:scale-[1.03] hover:shadow-2xl transition cursor-pointer';
+
     card.innerHTML = `
-      <div class="w-full h-40 overflow-hidden rounded-t-lg mb-2">
-        <img src="${s.logo}" alt="Server Banner" class="w-full h-full object-cover"/>
+      <div class="relative h-44 overflow-hidden">
+        <img src="${s.logo}" class="w-full h-full object-cover group-hover:scale-110 transition"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
       </div>
-      <div class="p-4 flex flex-col gap-2">
+
+      <div class="p-5 flex flex-col gap-3">
         <h3 class="text-lg font-semibold">${s.name}</h3>
-        <p class="text-sm text-zinc-300">${s.description}</p>
-        <p class="text-xs text-zinc-500">Tags: ${s.tags.join(', ')}</p>
-        <p class="text-xs text-zinc-500">Members: ${s.members || 'N/A'}</p>
-        <a href="${inviteLink}" target="_blank" class="text-blue-400 underline">Join Server</a>
+        <p class="text-sm text-zinc-300 line-clamp-2">${s.description}</p>
+
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-zinc-500">${s.members || 'N/A'} members</span>
+
+          <a href="${inviteLink}" target="_blank"
+            class="px-4 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 hover:brightness-110 transition">
+            Join
+          </a>
+        </div>
       </div>
     `;
-    card.addEventListener('click', () => openServerModal(s._id));
+
+    card.addEventListener('click', e => {
+      if (e.target.tagName !== 'A') openServerModal(s._id);
+    });
+
     container.appendChild(card);
   });
 }
 
-// --- Open server modal ---
-async function openServerModal(serverId) {
-  try {
-    const res = await fetch(`${API_URL}/api/servers/${serverId}`);
-    const server = await res.json();
+// --- Open modal ---
+async function openServerModal(id) {
+  const res = await fetch(`${API_URL}/api/servers/${id}`);
+  const server = await res.json();
 
-    document.getElementById('modalLogo').src = server.logo;
-    document.getElementById('modalName').textContent = server.name;
-    document.getElementById('modalDescription').textContent = server.description;
-    document.getElementById('modalTags').textContent = 'Tags: ' + server.tags.join(', ');
-    document.getElementById('modalInvite').href = server.invite;
+  document.getElementById('modalLogo').src = server.logo;
+  document.getElementById('modalName').textContent = server.name;
+  document.getElementById('modalDescription').textContent = server.description;
+  document.getElementById('modalTags').textContent = 'Tags: ' + server.tags.join(', ');
+  document.getElementById('modalInvite').href = server.invite;
 
-    const commentsContainer = document.getElementById('modalComments');
-    commentsContainer.innerHTML = '';
-    server.comments.forEach(c => {
-      const div = document.createElement('div');
-      div.className = 'bg-zinc-800 p-2 rounded text-sm';
-      div.textContent = `${c.user}: ${c.text}`;
-      commentsContainer.appendChild(div);
-    });
+  const comments = document.getElementById('modalComments');
+  comments.innerHTML = '';
+  server.comments.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'bg-zinc-800 p-3 rounded-xl text-sm';
+    div.textContent = `${c.user}: ${c.text}`;
+    comments.appendChild(div);
+  });
 
-    document.getElementById('serverModal').classList.remove('hidden');
-
-    // --- Comment form ---
-    const commentForm = document.getElementById('commentForm');
-    commentForm.onsubmit = async e => {
-      e.preventDefault();
-      if (!token || !userStr) {
-        alert("You must be logged in to post a comment.");
-        return;
-      }
-      const commentText = e.target.comment.value;
-      await fetch(`${API_URL}/api/servers/${serverId}/comments`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text: commentText })
-      });
-      e.target.reset();
-      openServerModal(serverId);
-    };
-
-    // --- Report button ---
-    const reportBtn = document.getElementById('reportServerBtn');
-    reportBtn.onclick = async () => {
-      if (!token || !userStr) {
-        alert("You must be logged in to report a server.");
-        return;
-      }
-      const reason = prompt("Why are you reporting this server?");
-      if (!reason) return;
-      await fetch(`${API_URL}/api/servers/${serverId}/report`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ reason })
-      });
-      alert("Server reported successfully.");
-    };
-
-  } catch (err) {
-    console.error('Failed to load server details:', err);
-  }
+  document.getElementById('serverModal').classList.remove('hidden');
 }
 
-document.getElementById('closeModal').addEventListener('click', () => {
+// --- Close modal ---
+document.getElementById('closeModal').onclick = () => {
   document.getElementById('serverModal').classList.add('hidden');
-});
+};
 
 // --- Filters ---
 document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
+  btn.onclick = () => {
     activeTag = btn.dataset.tag;
     renderServers();
-  });
+  };
 });
 
-document.getElementById('searchInput').addEventListener('input', renderServers);
-document.getElementById('nsfwToggle').addEventListener('change', renderServers);
+document.getElementById('searchInput').oninput = renderServers;
+document.getElementById('nsfwToggle').onchange = renderServers;
 
 loadServers();
 </script>
