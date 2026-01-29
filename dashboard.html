@@ -9,7 +9,7 @@
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
   <!-- Navbar -->
-  <nav class="flex items-center justify-between px-10 py-6">
+  <nav class="flex items-center justify-between px-10 py-6 border-b border-zinc-800">
     <div class="text-xl font-semibold tracking-wide">OpsLink Admin Dashboard</div>
     <div class="flex items-center gap-8 text-sm">
       <a href="index.html" class="hover:opacity-80">Home</a>
@@ -17,6 +17,7 @@
     </div>
   </nav>
 
+  <!-- Servers Section -->
   <section class="px-10 py-10">
     <h1 class="text-4xl font-bold mb-6">All Server Submissions</h1>
 
@@ -25,6 +26,12 @@
 
     <!-- Servers Grid -->
     <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </section>
+
+  <!-- Edit Requests Section -->
+  <section class="px-10 py-10 border-t border-zinc-800">
+    <h1 class="text-4xl font-bold mb-6">Pending Edit Requests</h1>
+    <div id="editRequestsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
   </section>
 
   <!-- Active Reports Section -->
@@ -70,6 +77,7 @@ async function loadServers() {
     });
     servers = await res.json();
     renderServers();
+    renderEditRequests();
     renderReports();
   } catch(err) {
     console.error(err);
@@ -91,7 +99,7 @@ function renderServers() {
     s.tags?.some(tag => tag.toLowerCase().includes(search))
   );
 
-  if (filtered.length === 0) {
+  if (!filtered.length) {
     container.innerHTML = '<div class="col-span-full text-center text-zinc-400 mt-10">No servers to show...</div>';
     return;
   }
@@ -105,7 +113,7 @@ function renderServers() {
                         'text-yellow-400';
 
     const inviteLink = s.invite?.startsWith('http') ? s.invite : `https://${s.invite}`;
-    const logoUrl = s.logo || ''; // Discord CDN URLs are used directly now
+    const logoUrl = s.logo || '';
 
     card.innerHTML = `
       <h3 class="text-lg font-semibold mb-1">${s.name}</h3>
@@ -119,7 +127,6 @@ function renderServers() {
       <p class="text-xs text-zinc-500 mb-1">Website/Social: ${s.website || 'N/A'}</p>
       ${s.rules ? `<p class="text-xs text-zinc-500 mb-1">Rules: ${s.rules}</p>` : ''}
       <p class="text-xs text-zinc-500 mb-1">Submitted by: ${s.submitterDiscord?.username || 'N/A'} (${s.submitterDiscord?.tag || 'N/A'})</p>
-      <p class="text-xs text-zinc-500 mb-1">UserID: ${s.submitterDiscord?.userID || 'N/A'}</p>
       <p class="text-xs text-zinc-500 mb-1">Created: ${s.createdAt ? new Date(s.createdAt).toLocaleString() : 'N/A'}</p>
       <p class="text-xs text-zinc-500 mb-2">Updated: ${s.updatedAt ? new Date(s.updatedAt).toLocaleString() : 'N/A'}</p>
       ${s.status === 'denied' && s.rejectionReason ? `<p class="text-xs text-red-400 mb-2">Reason: ${s.rejectionReason}</p>` : ''}
@@ -163,6 +170,52 @@ function renderServers() {
   });
 }
 
+// --- Render pending edit requests ---
+function renderEditRequests() {
+  const container = document.getElementById('editRequestsGrid');
+  container.innerHTML = '';
+
+  const requests = servers.flatMap(s => (s.editRequests || []).map(req => ({ ...req, serverId: s._id, original: s })));
+
+  if (!requests.length) {
+    container.innerHTML = '<div class="col-span-full text-center text-zinc-400 mt-10">No pending edit requests.</div>';
+    return;
+  }
+
+  requests.forEach(req => {
+    const card = document.createElement('div');
+    card.className = 'bg-yellow-900/80 border border-yellow-800 p-4 rounded flex flex-col gap-2';
+
+    card.innerHTML = `
+      <h3 class="text-lg font-semibold mb-1">${req.name} (Edit Request)</h3>
+      <p class="text-xs text-zinc-300 mb-1">Original Name: ${req.original.name}</p>
+      <p class="text-xs text-zinc-300 mb-1">Requested by owner: ${req.original.submitterDiscord?.username || 'N/A'}</p>
+      <p class="text-sm mb-1">Requested changes:</p>
+      <p class="text-xs text-zinc-300 mb-1">Description: ${req.description}</p>
+      <p class="text-xs text-zinc-300 mb-1">Tags: ${req.tags?.join(', ')}</p>
+      <p class="text-xs text-zinc-300 mb-1">NSFW: ${req.nsfw ? 'Yes' : 'No'}</p>
+      <p class="text-xs text-zinc-300 mb-1">Logo: <a href="${req.logo}" target="_blank" class="underline">View</a></p>
+      <div class="flex gap-2 flex-wrap mt-2"></div>
+    `;
+
+    const btnContainer = card.querySelector('div.flex.flex-wrap');
+
+    const approveBtn = document.createElement('button');
+    approveBtn.className = 'bg-green-600 px-3 py-1 rounded hover:bg-green-700';
+    approveBtn.textContent = 'Approve Edit';
+    approveBtn.onclick = () => approveEdit(req.serverId, req);
+    btnContainer.appendChild(approveBtn);
+
+    const denyBtn = document.createElement('button');
+    denyBtn.className = 'bg-red-600 px-3 py-1 rounded hover:bg-red-700';
+    denyBtn.textContent = 'Deny Edit';
+    denyBtn.onclick = () => denyEdit(req.serverId, req);
+    btnContainer.appendChild(denyBtn);
+
+    container.appendChild(card);
+  });
+}
+
 // --- Render Active Reports ---
 function renderReports() {
   const container = document.getElementById('reportsGrid');
@@ -170,7 +223,7 @@ function renderReports() {
 
   const reportedServers = servers.filter(s => s.reports && s.reports.length > 0);
 
-  if (reportedServers.length === 0) {
+  if (!reportedServers.length) {
     container.innerHTML = '<div class="col-span-full text-center text-zinc-400 mt-10">No active reports.</div>';
     return;
   }
@@ -208,70 +261,29 @@ function renderReports() {
 }
 
 // --- Server actions ---
-async function approveServer(id) {
-  if (!confirm('Approve this server?')) return;
-  await updateServerStatus(id, 'approved');
+async function approveServer(id) { if (!confirm('Approve this server?')) return; await updateServerStatus(id, 'approved'); }
+async function denyServer(id) { const reason = prompt('Enter reason for denial:'); if (reason===null) return; await updateServerStatus(id, 'denied', reason); }
+async function deleteServer(id) { if (!confirm('Delete this server?')) return; try { const res = await fetch(`${API_URL}/api/servers/${id}`, { method:'DELETE', headers:{ 'Authorization': `Bearer ${token}` } }); if(res.ok){alert('Server deleted!'); await loadServers();}else{const err=await res.json(); alert('Failed: '+(err.error||err.message));} } catch(e){console.error(e); alert('Error deleting server.'); } }
+async function updateServerStatus(id,status,reason=''){ try{ const res = await fetch(`${API_URL}/api/servers/${id}/status`,{method:'PATCH',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({status,rejectionReason:reason})}); if(res.ok){alert(`Server ${status}!`); await loadServers();}else{const err=await res.json(); alert('Failed: '+(err.error||err.message));} }catch(e){console.error(e); alert('Error updating server status.');} }
+
+// --- Approve/Deny edits ---
+async function approveEdit(serverId, reqData){
+  try{
+    const res = await fetch(`${API_URL}/api/servers/${serverId}/edit-approve`, {method:'POST', headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'}, body:JSON.stringify({edit:reqData})});
+    if(res.ok){alert('Edit approved!'); await loadServers();} else{const err=await res.json();alert('Failed: '+(err.error||err.message));}
+  } catch(e){console.error(e); alert('Error approving edit.');}
 }
-async function denyServer(id) {
-  const reason = prompt('Enter reason for denial:');
-  if (reason === null) return;
-  await updateServerStatus(id, 'denied', reason);
-}
-async function deleteServer(id) {
-  if (!confirm('Delete this server?')) return;
-  try {
-    const res = await fetch(`${API_URL}/api/servers/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (res.ok) {
-      alert('Server deleted!');
-      await loadServers();
-    } else {
-      const err = await res.json();
-      alert('Failed: ' + (err.error || err.message));
-    }
-  } catch(err) {
-    console.error(err);
-    alert('Error deleting server.');
-  }
-}
-async function updateServerStatus(id, status, reason = '') {
-  try {
-    const res = await fetch(`${API_URL}/api/servers/${id}/status`, {
-      method: 'PATCH',
-      headers: { 
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ status, rejectionReason: reason })
-    });
-    if (res.ok) {
-      alert(`Server ${status}!`);
-      await loadServers();
-    } else {
-      const err = await res.json();
-      alert('Failed: ' + (err.error || err.message));
-    }
-  } catch(err) {
-    console.error(err);
-    alert('Error updating server status.');
-  }
+async function denyEdit(serverId, reqData){
+  try{
+    const res = await fetch(`${API_URL}/api/servers/${serverId}/edit-deny`, {method:'POST', headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'}, body:JSON.stringify({edit:reqData})});
+    if(res.ok){alert('Edit denied!'); await loadServers();} else{const err=await res.json();alert('Failed: '+(err.error||err.message));}
+  } catch(e){console.error(e); alert('Error denying edit.');}
 }
 
+// --- Init ---
 document.getElementById('searchInput').addEventListener('input', renderServers);
-document.getElementById('logoutBtn').addEventListener('click', () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  window.location.href = '/login.html';
-});
-
-// --- Initialize ---
-(async () => {
-  if (await checkAdmin()) {
-    await loadServers();
-  }
-})();
+document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href='/login.html'; });
+(async()=>{if(await checkAdmin()) await loadServers();})();
 </script>
 
 </body>
