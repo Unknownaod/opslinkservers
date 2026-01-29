@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login - OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -26,8 +26,8 @@
       <form id="loginForm" class="flex flex-col gap-4">
 
         <!-- Account Info -->
-        <input name="email" type="email" placeholder="Email" class="p-2 rounded bg-zinc-800" required/>
-        <input name="password" type="password" placeholder="Password" class="p-2 rounded bg-zinc-800" required/>
+        <input name="email" type="email" placeholder="Email" class="p-2 rounded bg-zinc-800" required />
+        <input name="password" type="password" placeholder="Password" class="p-2 rounded bg-zinc-800" required />
 
         <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">Login</button>
       </form>
@@ -45,35 +45,39 @@
   </footer>
 
 <script>
-const API_URL = 'https://opslinkservers-backend.onrender.com';
+  const API_URL = 'https://opslinkservers-backend.onrender.com';
 
-document.getElementById('loginForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(e.target));
+  document.getElementById('loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target));
 
-  try {
-    const res = await fetch(`${API_URL}/api/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
+    try {
+      const res = await fetch(`${API_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
 
-    if (res.ok) {
-      const user = await res.json();
-      alert('Logged in successfully!');
-      console.log('User info:', user);
-      e.target.reset();
-    } else {
-      const err = await res.json();
-      alert('Login failed: ' + err.message);
+      if (res.ok) {
+        const { token, user } = await res.json();
+        alert('Login Successful!');
+        // Save token and user info to localStorage
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        e.target.reset();
+
+        // Redirect to homepage
+        window.location.href = 'index.html';
+      } else {
+        const err = await res.json();
+        alert('Login failed: ' + (err.error || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Login failed. Please try again later.');
+      console.error(err);
     }
-  } catch (err) {
-    alert('Login failed. Please try again later.');
-    console.error(err);
-  }
-});
+  });
 </script>
-
 
 </body>
 </html>
