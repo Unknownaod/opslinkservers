@@ -6,30 +6,56 @@
   <title>Submit Server - OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="min-h-screen bg-black text-white px-10 py-10">
+<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
-  <h1 class="text-4xl font-bold mb-6">Submit Your Server</h1>
-  <form id="submitForm" class="flex flex-col gap-4 max-w-lg">
-    <input name="name" placeholder="Server Name" class="p-2 rounded bg-zinc-800" required />
-    <input name="invite" placeholder="Discord Invite Link" class="p-2 rounded bg-zinc-800" required />
-    <textarea name="description" placeholder="Description" class="p-2 rounded bg-zinc-800" required></textarea>
-    <input name="tags" placeholder="Tags (comma separated)" class="p-2 rounded bg-zinc-800" />
-    <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">Submit</button>
-  </form>
+  <!-- Navbar -->
+  <nav class="flex items-center justify-between px-10 py-6">
+    <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
+    <div class="flex items-center gap-8 text-sm">
+      <a href="index.html" class="hover:opacity-80">Home</a>
+      <a href="browse.html" class="hover:opacity-80">Browse</a>
+      <a href="submit.html" class="hover:opacity-80">Submit</a>
+      <a href="#" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
+    </div>
+  </nav>
+
+  <section class="px-10 py-10 max-w-2xl mx-auto">
+    <h1 class="text-5xl font-bold mb-6">Submit Your Server</h1>
+    <div class="bg-zinc-900/80 border border-zinc-800 p-6 rounded">
+      <form id="submitForm" class="flex flex-col gap-4">
+        <input name="name" placeholder="Server Name" class="p-2 rounded bg-zinc-800" required/>
+        <input name="invite" placeholder="Invite Link" class="p-2 rounded bg-zinc-800" required/>
+        <textarea name="description" placeholder="Description" class="p-2 rounded bg-zinc-800" required></textarea>
+        <input name="tags" placeholder="Tags (comma separated)" class="p-2 rounded bg-zinc-800"/>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" name="nsfw"/> NSFW
+        </label>
+        <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">Submit</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
+    <span>© 2026 OpsLink Servers</span>
+    <span>Not affiliated with Discord</span>
+  </footer>
 
   <script>
-    document.getElementById('submitForm').addEventListener('submit', async e => {
+    document.getElementById('submitForm').addEventListener('submit', async e=>{
       e.preventDefault();
       const data = Object.fromEntries(new FormData(e.target));
-      data.tags = data.tags ? data.tags.split(',').map(t => t.trim()) : [];
-      await fetch('https://your-backend/api/servers', { // Replace with your backend
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(data)
+      data.tags = data.tags ? data.tags.split(',').map(t=>t.trim()) : [];
+      data.nsfw = data.nsfw ? true : false;
+      await fetch('https://your-backend/api/servers',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(data)
       });
       alert('Server submitted! Awaiting approval.');
       e.target.reset();
     });
   </script>
+
 </body>
 </html>
