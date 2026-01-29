@@ -38,7 +38,7 @@
     </div>
 
     <!-- Servers Grid -->
-    <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+    <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
   </section>
 
   <!-- Server Modal -->
@@ -143,10 +143,22 @@ function renderServers() {
   filtered.forEach(s => {
     const card = document.createElement('div');
     card.className = 'bg-zinc-900/80 border border-zinc-800 p-6 rounded hover:scale-105 transition-transform cursor-pointer';
+    let inviteLink = s.invite || '';
+    if (inviteLink.startsWith('discord.gg/')) inviteLink = 'https://' + inviteLink;
+
     card.innerHTML = `
       <h3 class="text-lg font-semibold mb-2">${s.name}</h3>
       <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
-      <p class="text-xs text-zinc-500 mb-2">Tags: ${s.tags.join(', ')}</p>
+      <p class="text-xs text-zinc-500 mb-1">Tags: ${s.tags.join(', ')}</p>
+      <p class="text-xs text-zinc-500 mb-1">Server Type: ${s.type || 'N/A'}</p>
+      <p class="text-xs text-zinc-500 mb-1">Members: ${s.members || 'N/A'}</p>
+      <p class="text-xs text-zinc-500 mb-1">Language: ${s.language || 'N/A'}</p>
+      <p class="text-xs text-zinc-500 mb-1">NSFW: ${s.nsfw ? 'Yes' : 'No'}</p>
+      <p class="text-xs text-zinc-500 mb-1">Submitted by: ${s.submitterDiscord.username} (${s.submitterDiscord.tag})</p>
+      <p class="text-xs text-zinc-500 mb-1">UserID: ${s.submitterDiscord.userID}</p>
+      <p class="text-xs text-zinc-500 mb-2">Created: ${new Date(s.createdAt).toLocaleString()}</p>
+      <a href="${inviteLink}" target="_blank" class="text-blue-400 underline">Join Server</a>
+      <p class="text-sm mb-2">Status: <span class="text-${s.status === 'approved' ? 'green' : s.status === 'denied' ? 'red' : 'yellow'}-400">${s.status}</span></p>
     `;
     card.addEventListener('click', () => openServerModal(s._id));
     container.appendChild(card);
