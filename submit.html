@@ -11,11 +11,11 @@
   <!-- Navbar -->
   <nav class="flex items-center justify-between px-10 py-6">
     <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
-    <div class="flex items-center gap-8 text-sm">
+    <div class="flex items-center gap-8 text-sm" id="navLinks">
       <a href="index.html" class="hover:opacity-80">Home</a>
       <a href="browse.html" class="hover:opacity-80">Browse</a>
       <a href="submit.html" class="hover:opacity-80">Submit</a>
-      <a href="#" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
+      <a href="login.html" id="loginBtn" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
     </div>
   </nav>
 
@@ -37,10 +37,8 @@
     <!-- Submission Form -->
     <div class="bg-zinc-900/80 border border-zinc-800 p-6 rounded">
       <form id="submitForm" class="flex flex-col gap-4">
-        
         <!-- Basic Info -->
         <input name="name" placeholder="Server Name" class="p-2 rounded bg-zinc-800" required/>
-        <input name="discordUsername" placeholder="Your Discord Username (e.g., User#1234)" class="p-2 rounded bg-zinc-800" required/>
         <input name="invite" placeholder="Server Invite Link" class="p-2 rounded bg-zinc-800" required/>
         <textarea name="description" placeholder="Brief Description" class="p-2 rounded bg-zinc-800" required></textarea>
 
@@ -80,9 +78,36 @@
 
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
+let currentUser = null;
 
+// Check if user is logged in
+async function checkUser() {
+  try {
+    const res = await fetch(`${API_URL}/api/me`, { credentials: 'include' });
+    if (!res.ok) throw new Error('Not logged in');
+    currentUser = await res.json();
+
+    // Update login button
+    const loginBtn = document.getElementById('loginBtn');
+    loginBtn.textContent = 'Logout';
+    loginBtn.href = '#';
+    loginBtn.addEventListener('click', async () => {
+      await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
+      window.location.reload();
+    });
+  } catch(err) {
+    console.log('Not logged in', err);
+  }
+}
+
+// Handle form submission
 document.getElementById('submitForm').addEventListener('submit', async e => {
   e.preventDefault();
+  if (!currentUser) {
+    alert('You must be logged in to submit a server.');
+    window.location.href = '/login.html';
+    return;
+  }
 
   const data = Object.fromEntries(new FormData(e.target));
   data.tags = data.tags ? data.tags.split(',').map(t => t.trim()) : [];
@@ -96,6 +121,7 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
   try {
     const res = await fetch(`${API_URL}/api/servers`, {
       method: 'POST',
+      credentials: 'include', // use cookie for auth
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
@@ -105,15 +131,16 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
       e.target.reset();
     } else {
       const err = await res.json();
-      alert('Submission failed: ' + err.message);
+      alert('Submission failed: ' + (err.error || err.message));
     }
   } catch (err) {
     alert('Submission failed. Please try again later.');
     console.error(err);
   }
 });
-</script>
 
+checkUser();
+</script>
 
 </body>
 </html>
