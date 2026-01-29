@@ -3,30 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>404 Not Found - OpsLink</title>
+  <title>404 - Page Not Found | OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Floating animation for the question mark */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    .animate-float {
+      animation: float 2s ease-in-out infinite;
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white flex flex-col justify-center items-center">
+<body class="bg-gradient-to-br from-black via-zinc-900 to-black text-white flex flex-col items-center justify-center min-h-screen px-6">
 
   <!-- Question Mark Icon -->
-  <div class="flex flex-col items-center mb-6">
-    <div class="text-white text-[6rem] font-bold mb-4 select-none">?</div>
-    <h1 class="text-6xl font-bold">404</h1>
+  <div class="text-white text-9xl mb-6 animate-float">
+    ?
   </div>
 
+  <!-- Error Code -->
+  <h1 class="text-6xl md:text-8xl font-bold mb-4">404</h1>
+
   <!-- Message -->
-  <p class="text-zinc-400 text-center max-w-md mb-6">
-    Oops! The page you are looking for does not exist. It might have been moved, deleted, or you may have typed the URL incorrectly.
+  <p class="text-zinc-400 text-center text-lg md:text-xl max-w-lg mb-8">
+    Oops! The page you are looking for doesn’t exist. It might have been moved, deleted, or never existed.
   </p>
 
-  <!-- Back Home Button -->
-  <a href="index.html" class="bg-white text-black px-6 py-3 rounded-full hover:bg-zinc-200 transition">
-    Go Back Home
-  </a>
+  <!-- Buttons -->
+  <div class="flex flex-col md:flex-row gap-4">
+    <a href="index.html" class="bg-white text-black px-6 py-3 rounded-full font-semibold hover:bg-zinc-200 transition">
+      Go to Home
+    </a>
+    <a href="browse.html" class="border border-white px-6 py-3 rounded-full font-semibold hover:bg-white/10 transition">
+      Browse Servers
+    </a>
+  </div>
 
-  <!-- Optional footer -->
-  <footer class="mt-12 text-sm text-zinc-500">
-    © 2026 OpsLink Servers — Not affiliated with Discord
-  </footer>
+  <!-- Decorative Elements -->
+  <div class="absolute top-10 left-10 w-24 h-24 bg-white/5 rounded-full blur-3xl animate-float"></div>
+  <div class="absolute bottom-20 right-16 w-32 h-32 bg-white/5 rounded-full blur-3xl animate-float"></div>
+
 </body>
 </html>
