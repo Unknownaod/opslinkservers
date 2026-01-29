@@ -44,86 +44,27 @@
       if (!token || !userStr) {
         alert('You must be logged in as admin to access this page.');
         window.location.href = '/login.html';
-        return;
+        return false;
       }
       currentUser = JSON.parse(userStr);
       if (currentUser.role !== 'admin') {
         alert('Access denied. Admins only.');
         window.location.href = '/';
-        return;
+        return false;
       }
+      return true;
     }
 
-    async function sendSystemMessage(userId, message) {
+    async function loadServers() {
       try {
-        await fetch(`${API_URL}/api/messages`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ userId, message })
-        });
-      } catch(err) {
-        console.error('Failed to send system message:', err);
-      }
-    }
-
-    async function approveServer(server) {
-      if (!confirm(`Approve ${server.name}?`)) return;
-      try {
-        await fetch(`${API_URL}/api/servers/${server._id}/approve`, {
-          method: 'POST',
+        const res = await fetch(`${API_URL}/api/servers/all`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-
-        // Send system message to submitter
-        await sendSystemMessage(server.submitter, `Your server "${server.name}" has been approved! 🎉`);
-
-        alert(`${server.name} approved!`);
-        await loadServers();
+        servers = await res.json();
+        renderServers();
       } catch(err) {
         console.error(err);
-        alert('Failed to approve server.');
-      }
-    }
-
-    async function denyServer(server) {
-      const reason = prompt(`Enter reason for denying ${server.name}:`);
-      if (!reason) return;
-      try {
-        await fetch(`${API_URL}/api/servers/${server._id}/deny`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ reason })
-        });
-
-        // Send system message to submitter
-        await sendSystemMessage(server.submitter, `Your server "${server.name}" has been denied. Reason: ${reason}`);
-
-        alert(`${server.name} denied!`);
-        await loadServers();
-      } catch(err) {
-        console.error(err);
-        alert('Failed to deny server.');
-      }
-    }
-
-    async function deleteServer(server) {
-      if (!confirm('Are you sure you want to permanently delete this server?')) return;
-      try {
-        await fetch(`${API_URL}/api/servers/${server._id}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        alert('Server deleted!');
-        await loadServers();
-      } catch(err) {
-        console.error(err);
-        alert('Failed to delete server.');
+        alert('Failed to load servers.');
       }
     }
 
@@ -146,48 +87,92 @@
 
       filtered.forEach(s => {
         const card = document.createElement('div');
-        card.className = 'bg-zinc-900/80 border border-zinc-800 p-4 rounded';
+        card.className = 'bg-zinc-900/80 border border-zinc-800 p-4 rounded flex flex-col justify-between';
+
+        // Status badge
+        let statusColor = 'text-zinc-400';
+        if (s.status === 'approved') statusColor = 'text-green-400';
+        else if (s.status === 'denied') statusColor = 'text-red-400';
+        else if (s.status === 'pending') statusColor = 'text-yellow-400';
+
         card.innerHTML = `
           <h3 class="text-lg font-semibold mb-1">${s.name}</h3>
           <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
           <p class="text-xs text-zinc-500 mb-2">Tags: ${s.tags.join(', ')}</p>
           <p class="text-xs text-zinc-500 mb-2">Submitted by: ${s.discordUsername}</p>
-          <p class="text-xs text-zinc-400 mb-2">Status: <span class="${s.status === 'approved' ? 'text-green-400' : s.status === 'denied' ? 'text-red-400' : 'text-zinc-400'}">${s.status}</span></p>
-          <div class="flex gap-2 mt-2">
-            ${s.status === 'pending' ? `
-              <button class="approve-btn bg-green-600 px-3 py-1 rounded hover:bg-green-700">Approve</button>
-              <button class="deny-btn bg-red-600 px-3 py-1 rounded hover:bg-red-700">Deny</button>
-            ` : ''}
-            <button class="delete-btn bg-gray-600 px-3 py-1 rounded hover:bg-gray-700">Delete</button>
-          </div>
+          <p class="text-sm mb-2">Status: <span class="${statusColor} font-semibold">${s.status}</span></p>
+          <div class="flex gap-2 flex-wrap"></div>
         `;
 
-        const approveBtn = card.querySelector('.approve-btn');
-        if (approveBtn) approveBtn.addEventListener('click', () => approveServer(s));
+        const btnContainer = card.querySelector('div');
 
-        const denyBtn = card.querySelector('.deny-btn');
-        if (denyBtn) denyBtn.addEventListener('click', () => denyServer(s));
+        // Approve button (only if pending)
+        if (s.status === 'pending') {
+          const approveBtn = document.createElement('button');
+          approveBtn.className = 'bg-green-600 px-3 py-1 rounded hover:bg-green-700';
+          approveBtn.textContent = 'Approve';
+          approveBtn.addEventListener('click', async () => {
+            if (confirm(`Approve "${s.name}"?`)) {
+              await updateServerStatus(s._id, 'approved');
+            }
+          });
+          btnContainer.appendChild(approveBtn);
+        }
 
-        card.querySelector('.delete-btn').addEventListener('click', () => deleteServer(s));
+        // Deny button (only if pending)
+        if (s.status === 'pending') {
+          const denyBtn = document.createElement('button');
+          denyBtn.className = 'bg-red-600 px-3 py-1 rounded hover:bg-red-700';
+          denyBtn.textContent = 'Deny';
+          denyBtn.addEventListener('click', async () => {
+            const reason = prompt('Enter reason for denial:');
+            if (reason !== null) {
+              await updateServerStatus(s._id, 'denied', reason);
+            }
+          });
+          btnContainer.appendChild(denyBtn);
+        }
+
+        // View invite (approved)
+        if (s.status === 'approved') {
+          const joinBtn = document.createElement('a');
+          joinBtn.href = s.invite;
+          joinBtn.target = '_blank';
+          joinBtn.className = 'bg-blue-600 px-3 py-1 rounded hover:bg-blue-700';
+          joinBtn.textContent = 'Join Server';
+          btnContainer.appendChild(joinBtn);
+        }
 
         container.appendChild(card);
       });
     }
 
-    async function loadServers() {
+    async function updateServerStatus(serverId, status, reason = '') {
       try {
-        const res = await fetch(`${API_URL}/api/servers`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        const res = await fetch(`${API_URL}/api/servers/${serverId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status, rejectionReason: reason })
         });
-        servers = await res.json();
-        renderServers();
+
+        if (res.ok) {
+          alert(`Server ${status}!`);
+          await loadServers(); // auto-refresh after status change
+        } else {
+          const err = await res.json();
+          alert('Failed: ' + (err.error || err.message));
+        }
       } catch(err) {
         console.error(err);
-        alert('Failed to load servers.');
+        alert('Error updating server status.');
       }
     }
 
     document.getElementById('searchInput').addEventListener('input', renderServers);
+
     document.getElementById('logoutBtn').addEventListener('click', () => {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -196,8 +181,9 @@
 
     // Initialize
     (async () => {
-      await checkAdmin();
-      await loadServers();
+      if (await checkAdmin()) {
+        await loadServers();
+      }
     })();
   </script>
 </body>
