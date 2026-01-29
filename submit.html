@@ -61,11 +61,13 @@
           <input type="checkbox" name="nsfw"/> NSFW
         </label>
 
-        <!-- Server Logo Upload (Required) -->
+        <!-- Server Logo Upload (Clean Preview) -->
         <label class="flex flex-col gap-2">
           Server Logo <span class="text-red-500">*</span>
           <input type="file" name="logo" id="logoInput" accept="image/*" class="p-2 rounded bg-zinc-800 text-white" required/>
-          <img id="logoPreview" class="mt-2 w-32 h-32 object-cover rounded hidden" alt="Logo Preview"/>
+          <div id="logoPreviewContainer" class="mt-2 w-32 h-32 border-2 border-zinc-700 rounded overflow-hidden hidden">
+            <img id="logoPreview" class="w-full h-full object-cover" alt="Logo Preview"/>
+          </div>
         </label>
 
         <!-- Tags -->
@@ -156,6 +158,7 @@ function renderTags() {
 // --- Logo Preview ---
 const logoInput = document.getElementById('logoInput');
 const logoPreview = document.getElementById('logoPreview');
+const logoPreviewContainer = document.getElementById('logoPreviewContainer');
 
 logoInput.addEventListener('change', () => {
   const file = logoInput.files[0];
@@ -163,12 +166,12 @@ logoInput.addEventListener('change', () => {
     const reader = new FileReader();
     reader.onload = e => {
       logoPreview.src = e.target.result;
-      logoPreview.classList.remove('hidden');
+      logoPreviewContainer.classList.remove('hidden');
     };
     reader.readAsDataURL(file);
   } else {
     logoPreview.src = '';
-    logoPreview.classList.add('hidden');
+    logoPreviewContainer.classList.add('hidden');
   }
 });
 
@@ -214,10 +217,16 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
       tags = [];
       renderTags();
       logoPreview.src = '';
-      logoPreview.classList.add('hidden');
+      logoPreviewContainer.classList.add('hidden');
     } else {
-      const err = await res.json();
-      alert('Submission failed: ' + (err.error || err.message));
+      let errMsg = '';
+      try {
+        const errJson = await res.json();
+        errMsg = errJson.error || errJson.message;
+      } catch {
+        errMsg = await res.text();
+      }
+      alert('Submission failed: ' + errMsg);
     }
   } catch (err) {
     console.error(err);
