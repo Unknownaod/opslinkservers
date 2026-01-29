@@ -110,11 +110,12 @@ if (token && userStr) {
   currentUser = JSON.parse(userStr);
   loginBtn.textContent = 'Logout';
   loginBtn.href = '#';
-  loginBtn.addEventListener('click', () => {
+  loginBtn.onclick = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     window.location.reload();
-  });
+  };
+
   const welcomeSpan = document.createElement('span');
   welcomeSpan.textContent = `Welcome, ${currentUser.discordUsername}`;
   welcomeSpan.className = "text-sm text-zinc-300";
@@ -124,26 +125,21 @@ if (token && userStr) {
     adminBtn.classList.remove('hidden');
     adminBtn.href = 'dashboard.html';
   }
-} else {
-  adminBtn.classList.add('hidden');
-  loginBtn.textContent = 'Login';
-  loginBtn.href = 'login.html';
-  loginBtn.replaceWith(loginBtn.cloneNode(true));
 }
 
-// --- Tag handling ---
+// ---------------- TAGS ----------------
 const tagInput = document.getElementById('tagInput');
 const addTagBtn = document.getElementById('addTagBtn');
 const tagsList = document.getElementById('tagsList');
 
-addTagBtn.addEventListener('click', () => {
+addTagBtn.onclick = () => {
   const value = tagInput.value.trim();
   if (value && !tags.includes(value) && tags.length < 5) {
     tags.push(value);
     renderTags();
   }
   tagInput.value = '';
-});
+};
 
 function renderTags() {
   tagsList.innerHTML = '';
@@ -151,20 +147,21 @@ function renderTags() {
     const span = document.createElement('span');
     span.className = 'bg-zinc-700 px-3 py-1 rounded flex items-center gap-1';
     span.textContent = tag;
+
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.textContent = '×';
-    removeBtn.className = 'ml-1';
-    removeBtn.addEventListener('click', () => {
+    removeBtn.onclick = () => {
       tags = tags.filter(t => t !== tag);
       renderTags();
-    });
+    };
+
     span.appendChild(removeBtn);
     tagsList.appendChild(span);
   });
 }
 
-// --- Logo preview (any URL) ---
+// ---------------- LOGO PREVIEW ----------------
 const logoInput = document.getElementById('logoInput');
 const logoPreview = document.getElementById('logoPreview');
 const logoPreviewContainer = document.getElementById('logoPreviewContainer');
@@ -180,72 +177,58 @@ logoInput.addEventListener('input', () => {
   }
 });
 
-// --- Form submission ---
+// ---------------- SUBMIT ----------------
 document.getElementById('submitForm').addEventListener('submit', async e => {
   e.preventDefault();
+
   if (!currentUser || !token) {
-    alert('You must be logged in to submit a server.');
-    window.location.href = 'login.html';
-    return;
+    alert('You must be logged in.');
+    return (window.location.href = 'login.html');
   }
 
-  const form = e.target;
-  const formData = new FormData(form);
+  const payload = {
+    name: e.target.name.value.trim(),
+    invite: e.target.invite.value.trim(),
+    description: e.target.description.value.trim(),
+    language: e.target.language.value.trim(),
+    members: e.target.members.value,
+    type: e.target.type.value,
+    rules: e.target.rules.value.trim(),
+    website: e.target.website.value.trim(),
+    logo: logoInput.value.trim(),
+    nsfw: e.target.nsfw.checked,
+    tags: tags
+  };
 
-  // Validate logo URL (any valid URL)
-  const logoUrl = logoInput.value.trim();
-  try {
-    new URL(logoUrl);
-  } catch {
-    alert('Server logo must be a valid URL.');
-    return;
-  }
-  formData.set('logo', logoUrl);
-
-  // Add tags
-  tags.forEach(tag => formData.append('tags[]', tag));
-  // NSFW checkbox
-  formData.set('nsfw', formData.get('nsfw') ? true : false);
-
-  // Acknowledge
-  if (!formData.get('acknowledge')) {
-    alert('You must confirm that you are the server owner or authorized representative.');
-    return;
-  }
+  if (!payload.logo) return alert('Server logo is required.');
 
   try {
     const res = await fetch(`${API_URL}/api/servers`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       },
-      body: formData
+      body: JSON.stringify(payload)
     });
 
-    if (res.ok) {
-      const data = await res.json();
-      alert('Server submitted! Awaiting approval.');
-      form.reset();
-      tags = [];
-      renderTags();
-      logoPreview.src = logoUrl;
-      logoPreviewContainer.classList.remove('hidden');
-    } else {
-      let errMsg = '';
-      try {
-        const errJson = await res.json();
-        errMsg = errJson.error || errJson.message || JSON.stringify(errJson);
-      } catch {
-        errMsg = await res.text();
-      }
-      alert('Submission failed: ' + errMsg);
-    }
+    const data = await res.json();
+
+    if (!res.ok) return alert(data.error || 'Submission failed');
+
+    alert('Server submitted! Awaiting approval.');
+    e.target.reset();
+    tags = [];
+    renderTags();
+    logoPreviewContainer.classList.add('hidden');
+
   } catch (err) {
     console.error(err);
-    alert('Submission failed. Please try again later.');
+    alert('Submission failed.');
   }
 });
 </script>
+
 
 </body>
 </html>
