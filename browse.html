@@ -51,7 +51,10 @@
   <div id="serverModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-6 z-50">
     <div class="bg-zinc-900 rounded p-6 max-w-3xl w-full relative">
       <button id="closeModal" class="absolute top-4 right-4 text-zinc-400 hover:text-white">&times;</button>
-      <h2 id="modalName" class="text-3xl font-bold mb-2"></h2>
+      <div class="flex items-center gap-4 mb-4">
+        <img id="modalLogo" src="" alt="Server Logo" class="w-16 h-16 rounded-full border border-zinc-700"/>
+        <h2 id="modalName" class="text-3xl font-bold"></h2>
+      </div>
       <p id="modalDescription" class="text-zinc-300 mb-2"></p>
       <p id="modalTags" class="text-xs text-zinc-500 mb-4"></p>
       <a id="modalInvite" href="#" target="_blank" class="text-blue-400 underline mb-4 inline-block">Join Server</a>
@@ -83,20 +86,16 @@
 const API_URL = 'https://opslinkservers-backend.onrender.com';
 let servers = [];
 let activeTag = 'all';
-let hasNewMessage = false;
 
-// --- LocalStorage login handling ---
+// --- Login / Admin ---
 const token = localStorage.getItem('token');
 const userStr = localStorage.getItem('user');
 const loginBtn = document.getElementById('loginBtn');
 const adminBtn = document.getElementById('adminBtn');
 const navLinks = document.getElementById('navLinks');
-const notificationBanner = document.getElementById('notificationBanner');
-const dismissNotification = document.getElementById('dismissNotification');
 
 if (token && userStr) {
   const user = JSON.parse(userStr);
-
   loginBtn.textContent = 'Logout';
   loginBtn.href = '#';
   loginBtn.addEventListener('click', () => {
@@ -121,46 +120,14 @@ if (token && userStr) {
   loginBtn.replaceWith(loginBtn.cloneNode(true));
 }
 
-// Show the notification banner when there's a new system message
-function showNotificationBanner() {
-  if (hasNewMessage) {
-    notificationBanner.classList.remove('hidden');
-  }
-}
-
-// Hide the notification banner when dismissed
-dismissNotification.addEventListener('click', () => {
-  notificationBanner.classList.add('hidden');
-  hasNewMessage = false;
-});
-
 // --- Load servers ---
 async function loadServers() {
   try {
     const res = await fetch(`${API_URL}/api/servers`);
     servers = await res.json();
     renderServers();
-    checkForNewMessages();
   } catch (err) {
-    console.error('Failed to load servers:', err);
-  }
-}
-
-// --- Check for new messages ---
-async function checkForNewMessages() {
-  try {
-    const res = await fetch(`${API_URL}/api/messages`);
-    const messages = await res.json();
-    
-    // Check if there are new messages and update the state
-    const newMessages = messages.filter(m => !m.read && m.userId === JSON.parse(localStorage.getItem('user'))._id);
-    
-    if (newMessages.length > 0) {
-      hasNewMessage = true;
-      showNotificationBanner();
-    }
-  } catch (err) {
-    console.error('Failed to fetch messages:', err);
+    console.error(err);
   }
 }
 
@@ -187,35 +154,30 @@ function renderServers() {
 
   filtered.forEach(s => {
     const card = document.createElement('div');
-    card.className = 'bg-zinc-900/80 border border-zinc-800 p-6 rounded hover:scale-105 transition-transform cursor-pointer';
+    card.className = 'bg-zinc-900/80 border border-zinc-800 p-4 rounded hover:scale-105 transition-transform cursor-pointer flex flex-col items-start';
     let inviteLink = s.invite || '';
     if (inviteLink.startsWith('discord.gg/')) inviteLink = 'https://' + inviteLink;
 
     card.innerHTML = `
-      <h3 class="text-lg font-semibold mb-2">${s.name}</h3>
+      <img src="${s.logo}" alt="Logo" class="w-16 h-16 rounded-full mb-2 border border-zinc-700"/>
+      <h3 class="text-lg font-semibold mb-1">${s.name}</h3>
       <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
       <p class="text-xs text-zinc-500 mb-1">Tags: ${s.tags.join(', ')}</p>
-      <p class="text-xs text-zinc-500 mb-1">Server Type: ${s.type || 'N/A'}</p>
       <p class="text-xs text-zinc-500 mb-1">Members: ${s.members || 'N/A'}</p>
-      <p class="text-xs text-zinc-500 mb-1">Language: ${s.language || 'N/A'}</p>
-      <p class="text-xs text-zinc-500 mb-1">NSFW: ${s.nsfw ? 'Yes' : 'No'}</p>
-      <p class="text-xs text-zinc-500 mb-1">Submitted by: ${s.submitterDiscord.username} (${s.submitterDiscord.tag})</p>
-      <p class="text-xs text-zinc-500 mb-1">UserID: ${s.submitterDiscord.userID}</p>
-      <p class="text-xs text-zinc-500 mb-2">Created: ${new Date(s.createdAt).toLocaleString()}</p>
       <a href="${inviteLink}" target="_blank" class="text-blue-400 underline">Join Server</a>
-      <p class="text-sm mb-2">Status: <span class="text-${s.status === 'approved' ? 'green' : s.status === 'denied' ? 'red' : 'yellow'}-400">${s.status}</span></p>
     `;
     card.addEventListener('click', () => openServerModal(s._id));
     container.appendChild(card);
   });
 }
 
-// --- Server modal ---
+// --- Open server modal ---
 async function openServerModal(serverId) {
   try {
     const res = await fetch(`${API_URL}/api/servers/${serverId}`);
     const server = await res.json();
 
+    document.getElementById('modalLogo').src = server.logo;
     document.getElementById('modalName').textContent = server.name;
     document.getElementById('modalDescription').textContent = server.description;
     document.getElementById('modalTags').textContent = 'Tags: ' + server.tags.join(', ');
@@ -232,6 +194,7 @@ async function openServerModal(serverId) {
 
     document.getElementById('serverModal').classList.remove('hidden');
 
+    // --- Comment form ---
     const commentForm = document.getElementById('commentForm');
     commentForm.onsubmit = async e => {
       e.preventDefault();
@@ -239,7 +202,6 @@ async function openServerModal(serverId) {
         alert("You must be logged in to post a comment.");
         return;
       }
-
       const commentText = e.target.comment.value;
       await fetch(`${API_URL}/api/servers/${serverId}/comments`, {
         method: 'POST',
@@ -252,6 +214,27 @@ async function openServerModal(serverId) {
       e.target.reset();
       openServerModal(serverId);
     };
+
+    // --- Report button ---
+    const reportBtn = document.getElementById('reportServerBtn');
+    reportBtn.onclick = async () => {
+      if (!token || !userStr) {
+        alert("You must be logged in to report a server.");
+        return;
+      }
+      const reason = prompt("Why are you reporting this server?");
+      if (!reason) return;
+      await fetch(`${API_URL}/api/servers/${serverId}/report`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ reason })
+      });
+      alert("Server reported successfully.");
+    };
+
   } catch (err) {
     console.error('Failed to load server details:', err);
   }
@@ -260,6 +243,17 @@ async function openServerModal(serverId) {
 document.getElementById('closeModal').addEventListener('click', () => {
   document.getElementById('serverModal').classList.add('hidden');
 });
+
+// --- Filters ---
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeTag = btn.dataset.tag;
+    renderServers();
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', renderServers);
+document.getElementById('nsfwToggle').addEventListener('change', renderServers);
 
 loadServers();
 </script>
