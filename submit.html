@@ -78,33 +78,42 @@
     <span>Not affiliated with Discord</span>
   </footer>
 
-  <script>
-    document.getElementById('submitForm').addEventListener('submit', async e=>{
-      e.preventDefault();
+<script>
+const API_URL = 'https://opslinkservers-backend.onrender.com';
 
-      const data = Object.fromEntries(new FormData(e.target));
-      data.tags = data.tags ? data.tags.split(',').map(t=>t.trim()) : [];
-      data.nsfw = data.nsfw ? true : false;
+document.getElementById('submitForm').addEventListener('submit', async e => {
+  e.preventDefault();
 
-      if(!data.acknowledge){
-        alert("You must confirm that you are the server owner or authorized representative.");
-        return;
-      }
+  const data = Object.fromEntries(new FormData(e.target));
+  data.tags = data.tags ? data.tags.split(',').map(t => t.trim()) : [];
+  data.nsfw = data.nsfw ? true : false;
 
-      try {
-        await fetch('https://your-backend/api/servers',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify(data)
-        });
-        alert('Server submitted! Awaiting approval.');
-        e.target.reset();
-      } catch(err){
-        alert('Submission failed. Please try again later.');
-        console.error(err);
-      }
+  if (!data.acknowledge) {
+    alert("You must confirm that you are the server owner or authorized representative.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/api/servers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
     });
-  </script>
+
+    if (res.ok) {
+      alert('Server submitted! Awaiting approval.');
+      e.target.reset();
+    } else {
+      const err = await res.json();
+      alert('Submission failed: ' + err.message);
+    }
+  } catch (err) {
+    alert('Submission failed. Please try again later.');
+    console.error(err);
+  }
+});
+</script>
+
 
 </body>
 </html>
