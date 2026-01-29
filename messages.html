@@ -33,22 +33,26 @@
 
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
-
 const loginBtn = document.getElementById('loginBtn');
 const messagesContainer = document.getElementById('messagesContainer');
 
-async function loadMessages() {
+let user = null;
+
+// Check login from localStorage
+function checkLogin() {
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
 
   if (!token || !userStr) {
     messagesContainer.innerHTML = '<p class="text-zinc-400">You must be logged in to view system messages.</p>';
-    return;
+    loginBtn.textContent = 'Login';
+    loginBtn.href = 'login.html';
+    return false;
   }
 
-  const user = JSON.parse(userStr);
+  user = JSON.parse(userStr);
 
-  // Update navbar login/logout
+  // Update login/logout button
   loginBtn.textContent = 'Logout';
   loginBtn.href = '#';
   loginBtn.addEventListener('click', () => {
@@ -57,43 +61,55 @@ async function loadMessages() {
     window.location.reload();
   });
 
+  return true;
+}
+
+// Render system messages
+function renderMessages(servers) {
+  const myServers = servers.filter(s => s.submitter && s.submitter === user._id);
+
+  if (myServers.length === 0) {
+    messagesContainer.innerHTML = '<p class="text-zinc-400">You have not submitted any servers yet.</p>';
+    return;
+  }
+
+  messagesContainer.innerHTML = '';
+
+  myServers.forEach(s => {
+    const div = document.createElement('div');
+    div.className = `p-4 rounded border ${s.status === 'approved' ? 'border-green-500 bg-green-900/30' : s.status === 'denied' ? 'border-red-500 bg-red-900/30' : 'border-zinc-700 bg-zinc-900/50'} cursor-pointer hover:scale-105 transition-transform`;
+    div.innerHTML = `
+      <h3 class="font-semibold text-lg">${s.name}</h3>
+      <p class="text-sm text-zinc-300">Status: <span class="${s.status === 'approved' ? 'text-green-400' : s.status === 'denied' ? 'text-red-400' : 'text-zinc-400'}">${s.status}</span></p>
+      ${s.status === 'denied' && s.rejectionReason ? `<p class="text-xs text-red-400">Reason: ${s.rejectionReason}</p>` : ''}
+      ${s.status === 'approved' ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>` : ''}
+    `;
+    div.addEventListener('click', () => div.classList.toggle('bg-zinc-800/50'));
+
+    messagesContainer.appendChild(div);
+  });
+}
+
+// Fetch servers and update messages
+async function fetchAndUpdateMessages() {
+  if (!user) return;
+
   try {
-    // Fetch all servers submitted by this user
     const res = await fetch(`${API_URL}/api/servers`);
     const servers = await res.json();
-
-    const myServers = servers.filter(s => s.submitter && s.submitter === user._id);
-
-    if (myServers.length === 0) {
-      messagesContainer.innerHTML = '<p class="text-zinc-400">You have not submitted any servers yet.</p>';
-      return;
-    }
-
-    messagesContainer.innerHTML = '';
-
-    myServers.forEach(s => {
-      const div = document.createElement('div');
-      div.className = `p-4 rounded border ${s.status === 'approved' ? 'border-green-500 bg-green-900/30' : s.status === 'denied' ? 'border-red-500 bg-red-900/30' : 'border-zinc-700 bg-zinc-900/50'} cursor-pointer hover:scale-105 transition-transform`;
-      div.innerHTML = `
-        <h3 class="font-semibold text-lg">${s.name}</h3>
-        <p class="text-sm text-zinc-300">Status: <span class="${s.status === 'approved' ? 'text-green-400' : s.status === 'denied' ? 'text-red-400' : 'text-zinc-400'}">${s.status}</span></p>
-        ${s.status === 'denied' && s.rejectionReason ? `<p class="text-xs text-red-400">Reason: ${s.rejectionReason}</p>` : ''}
-        ${s.status === 'approved' ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>` : ''}
-      `;
-
-      // Optional: click to toggle details
-      div.addEventListener('click', () => div.classList.toggle('bg-zinc-800/50'));
-
-      messagesContainer.appendChild(div);
-    });
-
+    renderMessages(servers);
   } catch (err) {
     console.error(err);
     messagesContainer.innerHTML = '<p class="text-red-400">Failed to load messages. Try again later.</p>';
   }
 }
 
-loadMessages();
+// Initialize
+if (checkLogin()) {
+  fetchAndUpdateMessages();
+  // Poll every 5 seconds
+  setInterval(fetchAndUpdateMessages, 5000);
+}
 </script>
 
 </body>
