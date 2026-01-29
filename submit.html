@@ -97,19 +97,17 @@
 
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
+let tags = [];
+let currentUser = null;
 
-// --- LocalStorage auth handling ---
 const token = localStorage.getItem('token');
 const userStr = localStorage.getItem('user');
 const loginBtn = document.getElementById('loginBtn');
 const adminBtn = document.getElementById('adminBtn');
 const navLinks = document.getElementById('navLinks');
-let currentUser = null;
-let tags = [];
 
 if (token && userStr) {
   currentUser = JSON.parse(userStr);
-
   loginBtn.textContent = 'Logout';
   loginBtn.href = '#';
   loginBtn.addEventListener('click', () => {
@@ -117,7 +115,6 @@ if (token && userStr) {
     localStorage.removeItem('user');
     window.location.reload();
   });
-
   const welcomeSpan = document.createElement('span');
   welcomeSpan.textContent = `Welcome, ${currentUser.discordUsername}`;
   welcomeSpan.className = "text-sm text-zinc-300";
@@ -134,28 +131,40 @@ if (token && userStr) {
   loginBtn.replaceWith(loginBtn.cloneNode(true));
 }
 
-// --- Tag input handling ---
-document.getElementById('addTagBtn').addEventListener('click', () => {
-  const tagInput = document.getElementById('tagInput');
-  if (tagInput.value && tags.length < 5 && !tags.includes(tagInput.value)) {
-    tags.push(tagInput.value);
+// Tag handling
+const tagInput = document.getElementById('tagInput');
+const addTagBtn = document.getElementById('addTagBtn');
+const tagsList = document.getElementById('tagsList');
+
+addTagBtn.addEventListener('click', () => {
+  const value = tagInput.value.trim();
+  if (value && !tags.includes(value) && tags.length < 5) {
+    tags.push(value);
     renderTags();
   }
   tagInput.value = '';
 });
 
 function renderTags() {
-  const tagsList = document.getElementById('tagsList');
   tagsList.innerHTML = '';
   tags.forEach(tag => {
-    const tagEl = document.createElement('span');
-    tagEl.className = 'bg-zinc-700 px-3 py-1 rounded';
-    tagEl.textContent = tag;
-    tagsList.appendChild(tagEl);
+    const span = document.createElement('span');
+    span.className = 'bg-zinc-700 px-3 py-1 rounded flex items-center gap-1';
+    span.textContent = tag;
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.textContent = '×';
+    removeBtn.className = 'ml-1';
+    removeBtn.addEventListener('click', () => {
+      tags = tags.filter(t => t !== tag);
+      renderTags();
+    });
+    span.appendChild(removeBtn);
+    tagsList.appendChild(span);
   });
 }
 
-// --- Logo Preview ---
+// Logo preview
 const logoInput = document.getElementById('logoInput');
 const logoPreview = document.getElementById('logoPreview');
 const logoPreviewContainer = document.getElementById('logoPreviewContainer');
@@ -175,30 +184,31 @@ logoInput.addEventListener('change', () => {
   }
 });
 
-// --- Form submission ---
+// Form submission
 document.getElementById('submitForm').addEventListener('submit', async e => {
   e.preventDefault();
-
   if (!currentUser || !token) {
     alert('You must be logged in to submit a server.');
     window.location.href = 'login.html';
     return;
   }
 
+  const form = e.target;
+  const formData = new FormData(form);
+
   if (!logoInput.files[0]) {
     alert('Server logo is required.');
     return;
   }
 
-  const form = e.target;
-  const formData = new FormData(form);
-
   // Add tags
-  tags.forEach(tag => formData.append('tags[]', tag));
-  formData.set('nsfw', formData.get('nsfw') ? 'true' : 'false');
+  tags.forEach(tag => formData.append('tags', tag));
+  // NSFW checkbox
+  formData.set('nsfw', formData.get('nsfw') ? true : false);
 
+  // Acknowledge
   if (!formData.get('acknowledge')) {
-    alert("You must confirm that you are the server owner or authorized representative.");
+    alert('You must confirm that you are the server owner or authorized representative.');
     return;
   }
 
@@ -222,7 +232,7 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
       let errMsg = '';
       try {
         const errJson = await res.json();
-        errMsg = errJson.error || errJson.message;
+        errMsg = errJson.error || errJson.message || JSON.stringify(errJson);
       } catch {
         errMsg = await res.text();
       }
