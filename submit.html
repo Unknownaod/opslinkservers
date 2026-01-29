@@ -195,7 +195,7 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
   // Validate logo URL (any valid URL)
   const logoUrl = logoInput.value.trim();
   try {
-    new URL(logoUrl); // Will throw if invalid
+    new URL(logoUrl);
   } catch {
     alert('Server logo must be a valid URL.');
     return;
@@ -203,7 +203,7 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
   formData.set('logo', logoUrl);
 
   // Add tags
-  tags.forEach(tag => formData.append('tags', tag));
+  tags.forEach(tag => formData.append('tags[]', tag));
   // NSFW checkbox
   formData.set('nsfw', formData.get('nsfw') ? true : false);
 
@@ -225,13 +225,9 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
     if (res.ok) {
       const data = await res.json();
       alert('Server submitted! Awaiting approval.');
-
-      // Reset form and tags
       form.reset();
       tags = [];
       renderTags();
-
-      // Show logo preview
       logoPreview.src = logoUrl;
       logoPreviewContainer.classList.remove('hidden');
     } else {
