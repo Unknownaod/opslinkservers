@@ -131,7 +131,7 @@ if (token && userStr) {
   loginBtn.replaceWith(loginBtn.cloneNode(true));
 }
 
-// Tag handling
+// --- Tag handling ---
 const tagInput = document.getElementById('tagInput');
 const addTagBtn = document.getElementById('addTagBtn');
 const tagsList = document.getElementById('tagsList');
@@ -164,7 +164,7 @@ function renderTags() {
   });
 }
 
-// Logo preview
+// --- Logo preview ---
 const logoInput = document.getElementById('logoInput');
 const logoPreview = document.getElementById('logoPreview');
 const logoPreviewContainer = document.getElementById('logoPreviewContainer');
@@ -184,7 +184,7 @@ logoInput.addEventListener('change', () => {
   }
 });
 
-// Form submission
+// --- Form submission ---
 document.getElementById('submitForm').addEventListener('submit', async e => {
   e.preventDefault();
   if (!currentUser || !token) {
@@ -222,12 +222,21 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
     });
 
     if (res.ok) {
+      const data = await res.json();
       alert('Server submitted! Awaiting approval.');
+
+      // Reset form fields and tags
       form.reset();
       tags = [];
       renderTags();
-      logoPreview.src = '';
-      logoPreviewContainer.classList.add('hidden');
+
+      // Show the uploaded logo from backend
+      if (data.server.logo) {
+        const logoUrl = `${API_URL}/${data.server.logo.replace(/\\/g, '/')}`;
+        logoPreview.src = logoUrl;
+        logoPreviewContainer.classList.remove('hidden');
+      }
+
     } else {
       let errMsg = '';
       try {
@@ -244,6 +253,7 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
   }
 });
 </script>
+
 
 </body>
 </html>
