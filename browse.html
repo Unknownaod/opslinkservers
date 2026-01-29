@@ -145,6 +145,22 @@ if (token && userStr) {
 async function loadServers() {
   const res = await fetch(`${API_URL}/api/servers`);
   servers = await res.json();
+
+  // Fetch live members for each server
+  await Promise.all(servers.map(async s => {
+    if (s.discordServerId) {
+      try {
+        const membersRes = await fetch(`${API_URL}/api/servers/${s.discordServerId}/updateMembers`);
+        if (membersRes.ok) {
+          const data = await membersRes.json();
+          s.members = data.members;
+        }
+      } catch (err) {
+        console.warn(`Failed to fetch members for ${s.name}`, err);
+      }
+    }
+  }));
+
   renderServers();
 }
 
@@ -203,7 +219,9 @@ function renderServers() {
         </div>
 
         <div class="flex justify-between items-center pt-1">
-          <span class="text-xs text-zinc-500">${s.members || 'N/A'} members</span>
+          <span class="text-xs text-zinc-500 members-count" data-id="${s.discordServerId}">
+            ${s.members != null ? s.members : 'N/A'} members
+          </span>
 
           <a href="${invite}" target="_blank"
              class="px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-sm font-semibold hover:brightness-110">
@@ -311,6 +329,7 @@ document.getElementById('nsfwToggle').onchange = renderServers;
 
 loadServers();
 </script>
+
 
 </body>
 </html>
