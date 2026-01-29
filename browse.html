@@ -8,14 +8,14 @@
 </head>
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
-  <!-- Navbar (same style) -->
+  <!-- Navbar -->
   <nav class="flex items-center justify-between px-10 py-6">
     <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
     <div class="flex items-center gap-8 text-sm">
       <a href="index.html" class="hover:opacity-80">Home</a>
       <a href="browse.html" class="hover:opacity-80">Browse</a>
       <a href="submit.html" class="hover:opacity-80">Submit</a>
-      <a href="#" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
+      <a href="login.html" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
     </div>
   </nav>
 
@@ -28,6 +28,8 @@
       <button class="px-3 py-1 bg-zinc-800 rounded filter-btn" data-tag="all">All</button>
       <button class="px-3 py-1 bg-zinc-800 rounded filter-btn" data-tag="gaming">Gaming</button>
       <button class="px-3 py-1 bg-zinc-800 rounded filter-btn" data-tag="community">Community</button>
+      <button class="px-3 py-1 bg-zinc-800 rounded filter-btn" data-tag="art">Art</button>
+      <button class="px-3 py-1 bg-zinc-800 rounded filter-btn" data-tag="tech">Tech</button>
       <label class="ml-auto flex items-center gap-2 text-sm">
         <input type="checkbox" id="nsfwToggle"/> Show NSFW
       </label>
@@ -37,6 +39,29 @@
     <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
   </section>
 
+  <!-- Server Modal -->
+  <div id="serverModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-6 z-50">
+    <div class="bg-zinc-900 rounded p-6 max-w-3xl w-full relative">
+      <button id="closeModal" class="absolute top-4 right-4 text-zinc-400 hover:text-white">&times;</button>
+      <h2 id="modalName" class="text-3xl font-bold mb-2"></h2>
+      <p id="modalDescription" class="text-zinc-300 mb-2"></p>
+      <p id="modalTags" class="text-xs text-zinc-500 mb-4"></p>
+      <a id="modalInvite" href="#" target="_blank" class="text-blue-400 underline mb-4 inline-block">Join Server</a>
+
+      <hr class="border-zinc-700 my-4"/>
+
+      <div>
+        <h3 class="font-semibold mb-2">Reviews & Comments</h3>
+        <div id="modalComments" class="flex flex-col gap-2 mb-4 max-h-60 overflow-y-auto"></div>
+
+        <form id="commentForm" class="flex flex-col gap-2">
+          <textarea name="comment" placeholder="Write a comment..." class="p-2 rounded bg-zinc-800" required></textarea>
+          <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">Post Comment</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
     <span>© 2026 OpsLink Servers</span>
@@ -45,9 +70,10 @@
 
   <script>
     let servers = [];
+    let activeTag = 'all';
 
     async function loadServers() {
-      const res = await fetch('https://your-backend/api/servers'); // Replace with your backend
+      const res = await fetch('https://your-backend/api/servers');
       servers = await res.json();
       renderServers();
     }
@@ -58,30 +84,74 @@
       const nsfw = document.getElementById('nsfwToggle').checked;
 
       container.innerHTML = '';
+
       servers
         .filter(s => (nsfw || !s.nsfw))
+        .filter(s => activeTag === 'all' || s.tags.includes(activeTag))
         .filter(s => s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search))
         .forEach(s => {
           const card = document.createElement('div');
-          card.className = 'bg-zinc-900/80 border border-zinc-800 p-6 rounded hover:scale-105 transition-transform';
+          card.className = 'bg-zinc-900/80 border border-zinc-800 p-6 rounded hover:scale-105 transition-transform cursor-pointer';
           card.innerHTML = `
             <h3 class="text-lg font-semibold mb-2">${s.name}</h3>
             <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
             <p class="text-xs text-zinc-500 mb-2">Tags: ${s.tags.join(', ')}</p>
-            <a href="${s.invite}" target="_blank" class="text-blue-400 underline">Join Server</a>
           `;
+          card.addEventListener('click', () => openServerModal(s._id));
           container.appendChild(card);
         });
     }
 
+    async function openServerModal(serverId) {
+      const res = await fetch(`https://your-backend/api/servers/${serverId}`);
+      const server = await res.json();
+
+      document.getElementById('modalName').textContent = server.name;
+      document.getElementById('modalDescription').textContent = server.description;
+      document.getElementById('modalTags').textContent = 'Tags: ' + server.tags.join(', ');
+      document.getElementById('modalInvite').href = server.invite;
+
+      const commentsContainer = document.getElementById('modalComments');
+      commentsContainer.innerHTML = '';
+      server.comments.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'bg-zinc-800 p-2 rounded text-sm';
+        div.textContent = `${c.user}: ${c.text}`;
+        commentsContainer.appendChild(div);
+      });
+
+      document.getElementById('serverModal').classList.remove('hidden');
+
+      // Handle comment submission
+      const commentForm = document.getElementById('commentForm');
+      commentForm.onsubmit = async e => {
+        e.preventDefault();
+        const commentText = e.target.comment.value;
+        await fetch(`https://your-backend/api/servers/${serverId}/comments`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ text: commentText })
+        });
+        e.target.reset();
+        openServerModal(serverId); // refresh comments
+      };
+    }
+
+    document.getElementById('closeModal').addEventListener('click', () => {
+      document.getElementById('serverModal').classList.add('hidden');
+    });
+
+    // Search & filters
     document.getElementById('searchInput').addEventListener('input', renderServers);
     document.getElementById('nsfwToggle').addEventListener('change', renderServers);
     document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => renderServers());
+      btn.addEventListener('click', () => {
+        activeTag = btn.dataset.tag;
+        renderServers();
+      });
     });
 
     loadServers();
   </script>
-
 </body>
 </html>
