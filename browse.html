@@ -68,98 +68,109 @@
     <span>Not affiliated with Discord</span>
   </footer>
 
-  <script>
-    let servers = [];
-    let activeTag = 'all';
+<script>
+const API_URL = 'https://opslinkservers-backend.onrender.com';
 
-    async function loadServers() {
-      const res = await fetch('https://your-backend/api/servers'); // Replace with your backend
-      servers = await res.json();
-      renderServers();
-    }
+let servers = [];
+let activeTag = 'all';
 
-    function renderServers() {
-      const container = document.getElementById('serversGrid');
-      const search = document.getElementById('searchInput').value.toLowerCase();
-      const nsfw = document.getElementById('nsfwToggle').checked;
+async function loadServers() {
+  try {
+    const res = await fetch(`${API_URL}/api/servers`);
+    servers = await res.json();
+    renderServers();
+  } catch (err) {
+    console.error('Failed to load servers:', err);
+  }
+}
 
-      container.innerHTML = '';
+function renderServers() {
+  const container = document.getElementById('serversGrid');
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const nsfw = document.getElementById('nsfwToggle').checked;
 
-      const filtered = servers
-        .filter(s => (nsfw || !s.nsfw))
-        .filter(s => activeTag === 'all' || s.tags.includes(activeTag))
-        .filter(s => s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search));
+  container.innerHTML = '';
 
-      if (filtered.length === 0) {
-        const message = document.createElement('div');
-        message.className = 'col-span-full text-center text-zinc-400 mt-10';
-        message.textContent = 'No servers to show...';
-        container.appendChild(message);
-        return;
-      }
+  const filtered = servers
+    .filter(s => (nsfw || !s.nsfw))
+    .filter(s => activeTag === 'all' || s.tags.includes(activeTag))
+    .filter(s => s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search));
 
-      filtered.forEach(s => {
-        const card = document.createElement('div');
-        card.className = 'bg-zinc-900/80 border border-zinc-800 p-6 rounded hover:scale-105 transition-transform cursor-pointer';
-        card.innerHTML = `
-          <h3 class="text-lg font-semibold mb-2">${s.name}</h3>
-          <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
-          <p class="text-xs text-zinc-500 mb-2">Tags: ${s.tags.join(', ')}</p>
-        `;
-        card.addEventListener('click', () => openServerModal(s._id));
-        container.appendChild(card);
-      });
-    }
+  if (filtered.length === 0) {
+    const message = document.createElement('div');
+    message.className = 'col-span-full text-center text-zinc-400 mt-10';
+    message.textContent = 'No servers to show...';
+    container.appendChild(message);
+    return;
+  }
 
-    async function openServerModal(serverId) {
-      const res = await fetch(`https://your-backend/api/servers/${serverId}`);
-      const server = await res.json();
+  filtered.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'bg-zinc-900/80 border border-zinc-800 p-6 rounded hover:scale-105 transition-transform cursor-pointer';
+    card.innerHTML = `
+      <h3 class="text-lg font-semibold mb-2">${s.name}</h3>
+      <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
+      <p class="text-xs text-zinc-500 mb-2">Tags: ${s.tags.join(', ')}</p>
+    `;
+    card.addEventListener('click', () => openServerModal(s._id));
+    container.appendChild(card);
+  });
+}
 
-      document.getElementById('modalName').textContent = server.name;
-      document.getElementById('modalDescription').textContent = server.description;
-      document.getElementById('modalTags').textContent = 'Tags: ' + server.tags.join(', ');
-      document.getElementById('modalInvite').href = server.invite;
+async function openServerModal(serverId) {
+  try {
+    const res = await fetch(`${API_URL}/api/servers/${serverId}`);
+    const server = await res.json();
 
-      const commentsContainer = document.getElementById('modalComments');
-      commentsContainer.innerHTML = '';
-      server.comments.forEach(c => {
-        const div = document.createElement('div');
-        div.className = 'bg-zinc-800 p-2 rounded text-sm';
-        div.textContent = `${c.user}: ${c.text}`;
-        commentsContainer.appendChild(div);
-      });
+    document.getElementById('modalName').textContent = server.name;
+    document.getElementById('modalDescription').textContent = server.description;
+    document.getElementById('modalTags').textContent = 'Tags: ' + server.tags.join(', ');
+    document.getElementById('modalInvite').href = server.invite;
 
-      document.getElementById('serverModal').classList.remove('hidden');
-
-      const commentForm = document.getElementById('commentForm');
-      commentForm.onsubmit = async e => {
-        e.preventDefault();
-        const commentText = e.target.comment.value;
-        await fetch(`https://your-backend/api/servers/${serverId}/comments`, {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ text: commentText })
-        });
-        e.target.reset();
-        openServerModal(serverId); // refresh comments
-      };
-    }
-
-    document.getElementById('closeModal').addEventListener('click', () => {
-      document.getElementById('serverModal').classList.add('hidden');
+    const commentsContainer = document.getElementById('modalComments');
+    commentsContainer.innerHTML = '';
+    server.comments.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'bg-zinc-800 p-2 rounded text-sm';
+      div.textContent = `${c.user}: ${c.text}`;
+      commentsContainer.appendChild(div);
     });
 
-    // Search & filters
-    document.getElementById('searchInput').addEventListener('input', renderServers);
-    document.getElementById('nsfwToggle').addEventListener('change', renderServers);
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        activeTag = btn.dataset.tag;
-        renderServers();
-      });
-    });
+    document.getElementById('serverModal').classList.remove('hidden');
 
-    loadServers();
-  </script>
+    const commentForm = document.getElementById('commentForm');
+    commentForm.onsubmit = async e => {
+      e.preventDefault();
+      const commentText = e.target.comment.value;
+      await fetch(`${API_URL}/api/servers/${serverId}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: commentText })
+      });
+      e.target.reset();
+      openServerModal(serverId);
+    };
+  } catch (err) {
+    console.error('Failed to load server details:', err);
+  }
+}
+
+document.getElementById('closeModal').addEventListener('click', () => {
+  document.getElementById('serverModal').classList.add('hidden');
+});
+
+// Search & filters
+document.getElementById('searchInput').addEventListener('input', renderServers);
+document.getElementById('nsfwToggle').addEventListener('change', renderServers);
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeTag = btn.dataset.tag;
+    renderServers();
+  });
+});
+
+loadServers();
+</script>
+
 </body>
 </html>
