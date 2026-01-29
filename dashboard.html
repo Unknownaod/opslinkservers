@@ -21,7 +21,7 @@
     <h1 class="text-4xl font-bold mb-6">All Server Submissions</h1>
 
     <!-- Search -->
-    <input id="searchInput" type="text" placeholder="Search by server name or submitter..." class="p-2 rounded bg-zinc-800 mb-6 w-full max-w-lg"/>
+    <input id="searchInput" type="text" placeholder="Search by server name, submitter, or tag..." class="p-2 rounded bg-zinc-800 mb-6 w-full max-w-lg"/>
 
     <!-- Servers Grid -->
     <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
@@ -68,12 +68,18 @@ async function loadServers() {
     const res = await fetch(`${API_URL}/api/servers/all`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || err.message || 'Failed to load servers');
+    }
+
     servers = await res.json();
     renderServers();
-    renderReports(); // Render reports after loading servers
+    renderReports();
   } catch(err) {
     console.error(err);
-    alert('Failed to load servers.');
+    alert('Failed to load servers: ' + err.message);
   }
 }
 
@@ -85,9 +91,10 @@ function renderServers() {
 
   const filtered = servers.filter(s =>
     s.name.toLowerCase().includes(search) ||
-    s.description.toLowerCase().includes(search) ||
+    (s.description && s.description.toLowerCase().includes(search)) ||
     s.submitterDiscord.username.toLowerCase().includes(search) ||
-    s.submitterDiscord.tag.toLowerCase().includes(search)
+    s.submitterDiscord.tag.toLowerCase().includes(search) ||
+    (s.tags && s.tags.some(t => t.toLowerCase().includes(search)))
   );
 
   if (filtered.length === 0) {
@@ -102,20 +109,18 @@ function renderServers() {
     const card = document.createElement('div');
     card.className = 'bg-zinc-900/80 border border-zinc-800 p-4 rounded flex flex-col justify-between';
 
-    // Status badge
     let statusColor = 'text-zinc-400';
     if (s.status === 'approved') statusColor = 'text-green-400';
     else if (s.status === 'denied') statusColor = 'text-red-400';
     else if (s.status === 'pending') statusColor = 'text-yellow-400';
 
-    // Ensure invite starts with https://
     let inviteLink = s.invite || '';
     if (inviteLink.startsWith('discord.gg/')) inviteLink = 'https://' + inviteLink;
 
     card.innerHTML = `
       <h3 class="text-lg font-semibold mb-1">${s.name}</h3>
-      <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
-      <p class="text-xs text-zinc-500 mb-1">Tags: ${s.tags.join(', ')}</p>
+      <p class="text-sm text-zinc-300 mb-2">${s.description || 'No description provided.'}</p>
+      <p class="text-xs text-zinc-500 mb-1">Tags: ${s.tags?.join(', ') || 'None'}</p>
       <p class="text-xs text-zinc-500 mb-1">NSFW: ${s.nsfw ? 'Yes' : 'No'}</p>
       <p class="text-xs text-zinc-500 mb-1">Server Type: ${s.type || 'N/A'}</p>
       <p class="text-xs text-zinc-500 mb-1">Language: ${s.language || 'N/A'}</p>
@@ -132,9 +137,8 @@ function renderServers() {
       <div class="flex gap-2 flex-wrap"></div>
     `;
 
-    const btnContainer = card.querySelector('div');
+    const btnContainer = card.querySelector('div.flex');
 
-    // Approve / Deny (pending)
     if (s.status === 'pending') {
       const approveBtn = document.createElement('button');
       approveBtn.className = 'bg-green-600 px-3 py-1 rounded hover:bg-green-700';
@@ -154,7 +158,6 @@ function renderServers() {
       btnContainer.appendChild(denyBtn);
     }
 
-    // Join button (approved)
     if (s.status === 'approved') {
       const joinBtn = document.createElement('a');
       joinBtn.href = inviteLink;
@@ -164,7 +167,6 @@ function renderServers() {
       btnContainer.appendChild(joinBtn);
     }
 
-    // Delete button (any status)
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'bg-orange-600 px-3 py-1 rounded hover:bg-orange-700';
     deleteBtn.textContent = 'Delete';
@@ -214,7 +216,7 @@ function renderReports() {
     s.reports.forEach(r => {
       const reportEl = document.createElement('p');
       reportEl.className = 'text-xs text-zinc-300';
-      reportEl.textContent = `- ${r.reason} (by user: ${r.user})`;
+      reportEl.textContent = `- ${r.reason} (by user ID: ${r.user})`;
       reportsContainer.appendChild(reportEl);
     });
 
@@ -239,16 +241,16 @@ async function updateServerStatus(serverId, status, reason = '') {
       body: JSON.stringify({ status, rejectionReason: reason })
     });
 
-    if (res.ok) {
-      alert(`Server ${status}!`);
-      await loadServers();
-    } else {
+    if (!res.ok) {
       const err = await res.json();
-      alert('Failed: ' + (err.error || err.message));
+      throw new Error(err.error || err.message || 'Failed to update status');
     }
+
+    alert(`Server ${status}!`);
+    await loadServers();
   } catch(err) {
     console.error(err);
-    alert('Error updating server status.');
+    alert('Error updating server status: ' + err.message);
   }
 }
 
@@ -259,16 +261,17 @@ async function deleteServer(serverId) {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    if (res.ok) {
-      alert('Server deleted!');
-      await loadServers();
-    } else {
+
+    if (!res.ok) {
       const err = await res.json();
-      alert('Failed: ' + (err.error || err.message));
+      throw new Error(err.error || err.message || 'Failed to delete server');
     }
+
+    alert('Server deleted!');
+    await loadServers();
   } catch(err) {
     console.error(err);
-    alert('Error deleting server.');
+    alert('Error deleting server: ' + err.message);
   }
 }
 
