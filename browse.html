@@ -108,13 +108,13 @@
 const API_URL = 'https://opslinkservers-backend.onrender.com';
 let servers = [];
 let activeTag = 'all';
+let currentServerId = null;
 
-/* ======================
-   AUTH / LOCALSTORAGE
-====================== */
-
+// --- AUTH ---
 const token = localStorage.getItem('token');
 const userStr = localStorage.getItem('user');
+
+// --- NAV LOGIN ---
 const loginBtn = document.getElementById('loginBtn');
 const adminBtn = document.getElementById('adminBtn');
 const navLinks = document.getElementById('navLinks');
@@ -124,17 +124,15 @@ if (token && userStr) {
 
   loginBtn.textContent = 'Logout';
   loginBtn.href = '#';
-
   loginBtn.onclick = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.clear();
     location.reload();
   };
 
-  const welcomeSpan = document.createElement('span');
-  welcomeSpan.textContent = `Welcome, ${user.discordUsername}`;
-  welcomeSpan.className = "text-sm text-zinc-300";
-  navLinks.insertBefore(welcomeSpan, loginBtn);
+  const welcome = document.createElement('span');
+  welcome.textContent = `Welcome, ${user.discordUsername}`;
+  welcome.className = 'text-zinc-300 text-sm';
+  navLinks.insertBefore(welcome, loginBtn);
 
   if (user.role === 'admin') {
     adminBtn.classList.remove('hidden');
@@ -142,115 +140,92 @@ if (token && userStr) {
   }
 }
 
-/* ======================
-   HELPERS
-====================== */
-
-function fixInvite(link) {
-  if (!link) return '#';
-  if (link.startsWith('http')) return link;
-  return 'https://' + link.replace(/^\/+/, '');
-}
-
-function fixImage(img) {
-  img.onerror = () => {
-    img.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
-  };
-}
-
-/* ======================
-   LOAD SERVERS
-====================== */
-
+// --- LOAD SERVERS ---
 async function loadServers() {
   const res = await fetch(`${API_URL}/api/servers`);
   servers = await res.json();
   renderServers();
 }
 
-/* ======================
-   RENDER
-====================== */
-
+// --- RENDER SERVERS ---
 function renderServers() {
-  const container = document.getElementById('serversGrid');
+  const grid = document.getElementById('serversGrid');
   const search = document.getElementById('searchInput').value.toLowerCase();
   const nsfw = document.getElementById('nsfwToggle').checked;
 
-  container.innerHTML = '';
+  grid.innerHTML = '';
 
   const filtered = servers
-    .filter(s => (nsfw || !s.nsfw))
+    .filter(s => nsfw || !s.nsfw)
     .filter(s => activeTag === 'all' || s.tags.includes(activeTag))
-    .filter(s => s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search));
+    .filter(s =>
+      s.name.toLowerCase().includes(search) ||
+      s.description.toLowerCase().includes(search)
+    );
 
   if (!filtered.length) {
-    container.innerHTML = '<div class="col-span-full text-center text-zinc-400 mt-12">No servers to show...</div>';
+    grid.innerHTML = '<div class="col-span-full text-center text-zinc-400 mt-10">No servers found</div>';
     return;
   }
 
   filtered.forEach(s => {
+    let invite = s.invite || '';
+    if (invite.startsWith('discord.gg/')) invite = 'https://' + invite;
+
     const card = document.createElement('div');
-    card.className = 'group bg-zinc-900/80 border border-zinc-800 rounded-2xl overflow-hidden hover:scale-[1.03] hover:shadow-2xl transition cursor-pointer';
+    card.className = 'group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:scale-[1.03] transition cursor-pointer';
 
     card.innerHTML = `
-      <div class="relative h-44 flex items-center justify-center bg-zinc-950">
-        <img src="${s.logo}" class="max-w-full max-h-full object-contain p-3"/>
-        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+      <div class="relative h-44 bg-black">
+        <img src="${s.logo}" class="w-full h-full object-contain p-2"/>
       </div>
 
-      <div class="p-5 flex flex-col gap-3">
+      <div class="p-5 space-y-3">
         <h3 class="text-lg font-semibold">${s.name}</h3>
-
         <p class="text-sm text-zinc-300 line-clamp-2">${s.description}</p>
 
         <div class="flex flex-wrap gap-1.5">
           ${(s.tags || []).map(tag => `
-            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300">
+            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-zinc-800 border border-zinc-700">
               #${tag}
             </span>
           `).join('')}
         </div>
 
-        <div class="flex items-center justify-between pt-1">
+        <div class="flex justify-between items-center">
           <span class="text-xs text-zinc-500">${s.members || 'N/A'} members</span>
-
-          <a href="${fixInvite(s.invite)}" target="_blank"
-            class="px-4 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 hover:brightness-110 hover:scale-105 transition">
-            🚀 Join
+          <a href="${invite}" target="_blank"
+             class="px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-sm font-semibold hover:brightness-110">
+             🚀 Join
           </a>
         </div>
       </div>
     `;
 
-    fixImage(card.querySelector('img'));
-
     card.onclick = e => {
       if (e.target.tagName !== 'A') openServerModal(s._id);
     };
 
-    container.appendChild(card);
+    grid.appendChild(card);
   });
 }
 
-/* ======================
-   MODAL
-====================== */
-
+// --- OPEN MODAL ---
 async function openServerModal(id) {
+  currentServerId = id;
+
   const res = await fetch(`${API_URL}/api/servers/${id}`);
   const server = await res.json();
 
   document.getElementById('modalLogo').src = server.logo;
-  fixImage(document.getElementById('modalLogo'));
-
   document.getElementById('modalName').textContent = server.name;
   document.getElementById('modalDescription').textContent = server.description;
   document.getElementById('modalTags').textContent = 'Tags: ' + server.tags.join(', ');
-  document.getElementById('modalInvite').href = fixInvite(server.invite);
+  document.getElementById('modalInvite').href = server.invite;
 
   const comments = document.getElementById('modalComments');
   comments.innerHTML = '';
+
   server.comments.forEach(c => {
     const div = document.createElement('div');
     div.className = 'bg-zinc-800 p-3 rounded-xl text-sm';
@@ -261,14 +236,53 @@ async function openServerModal(id) {
   document.getElementById('serverModal').classList.remove('hidden');
 }
 
-/* ======================
-   UI EVENTS
-====================== */
-
+// --- CLOSE MODAL ---
 document.getElementById('closeModal').onclick = () => {
   document.getElementById('serverModal').classList.add('hidden');
 };
 
+// --- POST COMMENT ---
+document.getElementById('commentForm').onsubmit = async e => {
+  e.preventDefault();
+
+  if (!token) return alert('Login required to comment.');
+
+  const text = e.target.comment.value.trim();
+  if (!text) return;
+
+  await fetch(`${API_URL}/api/servers/${currentServerId}/comments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ text })
+  });
+
+  e.target.reset();
+  openServerModal(currentServerId);
+};
+
+// --- REPORT SERVER ---
+document.getElementById('reportServerBtn').onclick = async () => {
+  if (!token) return alert('Login required to report servers.');
+
+  const reason = prompt('Why are you reporting this server?');
+  if (!reason) return;
+
+  await fetch(`${API_URL}/api/servers/${currentServerId}/report`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ reason })
+  });
+
+  alert('Server reported successfully.');
+};
+
+// --- FILTERS ---
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.onclick = () => {
     activeTag = btn.dataset.tag;
@@ -278,8 +292,6 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 
 document.getElementById('searchInput').oninput = renderServers;
 document.getElementById('nsfwToggle').onchange = renderServers;
-
-/* ====================== */
 
 loadServers();
 </script>
