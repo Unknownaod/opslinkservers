@@ -27,6 +27,12 @@
     <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
   </section>
 
+  <!-- Active Reports Section -->
+  <section class="px-10 py-10 border-t border-zinc-800">
+    <h1 class="text-4xl font-bold mb-6">Active Reports</h1>
+    <div id="reportsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </section>
+
   <!-- Footer -->
   <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
     <span>© 2026 OpsLink Servers</span>
@@ -64,6 +70,7 @@ async function loadServers() {
     });
     servers = await res.json();
     renderServers();
+    renderReports(); // Render reports after loading servers
   } catch(err) {
     console.error(err);
     alert('Failed to load servers.');
@@ -157,16 +164,64 @@ function renderServers() {
       btnContainer.appendChild(joinBtn);
     }
 
-    // Delete button (approved or denied)
-    if (s.status === 'approved' || s.status === 'denied') {
-      const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'bg-orange-600 px-3 py-1 rounded hover:bg-orange-700';
-      deleteBtn.textContent = 'Delete';
-      deleteBtn.addEventListener('click', async () => {
-        if (confirm(`Delete "${s.name}"?`)) await deleteServer(s._id);
-      });
-      btnContainer.appendChild(deleteBtn);
-    }
+    // Delete button (any status)
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'bg-orange-600 px-3 py-1 rounded hover:bg-orange-700';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.addEventListener('click', async () => {
+      if (confirm(`Delete "${s.name}"?`)) await deleteServer(s._id);
+    });
+    btnContainer.appendChild(deleteBtn);
+
+    container.appendChild(card);
+  });
+}
+
+// --- Render Active Reports ---
+function renderReports() {
+  const container = document.getElementById('reportsGrid');
+  container.innerHTML = '';
+
+  const reportedServers = servers.filter(s => s.reports && s.reports.length > 0);
+
+  if (reportedServers.length === 0) {
+    const msg = document.createElement('div');
+    msg.className = 'col-span-full text-center text-zinc-400 mt-10';
+    msg.textContent = 'No active reports.';
+    container.appendChild(msg);
+    return;
+  }
+
+  reportedServers.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'bg-red-900/80 border border-red-800 p-4 rounded flex flex-col gap-2';
+
+    let inviteLink = s.invite || '';
+    if (inviteLink.startsWith('discord.gg/')) inviteLink = 'https://' + inviteLink;
+
+    card.innerHTML = `
+      <h3 class="text-lg font-semibold mb-1">${s.name}</h3>
+      <p class="text-xs text-zinc-300 mb-1">Submitted by: ${s.submitterDiscord.username} (${s.submitterDiscord.tag})</p>
+      <p class="text-xs text-blue-400 mb-1">Invite: <a href="${inviteLink}" target="_blank" class="underline">${inviteLink || 'N/A'}</a></p>
+      <p class="text-sm font-semibold mb-1">Reports:</p>
+      <div class="flex flex-col gap-1"></div>
+      <div class="mt-2">
+        <button class="bg-orange-600 px-3 py-1 rounded hover:bg-orange-700 deleteBtn">Delete Server</button>
+      </div>
+    `;
+
+    const reportsContainer = card.querySelector('div.flex.flex-col');
+    s.reports.forEach(r => {
+      const reportEl = document.createElement('p');
+      reportEl.className = 'text-xs text-zinc-300';
+      reportEl.textContent = `- ${r.reason} (by user: ${r.user})`;
+      reportsContainer.appendChild(reportEl);
+    });
+
+    const deleteBtn = card.querySelector('.deleteBtn');
+    deleteBtn.addEventListener('click', async () => {
+      if (confirm(`Delete "${s.name}"?`)) await deleteServer(s._id);
+    });
 
     container.appendChild(card);
   });
