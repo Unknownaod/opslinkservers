@@ -16,6 +16,7 @@
       <a href="browse.html" class="hover:opacity-80">Browse</a>
       <a href="submit.html" class="hover:opacity-80">Submit</a>
       <a href="login.html" id="loginBtn" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
+      <a href="#" id="adminBtn" class="hidden rounded-full bg-red-600 text-white px-4 py-2 hover:bg-red-700">Admin Dashboard</a>
     </div>
   </nav>
 
@@ -70,32 +71,44 @@
 
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
-
 let servers = [];
 let activeTag = 'all';
-let currentUser = null;
 
-// Check login
-async function checkUser() {
-  try {
-    const res = await fetch(`${API_URL}/api/me`, { credentials: 'include' });
-    if (!res.ok) throw new Error('Not logged in');
-    currentUser = await res.json();
+// --- LocalStorage login handling (same as index.html) ---
+const token = localStorage.getItem('token');
+const userStr = localStorage.getItem('user');
+const loginBtn = document.getElementById('loginBtn');
+const adminBtn = document.getElementById('adminBtn');
+const navLinks = document.getElementById('navLinks');
 
-    // Update login button
-    const loginBtn = document.getElementById('loginBtn');
-    loginBtn.textContent = 'Logout';
-    loginBtn.href = '#';
-    loginBtn.addEventListener('click', async () => {
-      await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
-      window.location.reload();
-    });
-  } catch(err) {
-    console.log('Not logged in', err);
+if (token && userStr) {
+  const user = JSON.parse(userStr);
+
+  loginBtn.textContent = 'Logout';
+  loginBtn.href = '#';
+  loginBtn.addEventListener('click', () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.reload();
+  });
+
+  const welcomeSpan = document.createElement('span');
+  welcomeSpan.textContent = `Welcome, ${user.discordUsername}`;
+  welcomeSpan.className = "text-sm text-zinc-300";
+  navLinks.insertBefore(welcomeSpan, loginBtn);
+
+  if (user.role === 'admin') {
+    adminBtn.classList.remove('hidden');
+    adminBtn.href = 'dashboard.html';
   }
+} else {
+  adminBtn.classList.add('hidden');
+  loginBtn.textContent = 'Login';
+  loginBtn.href = 'login.html';
+  loginBtn.replaceWith(loginBtn.cloneNode(true));
 }
 
-// Load servers
+// --- Load servers ---
 async function loadServers() {
   try {
     const res = await fetch(`${API_URL}/api/servers`);
@@ -106,7 +119,6 @@ async function loadServers() {
   }
 }
 
-// Render servers grid
 function renderServers() {
   const container = document.getElementById('serversGrid');
   const search = document.getElementById('searchInput').value.toLowerCase();
@@ -115,7 +127,7 @@ function renderServers() {
   container.innerHTML = '';
 
   const filtered = servers
-    .filter(s => nsfw || !s.nsfw)
+    .filter(s => (nsfw || !s.nsfw))
     .filter(s => activeTag === 'all' || s.tags.includes(activeTag))
     .filter(s => s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search));
 
@@ -140,7 +152,7 @@ function renderServers() {
   });
 }
 
-// Open server modal and handle comments
+// --- Server modal ---
 async function openServerModal(serverId) {
   try {
     const res = await fetch(`${API_URL}/api/servers/${serverId}`);
@@ -165,37 +177,33 @@ async function openServerModal(serverId) {
     const commentForm = document.getElementById('commentForm');
     commentForm.onsubmit = async e => {
       e.preventDefault();
-      if (!currentUser) {
-        alert('You must be logged in to post a comment.');
-        window.location.href = '/login.html';
+      if (!token || !userStr) {
+        alert("You must be logged in to post a comment.");
         return;
       }
+
       const commentText = e.target.comment.value;
-      try {
-        await fetch(`${API_URL}/api/servers/${serverId}/comments`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: commentText })
-        });
-        e.target.reset();
-        openServerModal(serverId); // Refresh comments
-      } catch (err) {
-        alert('Failed to post comment.');
-        console.error(err);
-      }
+      await fetch(`${API_URL}/api/servers/${serverId}/comments`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: commentText })
+      });
+      e.target.reset();
+      openServerModal(serverId);
     };
   } catch (err) {
     console.error('Failed to load server details:', err);
   }
 }
 
-// Close modal
 document.getElementById('closeModal').addEventListener('click', () => {
   document.getElementById('serverModal').classList.add('hidden');
 });
 
-// Search & filters
+// --- Search & filters ---
 document.getElementById('searchInput').addEventListener('input', renderServers);
 document.getElementById('nsfwToggle').addEventListener('change', renderServers);
 document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -205,8 +213,6 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
   });
 });
 
-// Initialize
-checkUser();
 loadServers();
 </script>
 
