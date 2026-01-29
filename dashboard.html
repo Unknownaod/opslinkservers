@@ -21,7 +21,7 @@
     <h1 class="text-4xl font-bold mb-6">All Server Submissions</h1>
 
     <!-- Search -->
-    <input id="searchInput" type="text" placeholder="Search servers..." class="p-2 rounded bg-zinc-800 mb-6 w-full max-w-lg"/>
+    <input id="searchInput" type="text" placeholder="Search servers by name or submitter..." class="p-2 rounded bg-zinc-800 mb-6 w-full max-w-lg"/>
 
     <!-- Servers Grid -->
     <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
@@ -33,175 +33,187 @@
     <span>Admin Panel Only</span>
   </footer>
 
-  <script>
-    const API_URL = 'https://opslinkservers-backend.onrender.com';
-    let servers = [];
-    let currentUser = null;
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
+<script>
+const API_URL = 'https://opslinkservers-backend.onrender.com';
+let servers = [];
+let currentUser = null;
+const token = localStorage.getItem('token');
+const userStr = localStorage.getItem('user');
 
-    // --- Admin check ---
-    async function checkAdmin() {
-      if (!token || !userStr) {
-        alert('You must be logged in as admin to access this page.');
-        window.location.href = '/login.html';
-        return false;
-      }
-      currentUser = JSON.parse(userStr);
-      if (currentUser.role !== 'admin') {
-        alert('Access denied. Admins only.');
-        window.location.href = '/';
-        return false;
-      }
-      return true;
-    }
+// --- Admin check ---
+async function checkAdmin() {
+  if (!token || !userStr) {
+    alert('You must be logged in as admin to access this page.');
+    window.location.href = '/login.html';
+    return false;
+  }
+  currentUser = JSON.parse(userStr);
+  if (currentUser.role !== 'admin') {
+    alert('Access denied. Admins only.');
+    window.location.href = '/';
+    return false;
+  }
+  return true;
+}
 
-    // --- Load all submissions ---
-    async function loadServers() {
-      try {
-        const res = await fetch(`${API_URL}/api/servers/all`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        servers = await res.json();
-        renderServers();
-      } catch(err) {
-        console.error(err);
-        alert('Failed to load servers.');
-      }
-    }
+// --- Load all submissions ---
+async function loadServers() {
+  try {
+    const res = await fetch(`${API_URL}/api/servers/all`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    servers = await res.json();
+    renderServers();
+  } catch(err) {
+    console.error(err);
+    alert('Failed to load servers.');
+  }
+}
 
-    // --- Render servers ---
-    function renderServers() {
-      const container = document.getElementById('serversGrid');
-      const search = document.getElementById('searchInput').value.toLowerCase();
-      container.innerHTML = '';
+// --- Render servers ---
+function renderServers() {
+  const container = document.getElementById('serversGrid');
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  container.innerHTML = '';
 
-      const filtered = servers.filter(s =>
-        s.name.toLowerCase().includes(search) ||
-        s.description.toLowerCase().includes(search) ||
-        s.submitterDiscord.username.toLowerCase().includes(search) ||
-        s.submitterDiscord.tag.toLowerCase().includes(search)
-      );
+  const filtered = servers.filter(s =>
+    s.name.toLowerCase().includes(search) ||
+    s.submitterDiscord.username.toLowerCase().includes(search) ||
+    s.submitterDiscord.tag.toLowerCase().includes(search)
+  );
 
-      if (filtered.length === 0) {
-        const msg = document.createElement('div');
-        msg.className = 'col-span-full text-center text-zinc-400 mt-10';
-        msg.textContent = 'No servers to show...';
-        container.appendChild(msg);
-        return;
-      }
+  if (filtered.length === 0) {
+    const msg = document.createElement('div');
+    msg.className = 'col-span-full text-center text-zinc-400 mt-10';
+    msg.textContent = 'No servers to show...';
+    container.appendChild(msg);
+    return;
+  }
 
-      filtered.forEach(s => {
-        const card = document.createElement('div');
-        card.className = 'bg-zinc-900/80 border border-zinc-800 p-4 rounded flex flex-col justify-between';
+  filtered.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'bg-zinc-900/80 border border-zinc-800 p-4 rounded flex flex-col justify-between';
 
-        // Status badge
-        let statusColor = 'text-zinc-400';
-        if (s.status === 'approved') statusColor = 'text-green-400';
-        else if (s.status === 'denied') statusColor = 'text-red-400';
-        else if (s.status === 'pending') statusColor = 'text-yellow-400';
+    let statusColor = 'text-zinc-400';
+    if (s.status === 'approved') statusColor = 'text-green-400';
+    else if (s.status === 'denied') statusColor = 'text-red-400';
+    else if (s.status === 'pending') statusColor = 'text-yellow-400';
 
-        card.innerHTML = `
-          <h3 class="text-lg font-semibold mb-1">${s.name}</h3>
-          <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
-          <p class="text-xs text-zinc-500 mb-1">Tags: ${s.tags.join(', ')}</p>
-          <p class="text-xs text-zinc-500 mb-1">NSFW: ${s.nsfw ? 'Yes' : 'No'}</p>
-          <p class="text-xs text-zinc-500 mb-1">Server Type: ${s.type || 'N/A'}</p>
-          <p class="text-xs text-zinc-500 mb-1">Language: ${s.language || 'N/A'}</p>
-          <p class="text-xs text-zinc-500 mb-1">Members: ${s.members || 'N/A'}</p>
-          <p class="text-xs text-zinc-500 mb-1">Website/Social: ${s.website || 'N/A'}</p>
-          ${s.rules ? `<p class="text-xs text-zinc-500 mb-1">Rules: ${s.rules}</p>` : ''}
-          <p class="text-xs text-zinc-500 mb-1">Submitted by: ${s.submitterDiscord.username} (${s.submitterDiscord.tag})</p>
-          <p class="text-xs text-zinc-500 mb-1">UserID: ${s.submitterDiscord.userID}</p>
-          <p class="text-xs text-zinc-500 mb-1">Created: ${new Date(s.createdAt).toLocaleString()}</p>
-          <p class="text-xs text-zinc-500 mb-2">Updated: ${new Date(s.updatedAt).toLocaleString()}</p>
-          ${s.status === 'denied' ? `<p class="text-xs text-red-400 mb-2">Reason: ${s.rejectionReason}</p>` : ''}
-          <p class="text-sm mb-2">Status: <span class="${statusColor} font-semibold">${s.status}</span></p>
-          <div class="flex gap-2 flex-wrap"></div>
-        `;
+    card.innerHTML = `
+      <h3 class="text-lg font-semibold mb-1">${s.name}</h3>
+      <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
+      <p class="text-xs text-zinc-500 mb-1">Tags: ${s.tags.join(', ')}</p>
+      <p class="text-xs text-zinc-500 mb-1">NSFW: ${s.nsfw ? 'Yes' : 'No'}</p>
+      <p class="text-xs text-zinc-500 mb-1">Server Type: ${s.type || 'N/A'}</p>
+      <p class="text-xs text-zinc-500 mb-1">Language: ${s.language || 'N/A'}</p>
+      <p class="text-xs text-zinc-500 mb-1">Members: ${s.members || 'N/A'}</p>
+      <p class="text-xs text-zinc-500 mb-1">Website/Social: ${s.website || 'N/A'}</p>
+      ${s.rules ? `<p class="text-xs text-zinc-500 mb-1">Rules: ${s.rules}</p>` : ''}
+      <p class="text-xs text-zinc-500 mb-1">Submitted by: ${s.submitterDiscord.username} (${s.submitterDiscord.tag})</p>
+      <p class="text-xs text-zinc-500 mb-1">UserID: ${s.submitterDiscord.userID}</p>
+      <p class="text-xs text-zinc-500 mb-1">Created: ${new Date(s.createdAt).toLocaleString()}</p>
+      <p class="text-xs text-zinc-500 mb-2">Updated: ${new Date(s.updatedAt).toLocaleString()}</p>
+      ${s.status === 'denied' ? `<p class="text-xs text-red-400 mb-2">Reason: ${s.rejectionReason}</p>` : ''}
+      <p class="text-xs text-blue-400 mb-2">Invite: <a href="${s.invite}" target="_blank" class="underline">${s.invite}</a></p>
+      <p class="text-sm mb-2">Status: <span class="${statusColor} font-semibold">${s.status}</span></p>
+      <div class="flex gap-2 flex-wrap"></div>
+    `;
 
-        const btnContainer = card.querySelector('div');
+    const btnContainer = card.querySelector('div');
 
-        // Approve button (only pending)
-        if (s.status === 'pending') {
-          const approveBtn = document.createElement('button');
-          approveBtn.className = 'bg-green-600 px-3 py-1 rounded hover:bg-green-700';
-          approveBtn.textContent = 'Approve';
-          approveBtn.addEventListener('click', async () => {
-            if (confirm(`Approve "${s.name}"?`)) {
-              await updateServerStatus(s._id, 'approved');
-            }
-          });
-          btnContainer.appendChild(approveBtn);
-        }
-
-        // Deny button (only pending)
-        if (s.status === 'pending') {
-          const denyBtn = document.createElement('button');
-          denyBtn.className = 'bg-red-600 px-3 py-1 rounded hover:bg-red-700';
-          denyBtn.textContent = 'Deny';
-          denyBtn.addEventListener('click', async () => {
-            const reason = prompt('Enter reason for denial:');
-            if (reason !== null) {
-              await updateServerStatus(s._id, 'denied', reason);
-            }
-          });
-          btnContainer.appendChild(denyBtn);
-        }
-
-        // Join button (approved)
-        if (s.status === 'approved') {
-          const joinBtn = document.createElement('a');
-          joinBtn.href = s.invite;
-          joinBtn.target = '_blank';
-          joinBtn.className = 'bg-blue-600 px-3 py-1 rounded hover:bg-blue-700';
-          joinBtn.textContent = 'Join Server';
-          btnContainer.appendChild(joinBtn);
-        }
-
-        container.appendChild(card);
+    // Approve button (pending)
+    if (s.status === 'pending') {
+      const approveBtn = document.createElement('button');
+      approveBtn.className = 'bg-green-600 px-3 py-1 rounded hover:bg-green-700';
+      approveBtn.textContent = 'Approve';
+      approveBtn.addEventListener('click', async () => {
+        if (confirm(`Approve "${s.name}"?`)) await updateServerStatus(s._id, 'approved');
       });
+      btnContainer.appendChild(approveBtn);
+
+      const denyBtn = document.createElement('button');
+      denyBtn.className = 'bg-red-600 px-3 py-1 rounded hover:bg-red-700';
+      denyBtn.textContent = 'Deny';
+      denyBtn.addEventListener('click', async () => {
+        const reason = prompt('Enter reason for denial:');
+        if (reason !== null) await updateServerStatus(s._id, 'denied', reason);
+      });
+      btnContainer.appendChild(denyBtn);
     }
 
-    // --- Update server status ---
-    async function updateServerStatus(serverId, status, reason = '') {
-      try {
-        const res = await fetch(`${API_URL}/api/servers/${serverId}/status`, {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ status, rejectionReason: reason })
-        });
-
-        if (res.ok) {
-          alert(`Server ${status}!`);
-          await loadServers(); // refresh
-        } else {
-          const err = await res.json();
-          alert('Failed: ' + (err.error || err.message));
-        }
-      } catch(err) {
-        console.error(err);
-        alert('Error updating server status.');
-      }
+    // Take down / Delete (approved)
+    if (s.status === 'approved') {
+      const takedownBtn = document.createElement('button');
+      takedownBtn.className = 'bg-orange-600 px-3 py-1 rounded hover:bg-orange-700';
+      takedownBtn.textContent = 'Take Down';
+      takedownBtn.addEventListener('click', async () => {
+        if (confirm(`Take down "${s.name}"?`)) await deleteServer(s._id);
+      });
+      btnContainer.appendChild(takedownBtn);
     }
 
-    document.getElementById('searchInput').addEventListener('input', renderServers);
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login.html';
+    container.appendChild(card);
+  });
+}
+
+// --- Update server status ---
+async function updateServerStatus(serverId, status, reason = '') {
+  try {
+    const res = await fetch(`${API_URL}/api/servers/${serverId}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ status, rejectionReason: reason })
     });
 
-    // --- Init ---
-    (async () => {
-      if (await checkAdmin()) {
-        await loadServers();
-      }
-    })();
+    if (res.ok) {
+      alert(`Server ${status}!`);
+      await loadServers();
+    } else {
+      const err = await res.json();
+      alert('Failed: ' + (err.error || err.message));
+    }
+  } catch(err) {
+    console.error(err);
+    alert('Error updating server status.');
+  }
+}
 
-  </script>
+// --- Delete / Take down server ---
+async function deleteServer(serverId) {
+  try {
+    const res = await fetch(`${API_URL}/api/servers/${serverId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      alert('Server deleted!');
+      await loadServers();
+    } else {
+      const err = await res.json();
+      alert('Failed: ' + (err.error || err.message));
+    }
+  } catch(err) {
+    console.error(err);
+    alert('Error deleting server.');
+  }
+}
+
+// --- Event listeners ---
+document.getElementById('searchInput').addEventListener('input', renderServers);
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = '/login.html';
+});
+
+// --- Init ---
+(async () => {
+  if (await checkAdmin()) await loadServers();
+})();
+</script>
+
 </body>
 </html>
