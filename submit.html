@@ -16,6 +16,7 @@
       <a href="browse.html" class="hover:opacity-80">Browse</a>
       <a href="submit.html" class="hover:opacity-80">Submit</a>
       <a href="login.html" id="loginBtn" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
+      <a href="#" id="adminBtn" class="hidden rounded-full bg-red-600 text-white px-4 py-2 hover:bg-red-700">Admin Dashboard</a>
     </div>
   </nav>
 
@@ -78,34 +79,52 @@
 
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
+
+// --- LocalStorage auth handling ---
+const token = localStorage.getItem('token');
+const userStr = localStorage.getItem('user');
+const loginBtn = document.getElementById('loginBtn');
+const adminBtn = document.getElementById('adminBtn');
+const navLinks = document.getElementById('navLinks');
 let currentUser = null;
 
-// Check if user is logged in
-async function checkUser() {
-  try {
-    const res = await fetch(`${API_URL}/api/me`, { credentials: 'include' });
-    if (!res.ok) throw new Error('Not logged in');
-    currentUser = await res.json();
+if (token && userStr) {
+  currentUser = JSON.parse(userStr);
 
-    // Update login button
-    const loginBtn = document.getElementById('loginBtn');
-    loginBtn.textContent = 'Logout';
-    loginBtn.href = '#';
-    loginBtn.addEventListener('click', async () => {
-      await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
-      window.location.reload();
-    });
-  } catch(err) {
-    console.log('Not logged in', err);
+  // Login button becomes Logout
+  loginBtn.textContent = 'Logout';
+  loginBtn.href = '#';
+  loginBtn.addEventListener('click', () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.reload();
+  });
+
+  // Welcome message
+  const welcomeSpan = document.createElement('span');
+  welcomeSpan.textContent = `Welcome, ${currentUser.discordUsername}`;
+  welcomeSpan.className = "text-sm text-zinc-300";
+  navLinks.insertBefore(welcomeSpan, loginBtn);
+
+  // Admin button
+  if (currentUser.role === 'admin') {
+    adminBtn.classList.remove('hidden');
+    adminBtn.href = 'dashboard.html';
   }
+} else {
+  adminBtn.classList.add('hidden');
+  loginBtn.textContent = 'Login';
+  loginBtn.href = 'login.html';
+  loginBtn.replaceWith(loginBtn.cloneNode(true)); // remove previous listeners
 }
 
-// Handle form submission
+// --- Form submission ---
 document.getElementById('submitForm').addEventListener('submit', async e => {
   e.preventDefault();
-  if (!currentUser) {
+
+  if (!currentUser || !token) {
     alert('You must be logged in to submit a server.');
-    window.location.href = '/login.html';
+    window.location.href = 'login.html';
     return;
   }
 
@@ -121,8 +140,10 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
   try {
     const res = await fetch(`${API_URL}/api/servers`, {
       method: 'POST',
-      credentials: 'include', // use cookie for auth
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify(data)
     });
 
@@ -134,12 +155,10 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
       alert('Submission failed: ' + (err.error || err.message));
     }
   } catch (err) {
-    alert('Submission failed. Please try again later.');
     console.error(err);
+    alert('Submission failed. Please try again later.');
   }
 });
-
-checkUser();
 </script>
 
 </body>
