@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse Servers - OpsLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-black text-white px-10 py-10">
+
+  <h1 class="text-4xl font-bold mb-6">Browse Servers</h1>
+  <div class="flex gap-4 mb-6">
+    <button class="bg-zinc-800 px-3 py-1 rounded filter-btn" data-tag="gaming">Gaming</button>
+    <button class="bg-zinc-800 px-3 py-1 rounded filter-btn" data-tag="community">Community</button>
+    <button class="bg-zinc-800 px-3 py-1 rounded filter-btn" data-tag="all">All</button>
+  </div>
+
+  <div id="servers" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+
+  <script>
+    async function loadServers(tag = 'all') {
+      const res = await fetch('https://your-backend/api/servers'); // Replace with your backend
+      let servers = await res.json();
+      if(tag !== 'all') servers = servers.filter(s => s.tags.includes(tag));
+      const container = document.getElementById('servers');
+      container.innerHTML = '';
+      servers.forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'bg-zinc-900/80 border border-zinc-800 p-6';
+        card.innerHTML = `<h3 class="font-semibold text-lg mb-2">${s.name}</h3>
+                          <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
+                          <a href="${s.invite}" target="_blank" class="text-blue-400 underline">Join Server</a>`;
+        container.appendChild(card);
+      });
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => loadServers(btn.dataset.tag));
+    });
+
+    loadServers();
+  </script>
+</body>
+</html>
