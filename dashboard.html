@@ -17,12 +17,11 @@
     </div>
   </nav>
 
+  <!-- Server Submissions Section -->
   <section class="px-10 py-10">
     <h1 class="text-4xl font-bold mb-6">All Server Submissions</h1>
-
     <!-- Search -->
     <input id="searchInput" type="text" placeholder="Search by server name or submitter..." class="p-2 rounded bg-zinc-800 mb-6 w-full max-w-lg"/>
-
     <!-- Servers Grid -->
     <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
   </section>
@@ -85,7 +84,7 @@ function renderServers() {
 
   const filtered = servers.filter(s =>
     s.name.toLowerCase().includes(search) ||
-    s.description.toLowerCase().includes(search) ||
+    (s.description && s.description.toLowerCase().includes(search)) ||
     (s.submitterDiscord && s.submitterDiscord.username.toLowerCase().includes(search)) ||
     (s.submitterDiscord && s.submitterDiscord.tag.toLowerCase().includes(search))
   );
@@ -102,25 +101,26 @@ function renderServers() {
     const card = document.createElement('div');
     card.className = 'bg-zinc-900/80 border border-zinc-800 p-4 rounded flex flex-col justify-between';
 
-    // Status badge
+    // Status badge color
     let statusColor = 'text-zinc-400';
     if (s.status === 'approved') statusColor = 'text-green-400';
     else if (s.status === 'denied') statusColor = 'text-red-400';
     else if (s.status === 'pending') statusColor = 'text-yellow-400';
 
+    // Correct logo URL
+    const logoUrl = s.logo ? `${API_URL}/${s.logo}` : '';
+
     // Ensure invite starts with https://
     let inviteLink = s.invite || '';
     if (inviteLink.startsWith('discord.gg/')) inviteLink = 'https://' + inviteLink;
 
-    const logoUrl = s.logo ? `${API_URL}/${s.logo}` : '';  // Assuming logo URL is stored
-
     card.innerHTML = `
       <h3 class="text-lg font-semibold mb-1">${s.name}</h3>
-      <img src="${logoUrl}" alt="Server Logo" class="w-full h-32 object-cover mb-4 rounded-lg" />
+      <img src="${logoUrl}" alt="Server Logo" class="w-full h-32 object-cover mb-4 rounded-lg"/>
       <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
-      <p class="text-xs text-zinc-500 mb-1">Tags: ${s.tags.join(', ')}</p>
+      <p class="text-xs text-zinc-500 mb-1">Tags: ${s.tags && s.tags.length ? s.tags.join(', ') : 'N/A'}</p>
       <p class="text-xs text-zinc-500 mb-1">NSFW: ${s.nsfw ? 'Yes' : 'No'}</p>
-      <p class="text-xs text-zinc-500 mb-1">Server Type: ${s.type || 'N/A'}</p>
+      <p class="text-xs text-zinc-500 mb-1">Type: ${s.type || 'N/A'}</p>
       <p class="text-xs text-zinc-500 mb-1">Language: ${s.language || 'N/A'}</p>
       <p class="text-xs text-zinc-500 mb-1">Members: ${s.members || 'N/A'}</p>
       <p class="text-xs text-zinc-500 mb-1">Website/Social: ${s.website || 'N/A'}</p>
@@ -129,7 +129,7 @@ function renderServers() {
       <p class="text-xs text-zinc-500 mb-1">UserID: ${s.submitterDiscord ? s.submitterDiscord.userID : 'N/A'}</p>
       <p class="text-xs text-zinc-500 mb-1">Created: ${new Date(s.createdAt).toLocaleString()}</p>
       <p class="text-xs text-zinc-500 mb-2">Updated: ${new Date(s.updatedAt).toLocaleString()}</p>
-      ${s.status === 'denied' ? `<p class="text-xs text-red-400 mb-2">Reason: ${s.rejectionReason}</p>` : ''}
+      ${s.status === 'denied' && s.rejectionReason ? `<p class="text-xs text-red-400 mb-2">Reason: ${s.rejectionReason}</p>` : ''}
       <p class="text-xs text-blue-400 mb-2">Invite: <a href="${inviteLink}" target="_blank" class="underline">${inviteLink || 'N/A'}</a></p>
       <p class="text-sm mb-2">Status: <span class="${statusColor} font-semibold">${s.status}</span></p>
       <div class="flex gap-2 flex-wrap"></div>
@@ -180,7 +180,7 @@ function renderServers() {
   });
 }
 
-// --- Render Active Reports ---
+// --- Render reports ---
 function renderReports() {
   const container = document.getElementById('reportsGrid');
   container.innerHTML = '';
@@ -217,7 +217,7 @@ function renderReports() {
     s.reports.forEach(r => {
       const reportEl = document.createElement('p');
       reportEl.className = 'text-xs text-zinc-300';
-      reportEl.textContent = `- ${r.reason} (by user: ${r.user})`;
+      reportEl.textContent = `- ${r.reason} (by ${r.userDiscord?.username || r.user})`;
       reportsContainer.appendChild(reportEl);
     });
 
@@ -241,7 +241,6 @@ async function updateServerStatus(serverId, status, reason = '') {
       },
       body: JSON.stringify({ status, rejectionReason: reason })
     });
-
     if (res.ok) {
       alert(`Server ${status}!`);
       await loadServers();
@@ -275,6 +274,7 @@ async function deleteServer(serverId) {
   }
 }
 
+// --- Init ---
 document.getElementById('searchInput').addEventListener('input', renderServers);
 document.getElementById('logoutBtn').addEventListener('click', () => {
   localStorage.removeItem('token');
@@ -282,7 +282,6 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
   window.location.href = '/login.html';
 });
 
-// --- Init ---
 (async () => {
   if (await checkAdmin()) {
     await loadServers();
