@@ -44,29 +44,36 @@
     <span>Not affiliated with Discord</span>
   </footer>
 
-  <script>
-    document.getElementById('loginForm').addEventListener('submit', async e=>{
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target));
+<script>
+const API_URL = 'https://opslinkservers-backend.onrender.com';
 
-      try {
-        const res = await fetch('https://your-backend/api/login',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify(data)
-        });
-        if(res.ok){
-          alert('Logged in successfully!');
-          e.target.reset();
-        } else {
-          alert('Login failed. Check your credentials.');
-        }
-      } catch(err){
-        alert('Login failed. Please try again later.');
-        console.error(err);
-      }
+document.getElementById('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target));
+
+  try {
+    const res = await fetch(`${API_URL}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
     });
-  </script>
+
+    if (res.ok) {
+      const user = await res.json();
+      alert('Logged in successfully!');
+      console.log('User info:', user);
+      e.target.reset();
+    } else {
+      const err = await res.json();
+      alert('Login failed: ' + err.message);
+    }
+  } catch (err) {
+    alert('Login failed. Please try again later.');
+    console.error(err);
+  }
+});
+</script>
+
 
 </body>
 </html>
