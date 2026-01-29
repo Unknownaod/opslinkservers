@@ -21,6 +21,12 @@
     </div>
   </nav>
 
+  <!-- Notification Banner -->
+  <div id="notificationBanner" class="fixed top-0 left-0 w-full bg-yellow-500 text-black text-center py-2 hidden">
+    <span id="notificationMessage" class="font-semibold">New System Message! Check now!</span>
+    <button id="dismissNotification" class="absolute right-5 top-1/2 transform -translate-y-1/2 text-black font-bold">X</button>
+  </div>
+
   <section class="px-10 py-10">
     <h1 class="text-5xl font-bold mb-6">Browse Servers</h1>
 
@@ -77,6 +83,7 @@
 const API_URL = 'https://opslinkservers-backend.onrender.com';
 let servers = [];
 let activeTag = 'all';
+let hasNewMessage = false;
 
 // --- LocalStorage login handling ---
 const token = localStorage.getItem('token');
@@ -84,6 +91,8 @@ const userStr = localStorage.getItem('user');
 const loginBtn = document.getElementById('loginBtn');
 const adminBtn = document.getElementById('adminBtn');
 const navLinks = document.getElementById('navLinks');
+const notificationBanner = document.getElementById('notificationBanner');
+const dismissNotification = document.getElementById('dismissNotification');
 
 if (token && userStr) {
   const user = JSON.parse(userStr);
@@ -112,17 +121,50 @@ if (token && userStr) {
   loginBtn.replaceWith(loginBtn.cloneNode(true));
 }
 
+// Show the notification banner when there's a new system message
+function showNotificationBanner() {
+  if (hasNewMessage) {
+    notificationBanner.classList.remove('hidden');
+  }
+}
+
+// Hide the notification banner when dismissed
+dismissNotification.addEventListener('click', () => {
+  notificationBanner.classList.add('hidden');
+  hasNewMessage = false;
+});
+
 // --- Load servers ---
 async function loadServers() {
   try {
     const res = await fetch(`${API_URL}/api/servers`);
     servers = await res.json();
     renderServers();
+    checkForNewMessages();
   } catch (err) {
     console.error('Failed to load servers:', err);
   }
 }
 
+// --- Check for new messages ---
+async function checkForNewMessages() {
+  try {
+    const res = await fetch(`${API_URL}/api/messages`);
+    const messages = await res.json();
+    
+    // Check if there are new messages and update the state
+    const newMessages = messages.filter(m => !m.read && m.userId === JSON.parse(localStorage.getItem('user'))._id);
+    
+    if (newMessages.length > 0) {
+      hasNewMessage = true;
+      showNotificationBanner();
+    }
+  } catch (err) {
+    console.error('Failed to fetch messages:', err);
+  }
+}
+
+// --- Render servers ---
 function renderServers() {
   const container = document.getElementById('serversGrid');
   const search = document.getElementById('searchInput').value.toLowerCase();
@@ -217,49 +259,6 @@ async function openServerModal(serverId) {
 
 document.getElementById('closeModal').addEventListener('click', () => {
   document.getElementById('serverModal').classList.add('hidden');
-});
-
-// --- Report Server Functionality ---
-document.getElementById('reportServerBtn').addEventListener('click', async () => {
-  const reason = prompt('Please provide a reason for reporting this server:');
-
-  if (!reason) {
-    alert('You must provide a reason to report the server.');
-    return;
-  }
-
-  const serverId = document.getElementById('modalName').getAttribute('data-server-id'); // Assuming server ID is stored in the modal
-
-  try {
-    const res = await fetch(`${API_URL}/api/servers/${serverId}/report`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ reason })
-    });
-
-    if (res.ok) {
-      alert('Thank you for reporting the server. It will be reviewed by an admin.');
-    } else {
-      const err = await res.json();
-      alert('Failed to report server: ' + (err.error || err.message));
-    }
-  } catch (err) {
-    console.error('Error reporting server:', err);
-    alert('Failed to report the server. Please try again later.');
-  }
-});
-
-// --- Search & filters ---
-document.getElementById('searchInput').addEventListener('input', renderServers);
-document.getElementById('nsfwToggle').addEventListener('change', renderServers);
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    activeTag = btn.dataset.tag;
-    renderServers();
-  });
 });
 
 loadServers();
