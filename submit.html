@@ -29,20 +29,34 @@
       <h2 class="font-semibold mb-2">Submission Rules & Responsibilities</h2>
       <ul class="list-disc list-inside text-sm space-y-1">
         <li>You must be the <strong>server owner</strong> or an <strong>authorized representative</strong>.</li>
-        <li>All information submitted must be <strong>accurate and truthful</strong>. Any false information will result in immediate denial.</li>
-        <li>By submitting, you acknowledge that if your server is approved, <strong>you are fully responsible</strong> for its content, moderation, and community management.</li>
-        <li>OpsLink Servers reserves the right to remove your server at any time if it violates our guidelines.</li>
+        <li>All information submitted must be <strong>accurate and truthful</strong>.</li>
+        <li>If your server is approved, <strong>you are responsible for its content, moderation, and community management</strong>.</li>
+        <li>OpsLink Servers reserves the right to remove your server if it violates our guidelines.</li>
         <li>NSFW content must be properly labeled, or your server will be denied.</li>
+        <li><strong>You must have our bot added to your server</strong> for live statistics (member count, online users) to work. Without it, your server submission may be denied.</li>
       </ul>
     </div>
 
     <!-- Submission Form -->
     <div class="bg-zinc-900/80 border border-zinc-800 p-6 rounded">
       <form id="submitForm" class="flex flex-col gap-4">
+
         <!-- Basic Info -->
         <input name="name" placeholder="Server Name" class="p-2 rounded bg-zinc-800" required/>
         <input name="invite" placeholder="Server Invite Link" class="p-2 rounded bg-zinc-800" required/>
         <textarea name="description" placeholder="Brief Description" class="p-2 rounded bg-zinc-800" required></textarea>
+
+        <!-- Discord Bot Info -->
+        <div class="bg-zinc-700 p-3 rounded text-sm mb-4">
+          <p>To enable live statistics, you must add our bot to your server:</p>
+          <a href="https://discord.com/oauth2/authorize?client_id=1466430352238055587&permissions=48&scope=bot"
+             target="_blank"
+             class="text-indigo-400 hover:underline">
+            Add the OpsLink Bot
+          </a>
+          <p class="mt-2">Once added, enter your server's <strong>Discord Server ID</strong> below:</p>
+          <input name="discordServerId" placeholder="Discord Server ID" class="p-2 rounded bg-zinc-800" required/>
+        </div>
 
         <!-- Advanced Server Info -->
         <input name="language" placeholder="Primary Language (e.g., English)" class="p-2 rounded bg-zinc-800"/>
@@ -61,7 +75,7 @@
           <input type="checkbox" name="nsfw"/> NSFW
         </label>
 
-        <!-- Server Logo via ANY URL -->
+        <!-- Server Logo -->
         <label class="flex flex-col gap-2">
           Server Logo <span class="text-red-500">*</span>
           <input type="url" name="logo" id="logoInput" placeholder="https://example.com/logo.png" class="p-2 rounded bg-zinc-800 text-white" required/>
@@ -81,7 +95,7 @@
         <!-- Acknowledgment -->
         <label class="flex items-center gap-2 text-sm">
           <input type="checkbox" name="acknowledge" required/>
-          I confirm I am the server owner or authorized representative and understand all responsibilities listed above.
+          I confirm I am the server owner or authorized representative and understand all responsibilities.
         </label>
 
         <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">Submit Server</button>
@@ -197,10 +211,12 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
     website: e.target.website.value.trim(),
     logo: logoInput.value.trim(),
     nsfw: e.target.nsfw.checked,
-    tags: tags
+    tags: tags,
+    discordServerId: e.target.discordServerId.value.trim() // required for bot
   };
 
   if (!payload.logo) return alert('Server logo is required.');
+  if (!payload.discordServerId) return alert('You must add the OpsLink bot and provide your server ID.');
 
   try {
     const res = await fetch(`${API_URL}/api/servers`, {
@@ -228,7 +244,6 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
   }
 });
 </script>
-
 
 </body>
 </html>
