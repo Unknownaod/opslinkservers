@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - OpsLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
+
+  <!-- Navbar -->
+  <nav class="flex items-center justify-between px-10 py-6">
+    <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
+    <div class="flex items-center gap-8 text-sm">
+      <a href="index.html" class="hover:opacity-80">Home</a>
+      <a href="browse.html" class="hover:opacity-80">Browse</a>
+      <a href="submit.html" class="hover:opacity-80">Submit</a>
+      <a href="login.html" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
+    </div>
+  </nav>
+
+  <section class="px-10 py-10 max-w-md mx-auto">
+    <h1 class="text-4xl font-bold mb-6">Create an Account</h1>
+
+    <div class="bg-zinc-900/80 border border-zinc-800 p-6 rounded">
+      <form id="signupForm" class="flex flex-col gap-4">
+
+        <!-- Account Info -->
+        <input name="email" type="email" placeholder="Email" class="p-2 rounded bg-zinc-800" required/>
+        <input name="password" type="password" placeholder="Password" class="p-2 rounded bg-zinc-800" required/>
+        <input name="confirmPassword" type="password" placeholder="Confirm Password" class="p-2 rounded bg-zinc-800" required/>
+
+        <!-- Discord Info -->
+        <h2 class="font-semibold mt-4">Discord Information</h2>
+        <input name="discordUsername" placeholder="Discord Username (e.g., User#1234)" class="p-2 rounded bg-zinc-800" required/>
+        <input name="discordUserID" placeholder="Discord User ID" class="p-2 rounded bg-zinc-800" required/>
+        <input name="discordTag" placeholder="Discord Tag (optional)" class="p-2 rounded bg-zinc-800"/>
+
+        <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">Sign Up</button>
+      </form>
+    </div>
+  </section>
+
+  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
+    <span>© 2026 OpsLink Servers</span>
+    <span>Not affiliated with Discord</span>
+  </footer>
+
+  <script>
+    document.getElementById('signupForm').addEventListener('submit', async e=>{
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+
+      if(data.password !== data.confirmPassword){
+        alert("Passwords do not match.");
+        return;
+      }
+
+      try {
+        await fetch('https://your-backend/api/signup',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(data)
+        });
+        alert('Account created successfully!');
+        e.target.reset();
+      } catch(err){
+        alert('Signup failed. Please try again later.');
+        console.error(err);
+      }
+    });
+  </script>
+
+</body>
+</html>
