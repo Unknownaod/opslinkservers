@@ -66,7 +66,7 @@ function checkLogin() {
 
 // Render system messages
 function renderMessages(servers) {
-  const myServers = servers.filter(s => s.submitter && s.submitter === user._id);
+  const myServers = servers.filter(s => s.submitter && s.submitter._id === user._id);
 
   if (myServers.length === 0) {
     messagesContainer.innerHTML = '<p class="text-zinc-400">You have not submitted any servers yet.</p>';
@@ -78,10 +78,23 @@ function renderMessages(servers) {
   myServers.forEach(s => {
     const div = document.createElement('div');
     div.className = `p-4 rounded border ${s.status === 'approved' ? 'border-green-500 bg-green-900/30' : s.status === 'denied' ? 'border-red-500 bg-red-900/30' : 'border-zinc-700 bg-zinc-900/50'} cursor-pointer hover:scale-105 transition-transform`;
+    
+    let messageContent = '';
+    
+    // Status message for server submission
+    if (s.status === 'pending') {
+      messageContent = `Your server "${s.name}" has been submitted and is pending review.`;
+    } else if (s.status === 'approved') {
+      messageContent = `Your server "${s.name}" has been approved and is now live!`;
+    } else if (s.status === 'denied') {
+      messageContent = `Your server "${s.name}" has been denied. Reason: ${s.rejectionReason || 'N/A'}`;
+    } else if (s.status === 'taken down') {
+      messageContent = `Your server "${s.name}" has been taken down.`;
+    }
+
     div.innerHTML = `
       <h3 class="font-semibold text-lg">${s.name}</h3>
-      <p class="text-sm text-zinc-300">Status: <span class="${s.status === 'approved' ? 'text-green-400' : s.status === 'denied' ? 'text-red-400' : 'text-zinc-400'}">${s.status}</span></p>
-      ${s.status === 'denied' && s.rejectionReason ? `<p class="text-xs text-red-400">Reason: ${s.rejectionReason}</p>` : ''}
+      <p class="text-sm text-zinc-300">${messageContent}</p>
       ${s.status === 'approved' ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>` : ''}
     `;
     div.addEventListener('click', () => div.classList.toggle('bg-zinc-800/50'));
