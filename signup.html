@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign Up - OpsLink</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create an Account - OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
@@ -26,14 +26,14 @@
       <form id="signupForm" class="flex flex-col gap-4">
 
         <!-- Account Info -->
-        <input name="email" type="email" placeholder="Email" class="p-2 rounded bg-zinc-800" required/>
-        <input name="password" type="password" placeholder="Password" class="p-2 rounded bg-zinc-800" required/>
-        <input name="confirmPassword" type="password" placeholder="Confirm Password" class="p-2 rounded bg-zinc-800" required/>
+        <input name="email" type="email" placeholder="Email" class="p-2 rounded bg-zinc-800" required />
+        <input name="password" type="password" placeholder="Password" class="p-2 rounded bg-zinc-800" required />
+        <input name="confirmPassword" type="password" placeholder="Confirm Password" class="p-2 rounded bg-zinc-800" required />
 
         <!-- Discord Info -->
-        <input name="discordUsername" placeholder="Discord Username (e.g., User#1234)" class="p-2 rounded bg-zinc-800" required/>
-        <input name="discordId" placeholder="Discord ID (numbers only)" class="p-2 rounded bg-zinc-800" required/>
-        <input name="discordTag" placeholder="Discord Tag (#1234)" class="p-2 rounded bg-zinc-800" required/>
+        <input name="discordUsername" type="text" placeholder="Discord Username (without tag)" class="p-2 rounded bg-zinc-800" required />
+        <input name="discordUserID" type="text" placeholder="Discord User ID" class="p-2 rounded bg-zinc-800" required />
+        <input name="discordTag" type="text" placeholder="Discord Tag (optional)" class="p-2 rounded bg-zinc-800" />
 
         <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">Sign Up</button>
       </form>
@@ -51,37 +51,44 @@
   </footer>
 
   <script>
-    const API_URL = 'https://opslinkservers-backend.onrender.com';
-
     document.getElementById('signupForm').addEventListener('submit', async e => {
       e.preventDefault();
+
       const data = Object.fromEntries(new FormData(e.target));
 
-      // Validate passwords
+      // Check password confirmation
       if (data.password !== data.confirmPassword) {
-        alert("Passwords do not match.");
+        alert('Passwords do not match');
         return;
       }
 
+      // Build payload for backend
+      const payload = {
+        email: data.email,
+        password: data.password,
+        discordUsername: data.discordUsername,
+        discordUserID: data.discordUserID,
+      };
+
+      // Add discordTag only if provided (optional)
+      if (data.discordTag && data.discordTag.trim() !== '') {
+        payload.discordTag = data.discordTag.trim();
+      }
+
       try {
-        const res = await fetch(`${API_URL}/api/signup`, {
+        const res = await fetch('https://opslinkservers-backend.onrender.com/api/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: data.email,
-            password: data.password,
-            discordUsername: data.discordUsername,
-            discordId: data.discordId,
-            discordTag: data.discordTag
-          })
+          body: JSON.stringify(payload),
         });
 
         if (res.ok) {
-          alert('Account created successfully!');
+          alert('Account created successfully! Please login.');
           e.target.reset();
+          window.location.href = 'login.html';
         } else {
           const err = await res.json();
-          alert('Signup failed: ' + (err.message || 'Unknown error'));
+          alert('Signup failed: ' + (err.error || 'Unknown error'));
         }
       } catch (err) {
         alert('Signup failed. Please try again later.');
