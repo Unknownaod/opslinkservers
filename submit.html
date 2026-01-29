@@ -61,6 +61,13 @@
           <input type="checkbox" name="nsfw"/> NSFW
         </label>
 
+        <!-- Server Logo Upload (Required) -->
+        <label class="flex flex-col gap-2">
+          Server Logo <span class="text-red-500">*</span>
+          <input type="file" name="logo" id="logoInput" accept="image/*" class="p-2 rounded bg-zinc-800 text-white" required/>
+          <img id="logoPreview" class="mt-2 w-32 h-32 object-cover rounded hidden" alt="Logo Preview"/>
+        </label>
+
         <!-- Tags -->
         <label class="text-sm">Tags (up to 5 tags):</label>
         <div id="tagsContainer" class="flex gap-2 mb-4">
@@ -101,7 +108,6 @@ let tags = [];
 if (token && userStr) {
   currentUser = JSON.parse(userStr);
 
-  // Login button becomes Logout
   loginBtn.textContent = 'Logout';
   loginBtn.href = '#';
   loginBtn.addEventListener('click', () => {
@@ -110,13 +116,11 @@ if (token && userStr) {
     window.location.reload();
   });
 
-  // Welcome message
   const welcomeSpan = document.createElement('span');
   welcomeSpan.textContent = `Welcome, ${currentUser.discordUsername}`;
   welcomeSpan.className = "text-sm text-zinc-300";
   navLinks.insertBefore(welcomeSpan, loginBtn);
 
-  // Admin button
   if (currentUser.role === 'admin') {
     adminBtn.classList.remove('hidden');
     adminBtn.href = 'dashboard.html';
@@ -125,17 +129,17 @@ if (token && userStr) {
   adminBtn.classList.add('hidden');
   loginBtn.textContent = 'Login';
   loginBtn.href = 'login.html';
-  loginBtn.replaceWith(loginBtn.cloneNode(true)); // remove previous listeners
+  loginBtn.replaceWith(loginBtn.cloneNode(true));
 }
 
-// --- Handle tag input and adding tags ---
+// --- Tag input handling ---
 document.getElementById('addTagBtn').addEventListener('click', () => {
   const tagInput = document.getElementById('tagInput');
   if (tagInput.value && tags.length < 5 && !tags.includes(tagInput.value)) {
     tags.push(tagInput.value);
     renderTags();
   }
-  tagInput.value = ''; // Clear input field
+  tagInput.value = '';
 });
 
 function renderTags() {
@@ -149,6 +153,25 @@ function renderTags() {
   });
 }
 
+// --- Logo Preview ---
+const logoInput = document.getElementById('logoInput');
+const logoPreview = document.getElementById('logoPreview');
+
+logoInput.addEventListener('change', () => {
+  const file = logoInput.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      logoPreview.src = e.target.result;
+      logoPreview.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  } else {
+    logoPreview.src = '';
+    logoPreview.classList.add('hidden');
+  }
+});
+
 // --- Form submission ---
 document.getElementById('submitForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -159,11 +182,19 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
     return;
   }
 
-  const data = Object.fromEntries(new FormData(e.target));
-  data.tags = tags; // Send the tags entered by the user
-  data.nsfw = data.nsfw ? true : false;
+  if (!logoInput.files[0]) {
+    alert('Server logo is required.');
+    return;
+  }
 
-  if (!data.acknowledge) {
+  const form = e.target;
+  const formData = new FormData(form);
+
+  // Add tags
+  tags.forEach(tag => formData.append('tags[]', tag));
+  formData.set('nsfw', formData.get('nsfw') ? 'true' : 'false');
+
+  if (!formData.get('acknowledge')) {
     alert("You must confirm that you are the server owner or authorized representative.");
     return;
   }
@@ -172,17 +203,18 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
     const res = await fetch(`${API_URL}/api/servers`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify(data)
+      body: formData
     });
 
     if (res.ok) {
       alert('Server submitted! Awaiting approval.');
-      e.target.reset();
-      tags = []; // Clear the tags array
-      renderTags(); // Refresh the displayed tags
+      form.reset();
+      tags = [];
+      renderTags();
+      logoPreview.src = '';
+      logoPreview.classList.add('hidden');
     } else {
       const err = await res.json();
       alert('Submission failed: ' + (err.error || err.message));
