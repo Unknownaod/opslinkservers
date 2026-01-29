@@ -61,10 +61,10 @@
           <input type="checkbox" name="nsfw"/> NSFW
         </label>
 
-        <!-- Server Logo Upload (Clean Preview) -->
+        <!-- Server Logo via Discord CDN URL -->
         <label class="flex flex-col gap-2">
-          Server Logo <span class="text-red-500">*</span>
-          <input type="file" name="logo" id="logoInput" accept="image/*" class="p-2 rounded bg-zinc-800 text-white" required/>
+          Server Logo (Discord CDN URL) <span class="text-red-500">*</span>
+          <input type="url" name="logo" id="logoInput" placeholder="https://cdn.discordapp.com/..." class="p-2 rounded bg-zinc-800 text-white" required/>
           <div id="logoPreviewContainer" class="mt-2 w-32 h-32 border-2 border-zinc-700 rounded overflow-hidden hidden">
             <img id="logoPreview" class="w-full h-full object-cover" alt="Logo Preview"/>
           </div>
@@ -169,15 +169,11 @@ const logoInput = document.getElementById('logoInput');
 const logoPreview = document.getElementById('logoPreview');
 const logoPreviewContainer = document.getElementById('logoPreviewContainer');
 
-logoInput.addEventListener('change', () => {
-  const file = logoInput.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      logoPreview.src = e.target.result;
-      logoPreviewContainer.classList.remove('hidden');
-    };
-    reader.readAsDataURL(file);
+logoInput.addEventListener('input', () => {
+  const url = logoInput.value.trim();
+  if (url.startsWith('https://cdn.discordapp.com/')) {
+    logoPreview.src = url;
+    logoPreviewContainer.classList.remove('hidden');
   } else {
     logoPreview.src = '';
     logoPreviewContainer.classList.add('hidden');
@@ -196,10 +192,14 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
   const form = e.target;
   const formData = new FormData(form);
 
-  if (!logoInput.files[0]) {
-    alert('Server logo is required.');
+  // Validate logo URL
+  const logoUrl = logoInput.value.trim();
+  if (!logoUrl || !logoUrl.startsWith('https://cdn.discordapp.com/')) {
+    alert('Server logo must be a valid Discord CDN URL.');
     return;
   }
+
+  formData.set('logo', logoUrl);
 
   // Add tags
   tags.forEach(tag => formData.append('tags', tag));
@@ -225,18 +225,14 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
       const data = await res.json();
       alert('Server submitted! Awaiting approval.');
 
-      // Reset form fields and tags
+      // Reset form and tags
       form.reset();
       tags = [];
       renderTags();
 
-      // Show the uploaded logo from backend
-      if (data.server.logo) {
-        const logoUrl = `${API_URL}/${data.server.logo.replace(/\\/g, '/')}`;
-        logoPreview.src = logoUrl;
-        logoPreviewContainer.classList.remove('hidden');
-      }
-
+      // Show logo preview
+      logoPreview.src = logoUrl;
+      logoPreviewContainer.classList.remove('hidden');
     } else {
       let errMsg = '';
       try {
@@ -253,7 +249,6 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
   }
 });
 </script>
-
 
 </body>
 </html>
