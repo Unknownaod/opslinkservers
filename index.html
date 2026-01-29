@@ -81,12 +81,19 @@
     <span>Not affiliated with Discord</span>
   </footer>
 
+  <!-- Popup Notification -->
+  <div id="notification" class="fixed top-4 left-1/2 transform -translate-x-1/2 p-4 bg-green-500 text-white rounded-md hidden shadow-lg cursor-pointer z-50">
+    <p id="notificationMessage" class="font-semibold">New System Message! Check now!</p>
+  </div>
+
 <script>
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
   const loginBtn = document.getElementById('loginBtn');
   const adminBtn = document.getElementById('adminBtn');
   const navLinks = document.getElementById('navLinks');
+  const notification = document.getElementById('notification');
+  const notificationMessage = document.getElementById('notificationMessage');
 
   if (token && userStr) {
     const user = JSON.parse(userStr);
@@ -118,6 +125,33 @@
     loginBtn.href = 'login.html';
     loginBtn.replaceWith(loginBtn.cloneNode(true)); // Remove previous listeners
   }
+
+  // Function to show popup notification
+  function showNotification(message) {
+    notificationMessage.textContent = message;
+    notification.classList.remove('hidden');
+
+    setTimeout(() => {
+      notification.classList.add('hidden');
+    }, 5000); // Hide after 5 seconds
+  }
+
+  // Simulating checking for new system messages (this could be tied to an API response in a real app)
+  async function checkNewMessages() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const res = await fetch(`https://opslinkservers-backend.onrender.com/api/servers`);
+    const servers = await res.json();
+
+    const userServers = servers.filter(s => s.submitter && s.submitter._id === user._id);
+    const recentMessages = userServers.filter(s => s.status === 'approved' || s.status === 'denied' || s.status === 'taken down');
+
+    if (recentMessages.length > 0) {
+      showNotification('New System Message! Check now!');
+    }
+  }
+
+  // Call this function to check for system messages
+  setInterval(checkNewMessages, 10000);  // Check every 10 seconds
 </script>
 
 </body>
