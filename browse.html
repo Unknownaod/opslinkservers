@@ -73,7 +73,7 @@
     let activeTag = 'all';
 
     async function loadServers() {
-      const res = await fetch('https://your-backend/api/servers');
+      const res = await fetch('https://your-backend/api/servers'); // Replace with your backend
       servers = await res.json();
       renderServers();
     }
@@ -85,21 +85,30 @@
 
       container.innerHTML = '';
 
-      servers
+      const filtered = servers
         .filter(s => (nsfw || !s.nsfw))
         .filter(s => activeTag === 'all' || s.tags.includes(activeTag))
-        .filter(s => s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search))
-        .forEach(s => {
-          const card = document.createElement('div');
-          card.className = 'bg-zinc-900/80 border border-zinc-800 p-6 rounded hover:scale-105 transition-transform cursor-pointer';
-          card.innerHTML = `
-            <h3 class="text-lg font-semibold mb-2">${s.name}</h3>
-            <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
-            <p class="text-xs text-zinc-500 mb-2">Tags: ${s.tags.join(', ')}</p>
-          `;
-          card.addEventListener('click', () => openServerModal(s._id));
-          container.appendChild(card);
-        });
+        .filter(s => s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search));
+
+      if (filtered.length === 0) {
+        const message = document.createElement('div');
+        message.className = 'col-span-full text-center text-zinc-400 mt-10';
+        message.textContent = 'No servers to show...';
+        container.appendChild(message);
+        return;
+      }
+
+      filtered.forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'bg-zinc-900/80 border border-zinc-800 p-6 rounded hover:scale-105 transition-transform cursor-pointer';
+        card.innerHTML = `
+          <h3 class="text-lg font-semibold mb-2">${s.name}</h3>
+          <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
+          <p class="text-xs text-zinc-500 mb-2">Tags: ${s.tags.join(', ')}</p>
+        `;
+        card.addEventListener('click', () => openServerModal(s._id));
+        container.appendChild(card);
+      });
     }
 
     async function openServerModal(serverId) {
@@ -122,14 +131,13 @@
 
       document.getElementById('serverModal').classList.remove('hidden');
 
-      // Handle comment submission
       const commentForm = document.getElementById('commentForm');
       commentForm.onsubmit = async e => {
         e.preventDefault();
         const commentText = e.target.comment.value;
         await fetch(`https://your-backend/api/servers/${serverId}/comments`, {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: {'Content-Type':'application/json'},
           body: JSON.stringify({ text: commentText })
         });
         e.target.reset();
