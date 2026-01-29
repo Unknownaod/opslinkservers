@@ -6,39 +6,82 @@
   <title>Browse Servers - OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="min-h-screen bg-black text-white px-10 py-10">
+<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
-  <h1 class="text-4xl font-bold mb-6">Browse Servers</h1>
-  <div class="flex gap-4 mb-6">
-    <button class="bg-zinc-800 px-3 py-1 rounded filter-btn" data-tag="gaming">Gaming</button>
-    <button class="bg-zinc-800 px-3 py-1 rounded filter-btn" data-tag="community">Community</button>
-    <button class="bg-zinc-800 px-3 py-1 rounded filter-btn" data-tag="all">All</button>
-  </div>
+  <!-- Navbar (same style) -->
+  <nav class="flex items-center justify-between px-10 py-6">
+    <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
+    <div class="flex items-center gap-8 text-sm">
+      <a href="index.html" class="hover:opacity-80">Home</a>
+      <a href="browse.html" class="hover:opacity-80">Browse</a>
+      <a href="submit.html" class="hover:opacity-80">Submit</a>
+      <a href="#" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
+    </div>
+  </nav>
 
-  <div id="servers" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+  <section class="px-10 py-10">
+    <h1 class="text-5xl font-bold mb-6">Browse Servers</h1>
+
+    <!-- Search / Filters / NSFW -->
+    <div class="flex flex-wrap gap-4 mb-6 items-center">
+      <input id="searchInput" type="text" placeholder="Search servers..." class="p-2 rounded bg-zinc-800 flex-grow"/>
+      <button class="px-3 py-1 bg-zinc-800 rounded filter-btn" data-tag="all">All</button>
+      <button class="px-3 py-1 bg-zinc-800 rounded filter-btn" data-tag="gaming">Gaming</button>
+      <button class="px-3 py-1 bg-zinc-800 rounded filter-btn" data-tag="community">Community</button>
+      <label class="ml-auto flex items-center gap-2 text-sm">
+        <input type="checkbox" id="nsfwToggle"/> Show NSFW
+      </label>
+    </div>
+
+    <!-- Servers Grid -->
+    <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
+    <span>© 2026 OpsLink Servers</span>
+    <span>Not affiliated with Discord</span>
+  </footer>
 
   <script>
-    async function loadServers(tag = 'all') {
+    let servers = [];
+
+    async function loadServers() {
       const res = await fetch('https://your-backend/api/servers'); // Replace with your backend
-      let servers = await res.json();
-      if(tag !== 'all') servers = servers.filter(s => s.tags.includes(tag));
-      const container = document.getElementById('servers');
-      container.innerHTML = '';
-      servers.forEach(s => {
-        const card = document.createElement('div');
-        card.className = 'bg-zinc-900/80 border border-zinc-800 p-6';
-        card.innerHTML = `<h3 class="font-semibold text-lg mb-2">${s.name}</h3>
-                          <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
-                          <a href="${s.invite}" target="_blank" class="text-blue-400 underline">Join Server</a>`;
-        container.appendChild(card);
-      });
+      servers = await res.json();
+      renderServers();
     }
 
+    function renderServers() {
+      const container = document.getElementById('serversGrid');
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const nsfw = document.getElementById('nsfwToggle').checked;
+
+      container.innerHTML = '';
+      servers
+        .filter(s => (nsfw || !s.nsfw))
+        .filter(s => s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search))
+        .forEach(s => {
+          const card = document.createElement('div');
+          card.className = 'bg-zinc-900/80 border border-zinc-800 p-6 rounded hover:scale-105 transition-transform';
+          card.innerHTML = `
+            <h3 class="text-lg font-semibold mb-2">${s.name}</h3>
+            <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
+            <p class="text-xs text-zinc-500 mb-2">Tags: ${s.tags.join(', ')}</p>
+            <a href="${s.invite}" target="_blank" class="text-blue-400 underline">Join Server</a>
+          `;
+          container.appendChild(card);
+        });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', renderServers);
+    document.getElementById('nsfwToggle').addEventListener('change', renderServers);
     document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => loadServers(btn.dataset.tag));
+      btn.addEventListener('click', () => renderServers());
     });
 
     loadServers();
   </script>
+
 </body>
 </html>
