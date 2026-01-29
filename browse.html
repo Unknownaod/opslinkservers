@@ -109,7 +109,43 @@ const API_URL = 'https://opslinkservers-backend.onrender.com';
 let servers = [];
 let activeTag = 'all';
 
-// -------- HELPERS --------
+/* ======================
+   AUTH / LOCALSTORAGE
+====================== */
+
+const token = localStorage.getItem('token');
+const userStr = localStorage.getItem('user');
+const loginBtn = document.getElementById('loginBtn');
+const adminBtn = document.getElementById('adminBtn');
+const navLinks = document.getElementById('navLinks');
+
+if (token && userStr) {
+  const user = JSON.parse(userStr);
+
+  loginBtn.textContent = 'Logout';
+  loginBtn.href = '#';
+
+  loginBtn.onclick = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    location.reload();
+  };
+
+  const welcomeSpan = document.createElement('span');
+  welcomeSpan.textContent = `Welcome, ${user.discordUsername}`;
+  welcomeSpan.className = "text-sm text-zinc-300";
+  navLinks.insertBefore(welcomeSpan, loginBtn);
+
+  if (user.role === 'admin') {
+    adminBtn.classList.remove('hidden');
+    adminBtn.href = 'dashboard.html';
+  }
+}
+
+/* ======================
+   HELPERS
+====================== */
+
 function fixInvite(link) {
   if (!link) return '#';
   if (link.startsWith('http')) return link;
@@ -122,14 +158,20 @@ function fixImage(img) {
   };
 }
 
-// -------- LOAD SERVERS --------
+/* ======================
+   LOAD SERVERS
+====================== */
+
 async function loadServers() {
   const res = await fetch(`${API_URL}/api/servers`);
   servers = await res.json();
   renderServers();
 }
 
-// -------- RENDER --------
+/* ======================
+   RENDER
+====================== */
+
 function renderServers() {
   const container = document.getElementById('serversGrid');
   const search = document.getElementById('searchInput').value.toLowerCase();
@@ -191,7 +233,10 @@ function renderServers() {
   });
 }
 
-// -------- MODAL --------
+/* ======================
+   MODAL
+====================== */
+
 async function openServerModal(id) {
   const res = await fetch(`${API_URL}/api/servers/${id}`);
   const server = await res.json();
@@ -216,12 +261,14 @@ async function openServerModal(id) {
   document.getElementById('serverModal').classList.remove('hidden');
 }
 
-// -------- CLOSE --------
+/* ======================
+   UI EVENTS
+====================== */
+
 document.getElementById('closeModal').onclick = () => {
   document.getElementById('serverModal').classList.add('hidden');
 };
 
-// -------- FILTERS --------
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.onclick = () => {
     activeTag = btn.dataset.tag;
@@ -231,6 +278,8 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 
 document.getElementById('searchInput').oninput = renderServers;
 document.getElementById('nsfwToggle').onchange = renderServers;
+
+/* ====================== */
 
 loadServers();
 </script>
