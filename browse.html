@@ -32,16 +32,12 @@
 
   <h1 class="text-5xl font-bold mb-6">Browse Servers</h1>
 
-  <!-- SEARCH / FILTERS -->
+  <!-- SEARCH / TAG FILTERS -->
   <div class="flex flex-wrap gap-4 mb-6 items-center">
     <input id="searchInput" type="text" placeholder="Search servers..."
       class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 flex-grow outline-none focus:border-white/20"/>
 
-    <button class="filter-btn px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-white/20 transition" data-tag="all">All</button>
-    <button class="filter-btn px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-white/20 transition" data-tag="gaming">Gaming</button>
-    <button class="filter-btn px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-white/20 transition" data-tag="community">Community</button>
-    <button class="filter-btn px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-white/20 transition" data-tag="art">Art</button>
-    <button class="filter-btn px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-white/20 transition" data-tag="tech">Tech</button>
+    <div id="tagsFilterContainer" class="flex flex-wrap gap-2 max-w-xl"></div>
 
     <label class="ml-auto flex items-center gap-2 text-sm">
       <input type="checkbox" id="nsfwToggle"/> Show NSFW
@@ -108,7 +104,8 @@
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
 let servers = [];
-let activeTag = 'all';
+let activeTags = new Set();
+let allTags = new Set();
 let currentServerId = null;
 
 // --- AUTH ---
@@ -146,22 +143,43 @@ async function loadServers() {
   const res = await fetch(`${API_URL}/api/servers`);
   servers = await res.json();
 
-  // Fetch live members for each server
-  await Promise.all(servers.map(async s => {
-    if (s.discordServerId) {
-      try {
-        const membersRes = await fetch(`${API_URL}/api/servers/${s.discordServerId}/updateMembers`);
-        if (membersRes.ok) {
-          const data = await membersRes.json();
-          s.members = data.members;
-        }
-      } catch (err) {
-        console.warn(`Failed to fetch members for ${s.name}`, err);
-      }
-    }
-  }));
+  // Collect all tags
+  allTags.clear();
+  servers.forEach(s => {
+    (s.tags || []).forEach(tag => allTags.add(tag));
+  });
 
+  renderTagFilters();
   renderServers();
+}
+
+// --- RENDER TAG FILTERS ---
+function renderTagFilters() {
+  const container = document.getElementById('tagsFilterContainer');
+  container.innerHTML = '';
+
+  // "All" button
+  const allBtn = document.createElement('button');
+  allBtn.textContent = 'All';
+  allBtn.className = 'filter-tag-btn px-3 py-1 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-white/20 transition';
+  allBtn.onclick = () => {
+    activeTags.clear();
+    renderServers();
+  };
+  container.appendChild(allBtn);
+
+  // Buttons for existing tags
+  allTags.forEach(tag => {
+    const btn = document.createElement('button');
+    btn.textContent = tag;
+    btn.className = 'filter-tag-btn px-3 py-1 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-white/20 transition';
+    btn.onclick = () => {
+      if (activeTags.has(tag)) activeTags.delete(tag);
+      else activeTags.add(tag);
+      renderServers();
+    };
+    container.appendChild(btn);
+  });
 }
 
 // --- RENDER SERVERS ---
@@ -174,7 +192,7 @@ function renderServers() {
 
   const filtered = servers
     .filter(s => nsfw || !s.nsfw)
-    .filter(s => activeTag === 'all' || s.tags.includes(activeTag))
+    .filter(s => activeTags.size === 0 || s.tags.some(tag => activeTags.has(tag)))
     .filter(s =>
       s.name.toLowerCase().includes(search) ||
       s.description.toLowerCase().includes(search)
@@ -278,7 +296,6 @@ document.getElementById('closeModal').onclick = () => {
 // --- POST COMMENT ---
 document.getElementById('commentForm').onsubmit = async e => {
   e.preventDefault();
-
   if (!token) return alert('Login required to comment.');
 
   const text = e.target.comment.value.trim();
@@ -316,20 +333,13 @@ document.getElementById('reportServerBtn').onclick = async () => {
   alert('Server reported successfully.');
 };
 
-// --- FILTERS ---
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.onclick = () => {
-    activeTag = btn.dataset.tag;
-    renderServers();
-  };
-});
-
+// --- SEARCH / FILTER EVENTS ---
 document.getElementById('searchInput').oninput = renderServers;
 document.getElementById('nsfwToggle').onchange = renderServers;
 
+// Load servers
 loadServers();
 </script>
-
 
 </body>
 </html>
