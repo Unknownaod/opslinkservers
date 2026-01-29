@@ -1,139 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OpsLink Servers</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <style>
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    .fade-up {
-      animation: fadeUp 0.6s ease forwards;
-    }
-    .fade-up-delay-1 {
-      animation-delay: 0.1s;
-    }
-    .fade-up-delay-2 {
-      animation-delay: 0.2s;
-    }
-  </style>
 </head>
-
-<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-hidden">
+<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
   <!-- Navbar -->
   <nav class="flex items-center justify-between px-10 py-6">
     <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
     <div class="flex items-center gap-8 text-sm">
-      <a href="#browse" class="hover:opacity-80">Browse</a>
-      <a href="#submit" class="hover:opacity-80">Submit</a>
+      <a href="browse.html" class="hover:opacity-80">Browse</a>
+      <a href="submit.html" class="hover:opacity-80">Submit</a>
       <a href="#reviews" class="hover:opacity-80">Reviews</a>
-      <button class="rounded-full border border-white px-4 py-2 hover:bg-white/10">
-        Login
-      </button>
+      <a href="#" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
     </div>
   </nav>
 
-  <!-- Hero -->
+  <!-- Hero Section -->
   <section class="relative px-10 pt-28 pb-40">
-    <h1 class="fade-up max-w-3xl text-5xl font-bold leading-tight">
-      The <span class="text-white">curated</span> Discord server directory —
-      <br />
+    <h1 class="max-w-3xl text-5xl font-bold leading-tight">
+      The <span class="text-white">curated</span> Discord server directory —<br />
       trusted, moderated, and high quality.
     </h1>
 
-    <p class="fade-up fade-up-delay-1 mt-6 max-w-xl text-zinc-300">
+    <p class="mt-6 max-w-xl text-zinc-300">
       OpsLink Servers lists only verified Discord communities.
       Every server is manually approved. Every review is moderated.
       No spam. No fake ratings.
     </p>
 
-    <div class="fade-up fade-up-delay-2 mt-10 flex gap-4">
-      <button class="rounded-full bg-white px-6 py-3 text-black hover:bg-zinc-200">
-        Browse Servers
-      </button>
-      <button class="rounded-full border border-white px-6 py-3 hover:bg-white/10">
-        Submit Server
-      </button>
+    <div class="mt-10 flex gap-4">
+      <a href="browse.html" class="rounded-full bg-white text-black px-6 py-3 hover:bg-zinc-200">Browse Servers</a>
+      <a href="submit.html" class="rounded-full border border-white text-white px-6 py-3 hover:bg-white/10">Submit Server</a>
     </div>
   </section>
 
-  <!-- Features -->
+  <!-- Feature Cards -->
   <section class="px-10 pb-32 grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="rounded-lg border border-zinc-800 bg-zinc-900/80 p-6">
-      <svg class="mb-4 h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      </svg>
-      <h3 class="text-lg font-semibold">Manually Approved</h3>
-      <p class="mt-2 text-sm text-zinc-300">
-        Every server is reviewed by our team before being listed.
-      </p>
+    <div class="bg-zinc-900/80 border border-zinc-800 p-6 text-white">
+      <h3 class="text-lg font-semibold mb-2">Manually Approved</h3>
+      <p class="text-sm text-zinc-300">Every server is reviewed by our team before being listed.</p>
     </div>
-
-    <div class="rounded-lg border border-zinc-800 bg-zinc-900/80 p-6">
-      <svg class="mb-4 h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path d="M12 17l-5 3 2-6-5-4 6-.5L12 4l2 5.5 6 .5-5 4 2 6z" />
-      </svg>
-      <h3 class="text-lg font-semibold">Verified Reviews</h3>
-      <p class="mt-2 text-sm text-zinc-300">
-        Reviews come from real Discord members — no bots, no abuse.
-      </p>
+    <div class="bg-zinc-900/80 border border-zinc-800 p-6 text-white">
+      <h3 class="text-lg font-semibold mb-2">Verified Reviews</h3>
+      <p class="text-sm text-zinc-300">Reviews come from real Discord members — no bots, no abuse.</p>
     </div>
-
-    <div class="rounded-lg border border-zinc-800 bg-zinc-900/80 p-6">
-      <svg class="mb-4 h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-      </svg>
-      <h3 class="text-lg font-semibold">Quality Discovery</h3>
-      <p class="mt-2 text-sm text-zinc-300">
-        Find high-quality servers without scrolling through spam.
-      </p>
+    <div class="bg-zinc-900/80 border border-zinc-800 p-6 text-white">
+      <h3 class="text-lg font-semibold mb-2">Quality Discovery</h3>
+      <p class="text-sm text-zinc-300">Find high-quality servers without scrolling through spam.</p>
     </div>
   </section>
 
-  <!-- Trust -->
-  <section class="px-10 pb-32">
+  <!-- Trust Section -->
+  <section class="px-10 pb-32" id="reviews">
     <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
       <div>
-        <div class="mb-3">✔</div>
-        <h4 class="font-semibold">Strict Rules</h4>
-        <p class="mt-1 text-sm text-zinc-300">Low-effort servers are rejected.</p>
+        <h4 class="font-semibold mb-1">Strict Rules</h4>
+        <p class="text-sm text-zinc-300">Low-effort servers are rejected.</p>
       </div>
       <div>
-        <div class="mb-3">✔</div>
-        <h4 class="font-semibold">Transparent Moderation</h4>
-        <p class="mt-1 text-sm text-zinc-300">Clear reasons for approval or rejection.</p>
+        <h4 class="font-semibold mb-1">Transparent Moderation</h4>
+        <p class="text-sm text-zinc-300">Clear reasons for approval or rejection.</p>
       </div>
       <div>
-        <div class="mb-3">✔</div>
-        <h4 class="font-semibold">Community First</h4>
-        <p class="mt-1 text-sm text-zinc-300">Quality over quantity, always.</p>
+        <h4 class="font-semibold mb-1">Community First</h4>
+        <p class="text-sm text-zinc-300">Quality over quantity, always.</p>
       </div>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer class="flex justify-between border-t border-zinc-800 px-10 py-10 text-sm text-zinc-400">
-    <span>© <span id="year"></span> OpsLink Servers</span>
+  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
+    <span>© 2026 OpsLink Servers</span>
     <span>Not affiliated with Discord</span>
   </footer>
-
-  <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
-  </script>
-
 </body>
 </html>
