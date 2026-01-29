@@ -120,6 +120,7 @@ function renderServers() {
       <p class="text-xs text-zinc-500 mb-1">Created: ${new Date(s.createdAt).toLocaleString()}</p>
       <p class="text-xs text-zinc-500 mb-2">Updated: ${new Date(s.updatedAt).toLocaleString()}</p>
       ${s.status === 'denied' ? `<p class="text-xs text-red-400 mb-2">Reason: ${s.rejectionReason}</p>` : ''}
+      <p class="text-xs text-blue-400 mb-2">Invite: <a href="${inviteLink}" target="_blank" class="underline">${inviteLink || 'N/A'}</a></p>
       <p class="text-sm mb-2">Status: <span class="${statusColor} font-semibold">${s.status}</span></p>
       <div class="flex gap-2 flex-wrap"></div>
     `;
