@@ -45,30 +45,39 @@
     <span>Not affiliated with Discord</span>
   </footer>
 
-  <script>
-    document.getElementById('signupForm').addEventListener('submit', async e=>{
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target));
+<script>
+const API_URL = 'https://opslinkservers-backend.onrender.com';
 
-      if(data.password !== data.confirmPassword){
-        alert("Passwords do not match.");
-        return;
-      }
+document.getElementById('signupForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target));
 
-      try {
-        await fetch('https://your-backend/api/signup',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify(data)
-        });
-        alert('Account created successfully!');
-        e.target.reset();
-      } catch(err){
-        alert('Signup failed. Please try again later.');
-        console.error(err);
-      }
+  if (data.password !== data.confirmPassword) {
+    alert("Passwords do not match.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/api/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
     });
-  </script>
+
+    if (res.ok) {
+      alert('Account created successfully!');
+      e.target.reset();
+    } else {
+      const err = await res.json();
+      alert('Signup failed: ' + err.message);
+    }
+  } catch (err) {
+    alert('Signup failed. Please try again later.');
+    console.error(err);
+  }
+});
+</script>
+
 
 </body>
 </html>
