@@ -112,8 +112,11 @@ function renderServers() {
     let inviteLink = s.invite || '';
     if (inviteLink.startsWith('discord.gg/')) inviteLink = 'https://' + inviteLink;
 
+    const logoUrl = s.logo ? `${API_URL}/${s.logo}` : '';  // Assuming logo URL is stored
+
     card.innerHTML = `
       <h3 class="text-lg font-semibold mb-1">${s.name}</h3>
+      <img src="${logoUrl}" alt="Server Logo" class="w-full h-32 object-cover mb-4 rounded-lg" />
       <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
       <p class="text-xs text-zinc-500 mb-1">Tags: ${s.tags.join(', ')}</p>
       <p class="text-xs text-zinc-500 mb-1">NSFW: ${s.nsfw ? 'Yes' : 'No'}</p>
