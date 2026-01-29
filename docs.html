@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpsLink Docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white">
+
+  <!-- Navbar -->
+  <nav class="flex items-center justify-between px-10 py-6 border-b border-zinc-800">
+    <div class="text-xl font-semibold tracking-wide">OpsLink Documentation</div>
+    <div class="flex items-center gap-8 text-sm">
+      <a href="index.html" class="hover:opacity-80">Home</a>
+      <a href="support.html" class="hover:opacity-80">Support</a>
+      <a href="docs.html" class="hover:opacity-80 font-semibold underline">Docs</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="px-10 py-10 max-w-6xl mx-auto space-y-12">
+
+    <h1 class="text-5xl font-bold mb-6 text-center">OpsLink Docs</h1>
+    <p class="text-zinc-400 text-center max-w-2xl mx-auto mb-12">
+      Welcome to OpsLink documentation! This guide explains every feature of the site so you can browse, submit, and manage Discord servers effectively.
+    </p>
+
+    <!-- Section: Browsing Servers -->
+    <section>
+      <h2 class="text-3xl font-bold mb-4">Browsing Servers</h2>
+      <p class="text-zinc-300 mb-2">
+        The <strong>Browse Servers</strong> page lets you explore all Discord servers submitted to OpsLink.
+      </p>
+      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
+        <li><strong>Search:</strong> Use the search bar to find servers by name, description, or tags.</li>
+        <li><strong>Filter by Tag:</strong> Click on any tag to only show servers with that tag. You can also select multiple tags.</li>
+        <li><strong>NSFW Toggle:</strong> Check this box to show servers marked as NSFW (Not Safe For Work).</li>
+      </ul>
+      <p class="text-zinc-300">
+        Each server card shows its logo, description, tags, member count, and a link to join the server. Clicking a card opens a detailed modal with more info and reviews.
+      </p>
+    </section>
+
+    <!-- Section: Submitting Servers -->
+    <section>
+      <h2 class="text-3xl font-bold mb-4">Submitting Servers</h2>
+      <p class="text-zinc-300 mb-2">
+        To submit your Discord server, go to the <strong>Submit</strong> page. You'll need:
+      </p>
+      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
+        <li>Server Name</li>
+        <li>Server Invite Link (Discord.gg link)</li>
+        <li>Description (what your server is about)</li>
+        <li>Server Logo URL</li>
+        <li>Tags (to help users find your server)</li>
+        <li>Discord Server ID (for member tracking via our bot)</li>
+        <li>Optional: Website, Rules, NSFW toggle, Server Type, Language</li>
+      </ul>
+      <p class="text-zinc-300">
+        Once submitted, your server will be <strong>pending approval</strong> by the OpsLink team. You will receive a notification when it is approved or denied.
+      </p>
+    </section>
+
+    <!-- Section: Server Modals -->
+    <section>
+      <h2 class="text-3xl font-bold mb-4">Server Modals</h2>
+      <p class="text-zinc-300 mb-2">
+        Clicking a server card opens a detailed modal containing:
+      </p>
+      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
+        <li>Server Logo and Name</li>
+        <li>Description and Tags</li>
+        <li>Server Owner Info</li>
+        <li>Join Server button (opens Discord invite)</li>
+        <li>Reviews and Comments from other users</li>
+        <li>Option to report the server if inappropriate</li>
+      </ul>
+    </section>
+
+    <!-- Section: User Accounts -->
+    <section>
+      <h2 class="text-3xl font-bold mb-4">User Accounts</h2>
+      <p class="text-zinc-300 mb-2">
+        Creating an account allows you to submit servers, post comments, and report servers.
+      </p>
+      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
+        <li>Login is done via Discord OAuth for easy verification.</li>
+        <li>Once logged in, you can see your username and role (user/admin) in the navbar.</li>
+        <li>Admins get access to the <strong>Admin Dashboard</strong> for managing server submissions.</li>
+      </ul>
+    </section>
+
+    <!-- Section: Admin Dashboard -->
+    <section>
+      <h2 class="text-3xl font-bold mb-4">Admin Dashboard</h2>
+      <p class="text-zinc-300 mb-2">
+        Admins have a dashboard to review, approve, deny, or delete server submissions.
+      </p>
+      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
+        <li>View all pending, approved, and denied servers</li>
+        <li>Approve or deny servers with a reason</li>
+        <li>Delete inappropriate servers</li>
+        <li>View reports submitted by users</li>
+      </ul>
+      <p class="text-zinc-300">
+        Admin actions are logged and notifications are sent to a Discord webhook for transparency.
+      </p>
+    </section>
+
+    <!-- Section: Tags -->
+    <section>
+      <h2 class="text-3xl font-bold mb-4">Server Tags</h2>
+      <p class="text-zinc-300 mb-2">
+        Tags are keywords that describe a server's focus, such as <strong>Gaming</strong>, <strong>Art</strong>, <strong>Tech</strong>, or <strong>Community</strong>.
+      </p>
+      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
+        <li>Users can filter servers by tags to find what interests them.</li>
+        <li>Tags must be unique per server and are limited in length.</li>
+        <li>New tags are automatically created when a server submits one that doesn’t exist.</li>
+      </ul>
+    </section>
+
+    <!-- Section: Support -->
+    <section>
+      <h2 class="text-3xl font-bold mb-4">Support</h2>
+      <p class="text-zinc-300 mb-2">
+        OpsLink provides support through:
+      </p>
+      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
+        <li><strong>Docs:</strong> This page contains explanations for all site features.</li>
+        <li><strong>Support Tickets:</strong> Users can submit tickets for help, questions, or issues.</li>
+      </ul>
+      <p class="text-zinc-300">
+        Tickets are handled by OpsLink staff, and responses are sent back to the user’s account.
+      </p>
+    </section>
+
+    <!-- Section: Reports -->
+    <section>
+      <h2 class="text-3xl font-bold mb-4">Reporting Servers</h2>
+      <p class="text-zinc-300 mb-2">
+        Users can report servers that are inappropriate, spam, or violate Discord's rules.
+      </p>
+      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
+        <li>Reports are visible to admins in the dashboard.</li>
+        <li>Admins can delete servers based on reports.</li>
+        <li>Users are encouraged to provide a clear reason when reporting.</li>
+      </ul>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-center">
+    © 2026 OpsLink Documentation
+  </footer>
+
+</body>
+</html>
