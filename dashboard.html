@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - OpsLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
+
+  <!-- Navbar -->
+  <nav class="flex items-center justify-between px-10 py-6">
+    <div class="text-xl font-semibold tracking-wide">OpsLink Admin Dashboard</div>
+    <div class="flex items-center gap-8 text-sm">
+      <a href="index.html" class="hover:opacity-80">Home</a>
+      <button id="logoutBtn" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Logout</button>
+    </div>
+  </nav>
+
+  <section class="px-10 py-10">
+    <h1 class="text-4xl font-bold mb-6">All Servers</h1>
+
+    <!-- Search -->
+    <input id="searchInput" type="text" placeholder="Search servers..." class="p-2 rounded bg-zinc-800 mb-6 w-full max-w-lg"/>
+
+    <!-- Servers Grid -->
+    <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
+    <span>© 2026 OpsLink Servers</span>
+    <span>Admin Panel Only</span>
+  </footer>
+
+  <script>
+    const API_URL = 'https://opslinkservers-backend.onrender.com';
+    let servers = [];
+    let currentUser = null;
+
+    async function checkAdmin() {
+      // Check logged in user
+      try {
+        const res = await fetch(`${API_URL}/api/me`, { credentials: 'include' }); 
+        if(!res.ok) throw new Error('Not logged in');
+        currentUser = await res.json();
+
+        if(!currentUser.isAdmin) {
+          alert('Access denied. Admins only.');
+          window.location.href = '/';
+        }
+      } catch(err) {
+        alert('You must be logged in as admin to access this page.');
+        window.location.href = '/login.html';
+      }
+    }
+
+    async function loadServers() {
+      const res = await fetch(`${API_URL}/api/servers`, { credentials: 'include' });
+      servers = await res.json();
+      renderServers();
+    }
+
+    function renderServers() {
+      const container = document.getElementById('serversGrid');
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      container.innerHTML = '';
+
+      const filtered = servers.filter(s =>
+        s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search)
+      );
+
+      if(filtered.length === 0) {
+        const msg = document.createElement('div');
+        msg.className = 'col-span-full text-center text-zinc-400 mt-10';
+        msg.textContent = 'No servers to show...';
+        container.appendChild(msg);
+        return;
+      }
+
+      filtered.forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'bg-zinc-900/80 border border-zinc-800 p-4 rounded';
+        card.innerHTML = `
+          <h3 class="text-lg font-semibold mb-1">${s.name}</h3>
+          <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
+          <p class="text-xs text-zinc-500 mb-2">Tags: ${s.tags.join(', ')}</p>
+          <p class="text-xs text-zinc-500 mb-2">Submitted by: ${s.discordUsername}</p>
+          <button class="bg-red-600 px-3 py-1 rounded hover:bg-red-700 delete-btn">Take Down</button>
+          <button class="bg-blue-600 px-3 py-1 rounded hover:bg-blue-700 comment-btn mt-2">Moderate Comments</button>
+        `;
+        // Take down server
+        card.querySelector('.delete-btn').addEventListener('click', async () => {
+          if(confirm('Are you sure you want to take down this server?')) {
+            await fetch(`${API_URL}/api/servers/${s._id}`, {
+              method: 'DELETE',
+              credentials: 'include'
+            });
+            alert('Server taken down!');
+            await loadServers();
+          }
+        });
+
+        // Moderate comments
+        card.querySelector('.comment-btn').addEventListener('click', () => {
+          openCommentsModal(s);
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    // Comment moderation modal
+    function openCommentsModal(server) {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center p-6 z-50';
+      modal.innerHTML = `
+        <div class="bg-zinc-900 rounded p-6 max-w-3xl w-full relative">
+          <button class="absolute top-4 right-4 text-zinc-400 hover:text-white close-btn">&times;</button>
+          <h2 class="text-2xl font-bold mb-4">Comments for ${server.name}</h2>
+          <div class="flex flex-col gap-2 max-h-60 overflow-y-auto" id="commentList"></div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const list = modal.querySelector('#commentList');
+      server.comments.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'bg-zinc-800 p-2 rounded text-sm flex justify-between items-center';
+        div.innerHTML = `<span>${c.user}: ${c.text}</span><button class="bg-red-600 px-2 py-1 rounded hover:bg-red-700">Delete</button>`;
+        div.querySelector('button').addEventListener('click', async () => {
+          if(confirm('Delete this comment?')) {
+            await fetch(`${API_URL}/api/servers/${server._id}/comments/${c._id}`, {
+              method: 'DELETE',
+              credentials: 'include'
+            });
+            alert('Comment deleted!');
+            loadServers();
+            modal.remove();
+          }
+        });
+        list.appendChild(div);
+      });
+
+      modal.querySelector('.close-btn').addEventListener('click', () => modal.remove());
+    }
+
+    document.getElementById('searchInput').addEventListener('input', renderServers);
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
+      window.location.href = '/login.html';
+    });
+
+    // Initialize
+    (async () => {
+      await checkAdmin();
+      await loadServers();
+    })();
+  </script>
+</body>
+</html>
