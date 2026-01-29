@@ -9,6 +9,7 @@
 
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
+<!-- NAVBAR -->
 <nav class="flex items-center justify-between px-10 py-6 border-b border-zinc-800">
   <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
   <div class="flex items-center gap-8 text-sm" id="navLinks">
@@ -31,6 +32,7 @@
 
   <h1 class="text-5xl font-bold mb-6">Browse Servers</h1>
 
+  <!-- SEARCH / FILTERS -->
   <div class="flex flex-wrap gap-4 mb-6 items-center">
     <input id="searchInput" type="text" placeholder="Search servers..."
       class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 flex-grow outline-none focus:border-white/20"/>
@@ -46,18 +48,19 @@
     </label>
   </div>
 
+  <!-- SERVERS GRID -->
   <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
 
 </section>
 
-<!-- MODAL -->
+<!-- SERVER MODAL -->
 <div id="serverModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-6 z-50">
   <div class="bg-zinc-900 rounded-2xl p-8 max-w-3xl w-full relative border border-zinc-800">
 
     <button id="closeModal" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-2xl">&times;</button>
 
     <div class="flex items-center gap-4 mb-4">
-      <div class="w-20 h-20 rounded-full bg-zinc-950 border border-zinc-700 flex items-center justify-center overflow-hidden">
+      <div class="w-20 h-20 rounded-full border border-zinc-700 bg-zinc-950 flex items-center justify-center overflow-hidden">
         <img id="modalLogo" class="max-w-full max-h-full object-contain"/>
       </div>
       <div>
@@ -73,6 +76,26 @@
       🚀 Join Server
     </a>
 
+    <hr class="border-zinc-800 my-6"/>
+
+    <h3 class="font-semibold mb-2">Reviews & Comments</h3>
+    <div id="modalComments" class="flex flex-col gap-2 mb-4 max-h-60 overflow-y-auto"></div>
+
+    <form id="commentForm" class="flex flex-col gap-3">
+      <textarea name="comment" placeholder="Write a comment..."
+        class="p-3 rounded-xl bg-zinc-800 border border-zinc-700 focus:border-white/20 outline-none"
+        required></textarea>
+      <button type="submit"
+        class="bg-white text-black px-4 py-2 rounded-xl hover:bg-zinc-200 transition">
+        Post Comment
+      </button>
+    </form>
+
+    <button id="reportServerBtn"
+      class="mt-4 bg-red-600 px-4 py-2 rounded-xl hover:bg-red-700 transition">
+      Report Server
+    </button>
+
   </div>
 </div>
 
@@ -86,10 +109,11 @@ const API_URL = 'https://opslinkservers-backend.onrender.com';
 let servers = [];
 let activeTag = 'all';
 
-async function loadServers() {
-  const res = await fetch(`${API_URL}/api/servers`);
-  servers = await res.json();
-  renderServers();
+// -------- HELPERS --------
+function fixInvite(link) {
+  if (!link) return '#';
+  if (link.startsWith('http')) return link;
+  return 'https://' + link.replace(/^\/+/, '');
 }
 
 function fixImage(img) {
@@ -98,12 +122,14 @@ function fixImage(img) {
   };
 }
 
-function fixInvite(link) {
-  if (!link) return '#';
-  if (link.startsWith('http')) return link;
-  return 'https://' + link.replace(/^\/+/, '');
+// -------- LOAD SERVERS --------
+async function loadServers() {
+  const res = await fetch(`${API_URL}/api/servers`);
+  servers = await res.json();
+  renderServers();
 }
 
+// -------- RENDER --------
 function renderServers() {
   const container = document.getElementById('serversGrid');
   const search = document.getElementById('searchInput').value.toLowerCase();
@@ -114,10 +140,10 @@ function renderServers() {
   const filtered = servers
     .filter(s => (nsfw || !s.nsfw))
     .filter(s => activeTag === 'all' || s.tags.includes(activeTag))
-    .filter(s => s.name.toLowerCase().includes(search));
+    .filter(s => s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search));
 
   if (!filtered.length) {
-    container.innerHTML = '<div class="col-span-full text-center text-zinc-400 mt-12">No servers found...</div>';
+    container.innerHTML = '<div class="col-span-full text-center text-zinc-400 mt-12">No servers to show...</div>';
     return;
   }
 
@@ -128,14 +154,25 @@ function renderServers() {
     card.innerHTML = `
       <div class="relative h-44 flex items-center justify-center bg-zinc-950">
         <img src="${s.logo}" class="max-w-full max-h-full object-contain p-3"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
       </div>
 
       <div class="p-5 flex flex-col gap-3">
         <h3 class="text-lg font-semibold">${s.name}</h3>
+
         <p class="text-sm text-zinc-300 line-clamp-2">${s.description}</p>
 
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap gap-1.5">
+          ${(s.tags || []).map(tag => `
+            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300">
+              #${tag}
+            </span>
+          `).join('')}
+        </div>
+
+        <div class="flex items-center justify-between pt-1">
           <span class="text-xs text-zinc-500">${s.members || 'N/A'} members</span>
+
           <a href="${fixInvite(s.invite)}" target="_blank"
             class="px-4 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 hover:brightness-110 hover:scale-105 transition">
             🚀 Join
@@ -154,24 +191,37 @@ function renderServers() {
   });
 }
 
+// -------- MODAL --------
 async function openServerModal(id) {
   const res = await fetch(`${API_URL}/api/servers/${id}`);
-  const s = await res.json();
+  const server = await res.json();
 
-  document.getElementById('modalLogo').src = s.logo;
+  document.getElementById('modalLogo').src = server.logo;
   fixImage(document.getElementById('modalLogo'));
-  document.getElementById('modalName').textContent = s.name;
-  document.getElementById('modalDescription').textContent = s.description;
-  document.getElementById('modalTags').textContent = 'Tags: ' + s.tags.join(', ');
-  document.getElementById('modalInvite').href = fixInvite(s.invite);
+
+  document.getElementById('modalName').textContent = server.name;
+  document.getElementById('modalDescription').textContent = server.description;
+  document.getElementById('modalTags').textContent = 'Tags: ' + server.tags.join(', ');
+  document.getElementById('modalInvite').href = fixInvite(server.invite);
+
+  const comments = document.getElementById('modalComments');
+  comments.innerHTML = '';
+  server.comments.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'bg-zinc-800 p-3 rounded-xl text-sm';
+    div.textContent = `${c.user}: ${c.text}`;
+    comments.appendChild(div);
+  });
 
   document.getElementById('serverModal').classList.remove('hidden');
 }
 
+// -------- CLOSE --------
 document.getElementById('closeModal').onclick = () => {
   document.getElementById('serverModal').classList.add('hidden');
 };
 
+// -------- FILTERS --------
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.onclick = () => {
     activeTag = btn.dataset.tag;
