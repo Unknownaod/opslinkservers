@@ -273,7 +273,11 @@ async function openServerModal(id) {
   document.getElementById('modalOwner').textContent = owner
     ? `Server Owner: ${owner.username}${owner.tag ? '#' + owner.tag : ''} (${owner.userID})`
     : 'Server Owner: Unknown';
-  document.getElementById('modalInvite').href = server.invite;
+  // Ensure the invite link works correctly
+ let inviteLink = server.invite || '';
+ if (inviteLink.startsWith('discord.gg/')) inviteLink = 'https://' + inviteLink;
+ document.getElementById('modalInvite').href = inviteLink;
+
 
   const comments = document.getElementById('modalComments');
   comments.innerHTML = '';
