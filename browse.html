@@ -9,7 +9,6 @@
 
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
-<!-- NAVBAR -->
 <nav class="flex items-center justify-between px-10 py-6 border-b border-zinc-800">
   <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
   <div class="flex items-center gap-8 text-sm" id="navLinks">
@@ -32,7 +31,6 @@
 
   <h1 class="text-5xl font-bold mb-6">Browse Servers</h1>
 
-  <!-- SEARCH / FILTERS -->
   <div class="flex flex-wrap gap-4 mb-6 items-center">
     <input id="searchInput" type="text" placeholder="Search servers..."
       class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 flex-grow outline-none focus:border-white/20"/>
@@ -48,19 +46,20 @@
     </label>
   </div>
 
-  <!-- SERVERS GRID -->
   <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
 
 </section>
 
-<!-- SERVER MODAL -->
+<!-- MODAL -->
 <div id="serverModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-6 z-50">
   <div class="bg-zinc-900 rounded-2xl p-8 max-w-3xl w-full relative border border-zinc-800">
 
     <button id="closeModal" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-2xl">&times;</button>
 
     <div class="flex items-center gap-4 mb-4">
-      <img id="modalLogo" class="w-20 h-20 rounded-full border border-zinc-700 object-cover"/>
+      <div class="w-20 h-20 rounded-full bg-zinc-950 border border-zinc-700 flex items-center justify-center overflow-hidden">
+        <img id="modalLogo" class="max-w-full max-h-full object-contain"/>
+      </div>
       <div>
         <h2 id="modalName" class="text-3xl font-bold"></h2>
         <p id="modalTags" class="text-xs text-zinc-400"></p>
@@ -73,26 +72,6 @@
       class="inline-flex items-center justify-center px-8 py-3 rounded-xl font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 hover:brightness-110 hover:scale-105 transition shadow-lg">
       🚀 Join Server
     </a>
-
-    <hr class="border-zinc-800 my-6"/>
-
-    <h3 class="font-semibold mb-2">Reviews & Comments</h3>
-    <div id="modalComments" class="flex flex-col gap-2 mb-4 max-h-60 overflow-y-auto"></div>
-
-    <form id="commentForm" class="flex flex-col gap-3">
-      <textarea name="comment" placeholder="Write a comment..."
-        class="p-3 rounded-xl bg-zinc-800 border border-zinc-700 focus:border-white/20 outline-none"
-        required></textarea>
-      <button type="submit"
-        class="bg-white text-black px-4 py-2 rounded-xl hover:bg-zinc-200 transition">
-        Post Comment
-      </button>
-    </form>
-
-    <button id="reportServerBtn"
-      class="mt-4 bg-red-600 px-4 py-2 rounded-xl hover:bg-red-700 transition">
-      Report Server
-    </button>
 
   </div>
 </div>
@@ -107,42 +86,24 @@ const API_URL = 'https://opslinkservers-backend.onrender.com';
 let servers = [];
 let activeTag = 'all';
 
-// --- Login / Admin ---
-const token = localStorage.getItem('token');
-const userStr = localStorage.getItem('user');
-const loginBtn = document.getElementById('loginBtn');
-const adminBtn = document.getElementById('adminBtn');
-const navLinks = document.getElementById('navLinks');
-
-if (token && userStr) {
-  const user = JSON.parse(userStr);
-  loginBtn.textContent = 'Logout';
-  loginBtn.href = '#';
-  loginBtn.onclick = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    location.reload();
-  };
-
-  const welcomeSpan = document.createElement('span');
-  welcomeSpan.textContent = `Welcome, ${user.discordUsername}`;
-  welcomeSpan.className = "text-sm text-zinc-300";
-  navLinks.insertBefore(welcomeSpan, loginBtn);
-
-  if (user.role === 'admin') {
-    adminBtn.classList.remove('hidden');
-    adminBtn.href = 'dashboard.html';
-  }
-}
-
-// --- Load servers ---
 async function loadServers() {
   const res = await fetch(`${API_URL}/api/servers`);
   servers = await res.json();
   renderServers();
 }
 
-// --- Render servers ---
+function fixImage(img) {
+  img.onerror = () => {
+    img.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+  };
+}
+
+function fixInvite(link) {
+  if (!link) return '#';
+  if (link.startsWith('http')) return link;
+  return 'https://' + link.replace(/^\/+/, '');
+}
+
 function renderServers() {
   const container = document.getElementById('serversGrid');
   const search = document.getElementById('searchInput').value.toLowerCase();
@@ -153,24 +114,20 @@ function renderServers() {
   const filtered = servers
     .filter(s => (nsfw || !s.nsfw))
     .filter(s => activeTag === 'all' || s.tags.includes(activeTag))
-    .filter(s => s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search));
+    .filter(s => s.name.toLowerCase().includes(search));
 
   if (!filtered.length) {
-    container.innerHTML = '<div class="col-span-full text-center text-zinc-400 mt-12">No servers to show...</div>';
+    container.innerHTML = '<div class="col-span-full text-center text-zinc-400 mt-12">No servers found...</div>';
     return;
   }
 
   filtered.forEach(s => {
-    let inviteLink = s.invite || '';
-    if (inviteLink.startsWith('discord.gg/')) inviteLink = 'https://' + inviteLink;
-
     const card = document.createElement('div');
     card.className = 'group bg-zinc-900/80 border border-zinc-800 rounded-2xl overflow-hidden hover:scale-[1.03] hover:shadow-2xl transition cursor-pointer';
 
     card.innerHTML = `
-      <div class="relative h-44 overflow-hidden">
-        <img src="${s.logo}" class="w-full h-full object-contain bg-zinc-950 p-2 transition"/>
-        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+      <div class="relative h-44 flex items-center justify-center bg-zinc-950">
+        <img src="${s.logo}" class="max-w-full max-h-full object-contain p-3"/>
       </div>
 
       <div class="p-5 flex flex-col gap-3">
@@ -179,52 +136,42 @@ function renderServers() {
 
         <div class="flex items-center justify-between">
           <span class="text-xs text-zinc-500">${s.members || 'N/A'} members</span>
-
-          <a href="${inviteLink}" target="_blank"
-            class="px-4 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 hover:brightness-110 transition">
-            Join
+          <a href="${fixInvite(s.invite)}" target="_blank"
+            class="px-4 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 hover:brightness-110 hover:scale-105 transition">
+            🚀 Join
           </a>
         </div>
       </div>
     `;
 
-    card.addEventListener('click', e => {
+    fixImage(card.querySelector('img'));
+
+    card.onclick = e => {
       if (e.target.tagName !== 'A') openServerModal(s._id);
-    });
+    };
 
     container.appendChild(card);
   });
 }
 
-// --- Open modal ---
 async function openServerModal(id) {
   const res = await fetch(`${API_URL}/api/servers/${id}`);
-  const server = await res.json();
+  const s = await res.json();
 
-  document.getElementById('modalLogo').src = server.logo;
-  document.getElementById('modalName').textContent = server.name;
-  document.getElementById('modalDescription').textContent = server.description;
-  document.getElementById('modalTags').textContent = 'Tags: ' + server.tags.join(', ');
-  document.getElementById('modalInvite').href = server.invite;
-
-  const comments = document.getElementById('modalComments');
-  comments.innerHTML = '';
-  server.comments.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'bg-zinc-800 p-3 rounded-xl text-sm';
-    div.textContent = `${c.user}: ${c.text}`;
-    comments.appendChild(div);
-  });
+  document.getElementById('modalLogo').src = s.logo;
+  fixImage(document.getElementById('modalLogo'));
+  document.getElementById('modalName').textContent = s.name;
+  document.getElementById('modalDescription').textContent = s.description;
+  document.getElementById('modalTags').textContent = 'Tags: ' + s.tags.join(', ');
+  document.getElementById('modalInvite').href = fixInvite(s.invite);
 
   document.getElementById('serverModal').classList.remove('hidden');
 }
 
-// --- Close modal ---
 document.getElementById('closeModal').onclick = () => {
   document.getElementById('serverModal').classList.add('hidden');
 };
 
-// --- Filters ---
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.onclick = () => {
     activeTag = btn.dataset.tag;
