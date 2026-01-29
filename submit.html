@@ -61,6 +61,14 @@
           <input type="checkbox" name="nsfw"/> NSFW
         </label>
 
+        <!-- Tags -->
+        <label class="text-sm">Tags (up to 5 tags):</label>
+        <div id="tagsContainer" class="flex gap-2 mb-4">
+          <input type="text" id="tagInput" class="p-2 rounded bg-zinc-800" placeholder="Enter tag" />
+          <button type="button" id="addTagBtn" class="bg-zinc-600 px-4 py-2 rounded text-white">Add Tag</button>
+        </div>
+        <div id="tagsList" class="flex flex-wrap gap-2 mb-4"></div>
+
         <!-- Acknowledgment -->
         <label class="flex items-center gap-2 text-sm">
           <input type="checkbox" name="acknowledge" required/>
@@ -88,6 +96,7 @@ const loginBtn = document.getElementById('loginBtn');
 const adminBtn = document.getElementById('adminBtn');
 const navLinks = document.getElementById('navLinks');
 let currentUser = null;
+let tags = [];
 
 if (token && userStr) {
   currentUser = JSON.parse(userStr);
@@ -119,6 +128,27 @@ if (token && userStr) {
   loginBtn.replaceWith(loginBtn.cloneNode(true)); // remove previous listeners
 }
 
+// --- Handle tag input and adding tags ---
+document.getElementById('addTagBtn').addEventListener('click', () => {
+  const tagInput = document.getElementById('tagInput');
+  if (tagInput.value && tags.length < 5 && !tags.includes(tagInput.value)) {
+    tags.push(tagInput.value);
+    renderTags();
+  }
+  tagInput.value = ''; // Clear input field
+});
+
+function renderTags() {
+  const tagsList = document.getElementById('tagsList');
+  tagsList.innerHTML = '';
+  tags.forEach(tag => {
+    const tagEl = document.createElement('span');
+    tagEl.className = 'bg-zinc-700 px-3 py-1 rounded';
+    tagEl.textContent = tag;
+    tagsList.appendChild(tagEl);
+  });
+}
+
 // --- Form submission ---
 document.getElementById('submitForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -130,7 +160,7 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
   }
 
   const data = Object.fromEntries(new FormData(e.target));
-  data.tags = data.tags ? data.tags.split(',').map(t => t.trim()) : [];
+  data.tags = tags; // Send the tags entered by the user
   data.nsfw = data.nsfw ? true : false;
 
   if (!data.acknowledge) {
@@ -151,6 +181,8 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
     if (res.ok) {
       alert('Server submitted! Awaiting approval.');
       e.target.reset();
+      tags = []; // Clear the tags array
+      renderTags(); // Refresh the displayed tags
     } else {
       const err = await res.json();
       alert('Submission failed: ' + (err.error || err.message));
