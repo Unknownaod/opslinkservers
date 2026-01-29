@@ -154,17 +154,21 @@ function renderServers() {
 
   filtered.forEach(s => {
     const card = document.createElement('div');
-    card.className = 'bg-zinc-900/80 border border-zinc-800 p-4 rounded hover:scale-105 transition-transform cursor-pointer flex flex-col items-start';
+    card.className = 'bg-zinc-900/80 border border-zinc-800 rounded hover:scale-105 transition-transform cursor-pointer flex flex-col';
     let inviteLink = s.invite || '';
     if (inviteLink.startsWith('discord.gg/')) inviteLink = 'https://' + inviteLink;
 
     card.innerHTML = `
-      <img src="${API_URL}/${s.logo}" alt="Logo" class="w-16 h-16 rounded-full mb-2 border border-zinc-700"/>
-      <h3 class="text-lg font-semibold mb-1">${s.name}</h3>
-      <p class="text-sm text-zinc-300 mb-2">${s.description}</p>
-      <p class="text-xs text-zinc-500 mb-1">Tags: ${s.tags.join(', ')}</p>
-      <p class="text-xs text-zinc-500 mb-1">Members: ${s.members || 'N/A'}</p>
-      <a href="${inviteLink}" target="_blank" class="text-blue-400 underline">Join Server</a>
+      <div class="w-full h-40 overflow-hidden rounded-t-lg mb-2">
+        <img src="${s.logo}" alt="Server Banner" class="w-full h-full object-cover"/>
+      </div>
+      <div class="p-4 flex flex-col gap-2">
+        <h3 class="text-lg font-semibold">${s.name}</h3>
+        <p class="text-sm text-zinc-300">${s.description}</p>
+        <p class="text-xs text-zinc-500">Tags: ${s.tags.join(', ')}</p>
+        <p class="text-xs text-zinc-500">Members: ${s.members || 'N/A'}</p>
+        <a href="${inviteLink}" target="_blank" class="text-blue-400 underline">Join Server</a>
+      </div>
     `;
     card.addEventListener('click', () => openServerModal(s._id));
     container.appendChild(card);
