@@ -21,7 +21,7 @@
     <h1 class="text-4xl font-bold mb-6">All Server Submissions</h1>
 
     <!-- Search -->
-    <input id="searchInput" type="text" placeholder="Search servers by name or submitter..." class="p-2 rounded bg-zinc-800 mb-6 w-full max-w-lg"/>
+    <input id="searchInput" type="text" placeholder="Search by server name or submitter..." class="p-2 rounded bg-zinc-800 mb-6 w-full max-w-lg"/>
 
     <!-- Servers Grid -->
     <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
@@ -78,6 +78,7 @@ function renderServers() {
 
   const filtered = servers.filter(s =>
     s.name.toLowerCase().includes(search) ||
+    s.description.toLowerCase().includes(search) ||
     s.submitterDiscord.username.toLowerCase().includes(search) ||
     s.submitterDiscord.tag.toLowerCase().includes(search)
   );
@@ -94,10 +95,15 @@ function renderServers() {
     const card = document.createElement('div');
     card.className = 'bg-zinc-900/80 border border-zinc-800 p-4 rounded flex flex-col justify-between';
 
+    // Status badge
     let statusColor = 'text-zinc-400';
     if (s.status === 'approved') statusColor = 'text-green-400';
     else if (s.status === 'denied') statusColor = 'text-red-400';
     else if (s.status === 'pending') statusColor = 'text-yellow-400';
+
+    // Ensure invite starts with https://
+    let inviteLink = s.invite || '';
+    if (inviteLink.startsWith('discord.gg/')) inviteLink = 'https://' + inviteLink;
 
     card.innerHTML = `
       <h3 class="text-lg font-semibold mb-1">${s.name}</h3>
@@ -114,14 +120,13 @@ function renderServers() {
       <p class="text-xs text-zinc-500 mb-1">Created: ${new Date(s.createdAt).toLocaleString()}</p>
       <p class="text-xs text-zinc-500 mb-2">Updated: ${new Date(s.updatedAt).toLocaleString()}</p>
       ${s.status === 'denied' ? `<p class="text-xs text-red-400 mb-2">Reason: ${s.rejectionReason}</p>` : ''}
-      <p class="text-xs text-blue-400 mb-2">Invite: <a href="${s.invite}" target="_blank" class="underline">${s.invite}</a></p>
       <p class="text-sm mb-2">Status: <span class="${statusColor} font-semibold">${s.status}</span></p>
       <div class="flex gap-2 flex-wrap"></div>
     `;
 
     const btnContainer = card.querySelector('div');
 
-    // Approve button (pending)
+    // Approve / Deny (pending)
     if (s.status === 'pending') {
       const approveBtn = document.createElement('button');
       approveBtn.className = 'bg-green-600 px-3 py-1 rounded hover:bg-green-700';
@@ -141,15 +146,25 @@ function renderServers() {
       btnContainer.appendChild(denyBtn);
     }
 
-    // Take down / Delete (approved)
+    // Join button (approved)
     if (s.status === 'approved') {
-      const takedownBtn = document.createElement('button');
-      takedownBtn.className = 'bg-orange-600 px-3 py-1 rounded hover:bg-orange-700';
-      takedownBtn.textContent = 'Take Down';
-      takedownBtn.addEventListener('click', async () => {
-        if (confirm(`Take down "${s.name}"?`)) await deleteServer(s._id);
+      const joinBtn = document.createElement('a');
+      joinBtn.href = inviteLink;
+      joinBtn.target = '_blank';
+      joinBtn.className = 'bg-blue-600 px-3 py-1 rounded hover:bg-blue-700';
+      joinBtn.textContent = 'Join Server';
+      btnContainer.appendChild(joinBtn);
+    }
+
+    // Delete button (approved or denied)
+    if (s.status === 'approved' || s.status === 'denied') {
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'bg-orange-600 px-3 py-1 rounded hover:bg-orange-700';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.addEventListener('click', async () => {
+        if (confirm(`Delete "${s.name}"?`)) await deleteServer(s._id);
       });
-      btnContainer.appendChild(takedownBtn);
+      btnContainer.appendChild(deleteBtn);
     }
 
     container.appendChild(card);
@@ -181,7 +196,7 @@ async function updateServerStatus(serverId, status, reason = '') {
   }
 }
 
-// --- Delete / Take down server ---
+// --- Delete server ---
 async function deleteServer(serverId) {
   try {
     const res = await fetch(`${API_URL}/api/servers/${serverId}`, {
@@ -201,7 +216,6 @@ async function deleteServer(serverId) {
   }
 }
 
-// --- Event listeners ---
 document.getElementById('searchInput').addEventListener('input', renderServers);
 document.getElementById('logoutBtn').addEventListener('click', () => {
   localStorage.removeItem('token');
@@ -211,7 +225,9 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 
 // --- Init ---
 (async () => {
-  if (await checkAdmin()) await loadServers();
+  if (await checkAdmin()) {
+    await loadServers();
+  }
 })();
 </script>
 
