@@ -11,11 +11,11 @@
   <!-- Navbar -->
   <nav class="flex items-center justify-between px-10 py-6">
     <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
-    <div class="flex items-center gap-8 text-sm">
+    <div class="flex items-center gap-8 text-sm" id="navLinks">
       <a href="index.html" class="hover:opacity-80">Home</a>
       <a href="browse.html" class="hover:opacity-80">Browse</a>
       <a href="submit.html" class="hover:opacity-80">Submit</a>
-      <a href="login.html" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
+      <a href="login.html" id="loginBtn" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
     </div>
   </nav>
 
@@ -73,7 +73,29 @@ const API_URL = 'https://opslinkservers-backend.onrender.com';
 
 let servers = [];
 let activeTag = 'all';
+let currentUser = null;
 
+// Check login
+async function checkUser() {
+  try {
+    const res = await fetch(`${API_URL}/api/me`, { credentials: 'include' });
+    if (!res.ok) throw new Error('Not logged in');
+    currentUser = await res.json();
+
+    // Update login button
+    const loginBtn = document.getElementById('loginBtn');
+    loginBtn.textContent = 'Logout';
+    loginBtn.href = '#';
+    loginBtn.addEventListener('click', async () => {
+      await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
+      window.location.reload();
+    });
+  } catch(err) {
+    console.log('Not logged in', err);
+  }
+}
+
+// Load servers
 async function loadServers() {
   try {
     const res = await fetch(`${API_URL}/api/servers`);
@@ -84,6 +106,7 @@ async function loadServers() {
   }
 }
 
+// Render servers grid
 function renderServers() {
   const container = document.getElementById('serversGrid');
   const search = document.getElementById('searchInput').value.toLowerCase();
@@ -92,7 +115,7 @@ function renderServers() {
   container.innerHTML = '';
 
   const filtered = servers
-    .filter(s => (nsfw || !s.nsfw))
+    .filter(s => nsfw || !s.nsfw)
     .filter(s => activeTag === 'all' || s.tags.includes(activeTag))
     .filter(s => s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search));
 
@@ -117,6 +140,7 @@ function renderServers() {
   });
 }
 
+// Open server modal and handle comments
 async function openServerModal(serverId) {
   try {
     const res = await fetch(`${API_URL}/api/servers/${serverId}`);
@@ -141,20 +165,32 @@ async function openServerModal(serverId) {
     const commentForm = document.getElementById('commentForm');
     commentForm.onsubmit = async e => {
       e.preventDefault();
+      if (!currentUser) {
+        alert('You must be logged in to post a comment.');
+        window.location.href = '/login.html';
+        return;
+      }
       const commentText = e.target.comment.value;
-      await fetch(`${API_URL}/api/servers/${serverId}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: commentText })
-      });
-      e.target.reset();
-      openServerModal(serverId);
+      try {
+        await fetch(`${API_URL}/api/servers/${serverId}/comments`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: commentText })
+        });
+        e.target.reset();
+        openServerModal(serverId); // Refresh comments
+      } catch (err) {
+        alert('Failed to post comment.');
+        console.error(err);
+      }
     };
   } catch (err) {
     console.error('Failed to load server details:', err);
   }
 }
 
+// Close modal
 document.getElementById('closeModal').addEventListener('click', () => {
   document.getElementById('serverModal').classList.add('hidden');
 });
@@ -169,6 +205,8 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
   });
 });
 
+// Initialize
+checkUser();
 loadServers();
 </script>
 
