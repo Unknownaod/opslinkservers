@@ -60,6 +60,9 @@
           <textarea name="comment" placeholder="Write a comment..." class="p-2 rounded bg-zinc-800" required></textarea>
           <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">Post Comment</button>
         </form>
+
+        <!-- Report Server Button -->
+        <button id="reportServerBtn" class="mt-4 bg-red-600 px-4 py-2 rounded hover:bg-red-700">Report Server</button>
       </div>
     </div>
   </div>
@@ -214,6 +217,39 @@ async function openServerModal(serverId) {
 
 document.getElementById('closeModal').addEventListener('click', () => {
   document.getElementById('serverModal').classList.add('hidden');
+});
+
+// --- Report Server Functionality ---
+document.getElementById('reportServerBtn').addEventListener('click', async () => {
+  const reason = prompt('Please provide a reason for reporting this server:');
+
+  if (!reason) {
+    alert('You must provide a reason to report the server.');
+    return;
+  }
+
+  const serverId = document.getElementById('modalName').getAttribute('data-server-id'); // Assuming server ID is stored in the modal
+
+  try {
+    const res = await fetch(`${API_URL}/api/servers/${serverId}/report`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ reason })
+    });
+
+    if (res.ok) {
+      alert('Thank you for reporting the server. It will be reviewed by an admin.');
+    } else {
+      const err = await res.json();
+      alert('Failed to report server: ' + (err.error || err.message));
+    }
+  } catch (err) {
+    console.error('Error reporting server:', err);
+    alert('Failed to report the server. Please try again later.');
+  }
 });
 
 // --- Search & filters ---
