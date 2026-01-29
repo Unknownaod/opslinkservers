@@ -80,38 +80,44 @@
     <span>Not affiliated with Discord</span>
   </footer>
 
-  <script>
-    const API_URL = 'https://opslinkservers-backend.onrender.com';
+<script>
+  const token = localStorage.getItem('token');
+  const userStr = localStorage.getItem('user');
+  const loginBtn = document.getElementById('loginBtn');
+  const adminBtn = document.getElementById('adminBtn');
+  const navLinks = document.getElementById('navLinks');
 
-    async function checkUser() {
-      try {
-        const res = await fetch(`${API_URL}/api/me`, { credentials: 'include' });
-        if (!res.ok) throw new Error('Not logged in');
-        const user = await res.json();
+  if (token && userStr) {
+    const user = JSON.parse(userStr);
 
-        // If logged in, change Login button to Logout
-        const loginBtn = document.getElementById('loginBtn');
-        loginBtn.textContent = 'Logout';
-        loginBtn.href = '#';
-        loginBtn.addEventListener('click', async () => {
-          await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
-          window.location.reload();
-        });
+    // Replace Login link with Logout and Welcome message
+    loginBtn.textContent = 'Logout';
+    loginBtn.href = '#';
+    loginBtn.addEventListener('click', () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.reload();
+    });
 
-        // If admin, show Admin Dashboard button
-        if(user.isAdmin) {
-          const adminBtn = document.getElementById('adminBtn');
-          adminBtn.classList.remove('hidden');
-          adminBtn.href = 'dashboard.html';
-        }
+    // Add welcome message before Login/Logout button
+    const welcomeSpan = document.createElement('span');
+    welcomeSpan.textContent = `Welcome, ${user.discordUsername}`;
+    welcomeSpan.className = "text-sm text-zinc-300";
+    navLinks.insertBefore(welcomeSpan, loginBtn);
 
-      } catch(err) {
-        console.log('Not logged in', err);
-      }
+    // Show admin button if role is admin
+    if (user.role === 'admin') {
+      adminBtn.classList.remove('hidden');
+      adminBtn.href = 'dashboard.html';
     }
-
-    checkUser();
-  </script>
+  } else {
+    // User not logged in: ensure admin button hidden, Login button is correct
+    adminBtn.classList.add('hidden');
+    loginBtn.textContent = 'Login';
+    loginBtn.href = 'login.html';
+    loginBtn.replaceWith(loginBtn.cloneNode(true)); // Remove previous listeners
+  }
+</script>
 
 </body>
 </html>
