@@ -54,8 +54,6 @@
 
 <script>
   (function () {
-    let targetUrl = null;
-
     document.addEventListener('click', e => {
       const link = e.target.closest('a');
       if (!link) return;
@@ -70,12 +68,10 @@
       ) return;
 
       e.preventDefault();
-      targetUrl = href;
-
       document.body.classList.add('transition-active');
 
       setTimeout(() => {
-        window.location.href = targetUrl;
+        window.location.href = href;
       }, 900);
     });
 
