@@ -76,6 +76,8 @@
   <span>Not affiliated with Discord</span>
 </footer>
 
+<!-- ... your existing head and body ... -->
+
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
 const loginBtn = document.getElementById('loginBtn');
@@ -120,6 +122,7 @@ tabSystemBtn.onclick = () => {
   tabSystemBtn.classList.remove('text-zinc-400');
   tabMyServersBtn.classList.remove('border-indigo-600');
   tabMyServersBtn.classList.add('text-zinc-400');
+  fetchSystemMessages();
 };
 
 tabMyServersBtn.onclick = () => {
@@ -129,6 +132,7 @@ tabMyServersBtn.onclick = () => {
   tabSystemBtn.classList.add('text-zinc-400');
   tabMyServersBtn.classList.add('border-indigo-600');
   tabMyServersBtn.classList.remove('text-zinc-400');
+  fetchMyServers();
 };
 
 /* ================= EDIT MODAL ================= */
@@ -167,12 +171,15 @@ document.getElementById('editForm').onsubmit = async e => {
   if (!res.ok) return alert('Failed to submit edit request.');
   alert('Edit request submitted.');
   document.getElementById('editModal').classList.add('hidden');
+  // Refresh my servers tab if open
+  if (!myServersDiv.classList.contains('hidden')) fetchMyServers();
 };
 
 /* ================= RENDER ================= */
 function renderSystemMessages(servers) {
   systemMessagesDiv.innerHTML = '';
 
+  // Filter servers submitted by user to show system messages about their servers
   const myServers = servers.filter(s => s.submitter?.toString() === user._id);
 
   if (!myServers.length) {
@@ -208,14 +215,12 @@ function renderSystemMessages(servers) {
 function renderMyServers(servers) {
   myServersDiv.innerHTML = '';
 
-  const myServers = servers.filter(s => s.submitter?.toString() === user._id);
-
-  if (!myServers.length) {
+  if (!servers.length) {
     myServersDiv.innerHTML = '<p class="text-zinc-400">You have no servers submitted yet.</p>';
     return;
   }
 
-  myServers.forEach(s => {
+  servers.forEach(s => {
     const div = document.createElement('div');
     div.className = `p-4 rounded border ${
       s.status === 'approved' ? 'border-green-500 bg-green-900/30' :
@@ -243,23 +248,53 @@ function renderMyServers(servers) {
 }
 
 /* ================= FETCH ================= */
-async function fetchMessages() {
-  const token = localStorage.getItem('token');
 
-  // Pull all servers
-  const res = await fetch(`${API_URL}/api/servers/all`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const servers = await res.json();
+async function fetchSystemMessages() {
+  try {
+    const res = await fetch(`${API_URL}/api/servers`); // public route, no token
+    if (!res.ok) throw new Error('Failed to fetch servers');
+    const servers = await res.json();
 
-  renderSystemMessages(servers);
-  renderMyServers(servers);
+    renderSystemMessages(servers);
+  } catch (err) {
+    systemMessagesDiv.innerHTML = `<p class="text-red-500">Error loading system messages.</p>`;
+    console.error(err);
+  }
+}
+
+async function fetchMyServers() {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      myServersDiv.innerHTML = '<p class="text-zinc-400">Please log in to see your servers.</p>';
+      return;
+    }
+
+    const res = await fetch(`${API_URL}/api/servers/mine`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Failed to fetch your servers');
+    const servers = await res.json();
+
+    renderMyServers(servers);
+  } catch (err) {
+    myServersDiv.innerHTML = `<p class="text-red-500">Error loading your servers.</p>`;
+    console.error(err);
+  }
 }
 
 /* ================= INIT ================= */
 if (checkLogin()) {
-  fetchMessages();
-  setInterval(fetchMessages, 8000);
+  // Start on system tab by default
+  tabSystemBtn.click();
+  // Refresh every 8s on active tab
+  setInterval(() => {
+    if (!systemMessagesDiv.classList.contains('hidden')) fetchSystemMessages();
+    if (!myServersDiv.classList.contains('hidden')) fetchMyServers();
+  }, 8000);
+} else {
+  // Show system messages tab by default but prompt login message
+  tabSystemBtn.click();
 }
 </script>
 
