@@ -4,7 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Opslink Servers</title>
+
+  <!-- Preload logo image for better performance -->
+  <link rel="preload" href="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png" as="image" />
+
   <style>
+    :root {
+      --transition-duration: 900ms;
+    }
+
     #page-transition {
       position: fixed;
       inset: 0;
@@ -20,6 +28,7 @@
       opacity: 0;
       transform: scale(0.8);
       filter: drop-shadow(0 0 0 rgba(80, 200, 255, 0));
+      will-change: opacity, transform, filter;
     }
 
     .transition-active #page-transition {
@@ -27,7 +36,7 @@
     }
 
     .transition-active #transition-logo {
-      animation: logoGlow 0.9s ease forwards;
+      animation: logoGlow var(--transition-duration) ease forwards;
     }
 
     @keyframes logoGlow {
@@ -51,36 +60,43 @@
 </head>
 <body>
   <!-- Page Transition Overlay -->
-  <div id="page-transition">
+  <div id="page-transition" role="alert" aria-live="assertive" aria-atomic="true">
     <img
       id="transition-logo"
       src="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png"
-      alt="Loading"
+      alt="Loading animation"
+      aria-hidden="true"
+      draggable="false"
     />
   </div>
 
   <script>
     (function () {
+      const TRANSITION_DURATION = 900; // ms
+
       document.addEventListener('click', e => {
         const link = e.target.closest('a');
         if (!link) return;
 
         const href = link.getAttribute('href');
+        const target = link.getAttribute('target');
 
+        // Ignore external, anchor, or blank-target links
         if (
           !href ||
           href.startsWith('#') ||
           href.startsWith('http') ||
-          link.target === '_blank'
-        )
-          return;
+          target === '_blank'
+        ) return;
 
         e.preventDefault();
+
         document.body.classList.add('transition-active');
 
+        // Delay navigation to allow animation to play
         setTimeout(() => {
           window.location.href = href;
-        }, 900);
+        }, TRANSITION_DURATION);
       });
 
       window.addEventListener('pageshow', () => {
