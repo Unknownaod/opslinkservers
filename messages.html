@@ -87,7 +87,7 @@ const myServersDiv = document.getElementById('myServersMessages');
 
 let user = null;
 let currentEditServer = null;
-let lastStatuses = {}; // to track changes for notifications
+let lastStatuses = {}; // track changes for notifications
 
 /* ================= LOGIN CHECK ================= */
 function checkLogin() {
@@ -193,7 +193,7 @@ function renderSystemMessages(servers) {
     if (s.status === 'approved') msg = 'Your server is approved and live.';
     if (s.status === 'denied') msg = `Denied: ${s.rejectionReason || 'No reason provided.'}`;
 
-    // Notification for new status changes
+    // Notify if status changed
     if (lastStatuses[s._id] && lastStatuses[s._id] !== s.status) {
       alert(`Server "${s.name}" status changed: ${s.status.toUpperCase()}`);
     }
@@ -245,8 +245,13 @@ function renderMyServers(servers) {
 /* ================= FETCH ================= */
 async function fetchMessages() {
   const token = localStorage.getItem('token');
-  const res = await fetch(`${API_URL}/api/servers/all`, { headers: { Authorization: `Bearer ${token}` } });
+
+  // Pull all servers
+  const res = await fetch(`${API_URL}/api/servers/all`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
   const servers = await res.json();
+
   renderSystemMessages(servers);
   renderMyServers(servers);
 }
