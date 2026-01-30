@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Browse Servers - OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -13,13 +13,19 @@
 <nav class="flex items-center justify-between px-10 py-6 border-b border-zinc-800">
   <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
   <div class="flex items-center gap-8 text-sm" id="navLinks">
-    <a href="index.html">Home</a>
-    <a href="browse.html">Browse</a>
-    <a href="submit.html">Submit</a>
-    <a href="messages.html">Messages</a>
-    <a href="support.html">Support</a>
+    <a href="index.html" class="hover:opacity-80">Home</a>
+    <a href="browse.html" class="hover:opacity-80">Browse</a>
+    <a href="submit.html" class="hover:opacity-80">Submit</a>
+    <a href="messages.html" class="hover:opacity-80">Messages</a>
+    <a href="support.html" class="hover:opacity-80">Support</a>
     <a href="login.html" id="loginBtn"
-      class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10 transition">Login</a>
+      class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10 transition">
+      Login
+    </a>
+    <a href="#" id="adminBtn"
+      class="hidden rounded-full bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-2 hover:brightness-110 transition">
+      Admin Dashboard
+    </a>
   </div>
 </nav>
 
@@ -30,19 +36,8 @@
   <!-- SEARCH / FILTERS -->
   <div class="flex flex-wrap gap-4 mb-6 items-center">
     <input id="searchInput" type="text" placeholder="Search servers..."
-      class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 flex-grow outline-none"/>
-
-    <select id="tagFilter"
-      class="p-3 rounded-xl bg-zinc-900 border border-zinc-800">
-      <option value="all">All Tags</option>
-    </select>
-
-    <button id="filterBtn"
-      class="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 transition">
-      Filter
-    </button>
-
-    <label class="flex items-center gap-2 text-sm">
+      class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 flex-grow outline-none focus:border-white/20"/>
+    <label class="ml-auto flex items-center gap-2 text-sm">
       <input type="checkbox" id="nsfwToggle"/> Show NSFW
     </label>
   </div>
@@ -65,22 +60,79 @@
       <div>
         <h2 id="modalName" class="text-3xl font-bold"></h2>
         <p id="modalTags" class="text-xs text-zinc-400"></p>
+        <p id="modalOwner" class="text-xs text-zinc-400 mt-1"></p>
       </div>
     </div>
 
     <p id="modalDescription" class="text-zinc-300 mb-4"></p>
 
-    <!-- RATING -->
-    <div class="flex gap-1 mb-6 items-center">
-      <div id="ratingStars" class="flex gap-1 text-3xl text-yellow-400"></div>
-      <span id="ratingValue" class="text-sm text-zinc-400 ml-2"></span>
-    </div>
-
     <a id="modalInvite" target="_blank"
-      class="inline-flex px-8 py-3 rounded-xl font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 hover:brightness-110 transition">
+      class="inline-flex items-center justify-center px-8 py-3 rounded-xl font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 hover:brightness-110 hover:scale-105 transition shadow-lg">
       🚀 Join Server
     </a>
 
+    <hr class="border-zinc-800 my-6"/>
+
+    <h3 class="font-semibold mb-2">Reviews & Comments</h3>
+    <div id="modalComments" class="flex flex-col gap-2 mb-4 max-h-60 overflow-y-auto"></div>
+
+    <form id="commentForm" class="flex flex-col gap-3">
+      <textarea name="comment" placeholder="Write a comment..."
+        class="p-3 rounded-xl bg-zinc-800 border border-zinc-700 focus:border-white/20 outline-none"
+        required></textarea>
+      <button type="submit"
+        class="bg-white text-black px-4 py-2 rounded-xl hover:bg-zinc-200 transition">
+        Post Comment
+      </button>
+    </form>
+
+    <button id="reportServerBtn"
+      class="mt-4 bg-red-600 px-4 py-2 rounded-xl hover:bg-red-700 transition">
+      Report Server
+    </button>
+
+  </div>
+</div>
+
+<!-- EDIT REQUEST MODAL -->
+<div id="editRequestModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-6 z-50">
+  <div class="bg-zinc-900 rounded-2xl p-8 max-w-3xl w-full relative border border-zinc-800">
+
+    <button id="closeEditModal" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-2xl">&times;</button>
+    <h2 class="text-2xl font-bold mb-4">Request Server Edit</h2>
+
+    <form id="editRequestForm" class="flex flex-col gap-4">
+
+      <input name="name" placeholder="Server Name" class="p-2 rounded bg-zinc-800" required/>
+      <textarea name="description" placeholder="Description" class="p-2 rounded bg-zinc-800" required></textarea>
+      <input name="logo" placeholder="Logo URL" class="p-2 rounded bg-zinc-800" required/>
+      <input name="website" placeholder="Website / Social Links" class="p-2 rounded bg-zinc-800"/>
+      <input name="language" placeholder="Primary Language" class="p-2 rounded bg-zinc-800"/>
+      <input name="members" type="number" placeholder="Approximate Members" class="p-2 rounded bg-zinc-800"/>
+      <select name="type" class="p-2 rounded bg-zinc-800">
+        <option value="">Server Type</option>
+        <option value="gaming">Gaming</option>
+        <option value="community">Community</option>
+        <option value="education">Education</option>
+        <option value="hobby">Hobby / Interest</option>
+        <option value="other">Other</option>
+      </select>
+
+      <label class="flex items-center gap-2">
+        <input type="checkbox" name="nsfw"/> NSFW
+      </label>
+
+      <label class="text-sm">Tags (up to 5):</label>
+      <div id="editTagsContainer" class="flex gap-2 mb-2">
+        <input type="text" id="editTagInput" class="p-2 rounded bg-zinc-800" placeholder="Enter tag" />
+        <button type="button" id="addEditTagBtn" class="bg-zinc-600 px-4 py-2 rounded text-white">Add Tag</button>
+      </div>
+      <div id="editTagsList" class="flex flex-wrap gap-2 mb-4"></div>
+
+      <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200 transition">
+        Submit Edit Request
+      </button>
+    </form>
   </div>
 </div>
 
@@ -91,40 +143,45 @@
 
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
-
 let servers = [];
 let activeTag = 'all';
+let currentServerId = null;
+let editTags = [];
 
-// LOAD SERVERS
+// --- AUTH ---
+const token = localStorage.getItem('token');
+const userStr = localStorage.getItem('user');
+let currentUser = userStr ? JSON.parse(userStr) : null;
+
+// --- NAV LOGIN ---
+const loginBtn = document.getElementById('loginBtn');
+const adminBtn = document.getElementById('adminBtn');
+const navLinks = document.getElementById('navLinks');
+
+if (currentUser) {
+  loginBtn.textContent = 'Logout';
+  loginBtn.href = '#';
+  loginBtn.onclick = () => { localStorage.clear(); location.reload(); };
+
+  const welcome = document.createElement('span');
+  welcome.textContent = `Welcome, ${currentUser.discordUsername}`;
+  welcome.className = 'text-zinc-300 text-sm';
+  navLinks.insertBefore(welcome, loginBtn);
+
+  if (currentUser.role === 'admin') {
+    adminBtn.classList.remove('hidden');
+    adminBtn.href = 'dashboard.html';
+  }
+}
+
+// --- LOAD SERVERS ---
 async function loadServers() {
   const res = await fetch(`${API_URL}/api/servers`);
   servers = await res.json();
-  buildTagFilter();
   renderServers();
 }
 
-// BUILD TAG FILTER DROPDOWN
-function buildTagFilter() {
-  const tags = new Set();
-  servers.forEach(s => (s.tags || []).forEach(t => tags.add(t)));
-
-  const dropdown = document.getElementById('tagFilter');
-  dropdown.innerHTML = `<option value="all">All Tags</option>`;
-
-  tags.forEach(tag => {
-    const opt = document.createElement('option');
-    opt.value = tag;
-    opt.textContent = `#${tag}`;
-    dropdown.appendChild(opt);
-  });
-}
-
-// SORT SERVERS BY RATING
-function sortServers(list) {
-  return list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-}
-
-// RENDER SERVERS GRID
+// --- RENDER SERVERS ---
 function renderServers() {
   const grid = document.getElementById('serversGrid');
   const search = document.getElementById('searchInput').value.toLowerCase();
@@ -132,15 +189,13 @@ function renderServers() {
 
   grid.innerHTML = '';
 
-  let filtered = servers
+  const filtered = servers
     .filter(s => nsfw || !s.nsfw)
-    .filter(s => activeTag === 'all' || (s.tags || []).includes(activeTag))
+    .filter(s => activeTag === 'all' || s.tags.includes(activeTag))
     .filter(s =>
       s.name.toLowerCase().includes(search) ||
       s.description.toLowerCase().includes(search)
     );
-
-  filtered = sortServers(filtered);
 
   if (!filtered.length) {
     grid.innerHTML = '<div class="col-span-full text-center text-zinc-400 mt-10">No servers found</div>';
@@ -148,108 +203,185 @@ function renderServers() {
   }
 
   filtered.forEach(s => {
+    let invite = s.invite || '';
+    if (!invite.startsWith('http')) invite = 'https://discord.gg/' + invite.replace(/^discord\.gg\/?/i, '');
+    const owner = s.submitterDiscord
+      ? `${s.submitterDiscord.username}${s.submitterDiscord.tag ? '#' + s.submitterDiscord.tag : ''}`
+      : 'Unknown';
+
     const card = document.createElement('div');
-    card.className =
-      'group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:scale-[1.03] transition cursor-pointer';
-
+    card.className = 'group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:scale-[1.03] transition cursor-pointer';
     card.innerHTML = `
-      <div class="h-44 bg-black flex items-center justify-center">
-        <img src="${s.logo}" class="max-h-full"/>
+      <div class="relative h-44 bg-black">
+        <img src="${s.logo}" class="w-full h-full object-contain p-2"/>
       </div>
-
       <div class="p-5 space-y-2">
         <h3 class="text-lg font-semibold">${s.name}</h3>
-        <p class="text-sm text-zinc-400 line-clamp-2">${s.description}</p>
-
-        <div class="flex items-center gap-1 text-yellow-400">
-          ${renderStars(s.rating || 0)}
-          <span class="text-xs text-zinc-500 ml-1">(${s.rating || 0}/5)</span>
-        </div>
-
-        <div class="flex flex-wrap gap-1">
-          ${(s.tags || []).map(t => `<span class="px-2 py-0.5 text-xs bg-zinc-800 rounded-full">#${t}</span>`).join('')}
-        </div>
-
-        <div class="flex justify-between items-center pt-2">
-          <span class="text-xs text-zinc-500">${s.members || 0} members</span>
-          <span class="text-indigo-400 text-sm font-semibold">View →</span>
+        <p class="text-xs text-zinc-400">Server Owner: <span class="text-zinc-200">${owner}</span></p>
+        <p class="text-sm text-zinc-300 line-clamp-2">${s.description}</p>
+        <div class="flex flex-wrap gap-1.5">${(s.tags || []).map(tag => `<span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-zinc-800 border border-zinc-700">#${tag}</span>`).join('')}</div>
+        <div class="flex justify-between items-center pt-1">
+          <span class="text-xs text-zinc-500 members-count" data-id="${s.discordServerId}">${s.members != null ? s.members : 'N/A'} members</span>
+          <a href="${invite}" target="_blank" class="px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-sm font-semibold hover:brightness-110">🚀 Join</a>
         </div>
       </div>
     `;
-
-    card.onclick = () => openServerModal(s);
+    card.onclick = e => { if(e.target.tagName !== 'A') openServerModal(s._id); };
     grid.appendChild(card);
   });
 }
 
-// STAR RENDERER
-function renderStars(rating) {
-  let out = '';
-  for (let i = 1; i <= 5; i++) {
-    out += i <= rating ? '★' : '☆';
-  }
-  return out;
-}
+// --- OPEN SERVER MODAL ---
+async function openServerModal(id) {
+  currentServerId = id;
+  const res = await fetch(`${API_URL}/api/servers/${id}`);
+  const server = await res.json();
 
-// OPEN MODAL
-function openServerModal(server) {
   document.getElementById('modalLogo').src = server.logo;
   document.getElementById('modalName').textContent = server.name;
   document.getElementById('modalDescription').textContent = server.description;
-  document.getElementById('modalTags').textContent = 'Tags: ' + (server.tags || []).join(', ');
-
-  document.getElementById('modalInvite').href =
-    server.invite.startsWith('http')
-      ? server.invite
-      : 'https://discord.gg/' + server.invite.replace(/^discord\.gg\/?/i, '');
-
-  const stars = document.getElementById('ratingStars');
-  const ratingValue = document.getElementById('ratingValue');
-  stars.innerHTML = '';
-  ratingValue.textContent = `(${server.rating || 0}/5)`;
-
-  for (let i = 1; i <= 5; i++) {
-    const star = document.createElement('span');
-    star.textContent = i <= (server.rating || 0) ? '★' : '☆';
-    star.className = 'cursor-pointer';
-    star.onclick = () => rateServer(server._id, i);
-    stars.appendChild(star);
-  }
-
-  document.getElementById('serverModal').classList.remove('hidden');
-}
-
-document.getElementById('closeModal').onclick = () =>
-  document.getElementById('serverModal').classList.add('hidden');
-
-// RATE SERVER
-async function rateServer(id, stars) {
-  const token = localStorage.getItem('token');
-  if (!token) return alert('Login required to rate servers');
-
-  await fetch(`${API_URL}/api/servers/${id}/rate`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify({ stars })
+  document.getElementById('modalTags').textContent = 'Tags: ' + server.tags.join(', ');
+  const owner = server.submitterDiscord;
+  document.getElementById('modalOwner').textContent = owner ? `Server Owner: ${owner.username}${owner.tag ? '#' + owner.tag : ''} (${owner.userID})` : 'Server Owner: Unknown';
+  document.getElementById('modalInvite').href = server.invite.startsWith('http') ? server.invite : 'https://discord.gg/' + server.invite.replace(/^discord\.gg\/?/i, '');
+  
+  const comments = document.getElementById('modalComments');
+  comments.innerHTML = '';
+  server.comments.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'bg-zinc-800 p-3 rounded-xl text-sm';
+    div.textContent = `${c.user}: ${c.text}`;
+    comments.appendChild(div);
   });
 
-  loadServers();
+  document.getElementById('serverModal').classList.remove('hidden');
+
+  // --- REQUEST EDIT BUTTON ---
+  const existingBtn = document.getElementById('requestEditBtn');
+  if (existingBtn) existingBtn.remove();
+  if (currentUser && owner && currentUser.discordUserID === owner.userID) {
+    const btn = document.createElement('button');
+    btn.id = 'requestEditBtn';
+    btn.textContent = 'Request Edit';
+    btn.className = 'mt-4 bg-indigo-600 px-4 py-2 rounded-xl hover:bg-indigo-700 transition';
+    btn.onclick = () => openEditRequestModal(server);
+    document.querySelector('#serverModal > div').appendChild(btn);
+  }
 }
 
-// FILTER EVENTS
-document.getElementById('filterBtn').onclick = () => {
-  activeTag = document.getElementById('tagFilter').value;
-  renderServers();
+// --- CLOSE SERVER MODAL ---
+document.getElementById('closeModal').onclick = () => document.getElementById('serverModal').classList.add('hidden');
+
+// --- OPEN EDIT REQUEST MODAL ---
+function openEditRequestModal(server) {
+  const modal = document.getElementById('editRequestModal');
+  const form = document.getElementById('editRequestForm');
+  form.name.value = server.name;
+  form.description.value = server.description;
+  form.logo.value = server.logo;
+  form.website.value = server.website || '';
+  form.language.value = server.language || '';
+  form.members.value = server.members || '';
+  form.type.value = server.type || '';
+  form.nsfw.checked = server.nsfw || false;
+
+  editTags = [...server.tags];
+  renderEditTags();
+  modal.classList.remove('hidden');
+}
+
+// --- CLOSE EDIT MODAL ---
+document.getElementById('closeEditModal').onclick = () => document.getElementById('editRequestModal').classList.add('hidden');
+
+// --- EDIT TAGS HANDLING ---
+const editTagInput = document.getElementById('editTagInput');
+const addEditTagBtn = document.getElementById('addEditTagBtn');
+const editTagsList = document.getElementById('editTagsList');
+
+addEditTagBtn.onclick = () => {
+  const value = editTagInput.value.trim().toLowerCase();
+  if(value && !editTags.includes(value) && editTags.length < 5) {
+    editTags.push(value); renderEditTags();
+  }
+  editTagInput.value = '';
+};
+function renderEditTags() {
+  editTagsList.innerHTML = '';
+  editTags.forEach(tag => {
+    const span = document.createElement('span');
+    span.className = 'bg-zinc-700 px-3 py-1 rounded flex items-center gap-1';
+    span.textContent = tag;
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.textContent = '×';
+    removeBtn.onclick = () => { editTags = editTags.filter(t => t!==tag); renderEditTags(); };
+    span.appendChild(removeBtn);
+    editTagsList.appendChild(span);
+  });
+}
+
+// --- SUBMIT EDIT REQUEST ---
+document.getElementById('editRequestForm').onsubmit = async e => {
+  e.preventDefault();
+  if(!token) return alert('Login required.');
+  const form = e.target;
+  const payload = {
+    name: form.name.value.trim(),
+    description: form.description.value.trim(),
+    logo: form.logo.value.trim(),
+    website: form.website.value.trim(),
+    language: form.language.value.trim(),
+    members: form.members.value,
+    type: form.type.value,
+    nsfw: form.nsfw.checked,
+    tags: editTags
+  };
+  try {
+    const res = await fetch(`${API_URL}/api/servers/${currentServerId}/request-edit`, {
+      method:'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if(!res.ok) return alert(data.error || 'Failed to submit edit request');
+    alert('Edit request submitted! Staff will review it.');
+    document.getElementById('editRequestModal').classList.add('hidden');
+  } catch(err) { console.error(err); alert('Failed to submit edit request'); }
 };
 
+// --- COMMENT FORM ---
+document.getElementById('commentForm').onsubmit = async e => {
+  e.preventDefault();
+  if(!token) return alert('Login required to comment.');
+  const text = e.target.comment.value.trim();
+  if(!text) return;
+  await fetch(`${API_URL}/api/servers/${currentServerId}/comments`, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` },
+    body: JSON.stringify({ text })
+  });
+  e.target.reset();
+  openServerModal(currentServerId);
+};
+
+// --- REPORT SERVER ---
+document.getElementById('reportServerBtn').onclick = async () => {
+  if(!token) return alert('Login required to report servers.');
+  const reason = prompt('Why are you reporting this server?');
+  if(!reason) return;
+  await fetch(`${API_URL}/api/servers/${currentServerId}/report`, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` },
+    body: JSON.stringify({ reason })
+  });
+  alert('Server reported successfully.');
+};
+
+// --- SEARCH & NSFW ---
 document.getElementById('searchInput').oninput = renderServers;
 document.getElementById('nsfwToggle').onchange = renderServers;
 
 loadServers();
 </script>
-
 </body>
 </html>
