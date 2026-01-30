@@ -198,9 +198,7 @@ document.getElementById('editForm').onsubmit = async e => {
     formData.tags = [];
   }
 
-  // Convert entire object to JSON string for backend
-  const changesPayload = JSON.stringify(formData);
-
+  // Send the object directly, not as a string
   try {
     const res = await fetch(`${API_URL}/api/servers/${currentEditServer._id}/request-edit`, {
       method: 'POST',
@@ -208,7 +206,7 @@ document.getElementById('editForm').onsubmit = async e => {
         'Authorization': `Bearer ${token}`, 
         'Content-Type': 'application/json' 
       },
-      body: JSON.stringify({ changes: changesPayload }) // backend expects string
+      body: JSON.stringify({ changes: formData }) // <-- send as object
     });
 
     if (!res.ok) throw new Error('Failed to submit edit request.');
@@ -221,12 +219,10 @@ document.getElementById('editForm').onsubmit = async e => {
   }
 };
 
-
 /* ================= RENDER ================= */
 function renderSystemMessages(servers) {
   systemMessagesDiv.innerHTML = '';
 
-  // Filter servers submitted by user to show system messages about their servers
   const myServers = servers.filter(s => s.submitter?.toString() === user._id);
 
   if (!myServers.length) {
@@ -295,13 +291,11 @@ function renderMyServers(servers) {
 }
 
 /* ================= FETCH ================= */
-
 async function fetchSystemMessages() {
   try {
-    const res = await fetch(`${API_URL}/api/servers`); // public route, no token
+    const res = await fetch(`${API_URL}/api/servers`);
     if (!res.ok) throw new Error('Failed to fetch servers');
     const servers = await res.json();
-
     renderSystemMessages(servers);
   } catch (err) {
     systemMessagesDiv.innerHTML = `<p class="text-red-500">Error loading system messages.</p>`;
@@ -322,7 +316,6 @@ async function fetchMyServers() {
     });
     if (!res.ok) throw new Error('Failed to fetch your servers');
     const servers = await res.json();
-
     renderMyServers(servers);
   } catch (err) {
     myServersDiv.innerHTML = `<p class="text-red-500">Error loading your servers.</p>`;
@@ -332,18 +325,16 @@ async function fetchMyServers() {
 
 /* ================= INIT ================= */
 if (checkLogin()) {
-  // Start on system tab by default
   tabSystemBtn.click();
-  // Refresh every 8s on active tab
   setInterval(() => {
     if (!systemMessagesDiv.classList.contains('hidden')) fetchSystemMessages();
     if (!myServersDiv.classList.contains('hidden')) fetchMyServers();
   }, 8000);
 } else {
-  // Show system messages tab by default but prompt login message
   tabSystemBtn.click();
 }
 </script>
+
 
 </body>
 </html>
