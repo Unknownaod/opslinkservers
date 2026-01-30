@@ -3,343 +3,288 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OpsLink Support Portal</title>
+  <title>Discord Server Support Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            opsPrimary: '#0EA5E9', // OpsLink Blue
-            opsDark: '#1F2937',     // Dark background
-            opsAccent: '#3B82F6',   // Hover accent
-            opsLight: '#F3F4F6'     // Light text
-          }
-        }
-      }
-    };
-  </script>
+  <style>
+    /* Smooth fade-in animations */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .fade-in.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* Custom scrollbar for dark theme */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1f2937;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #6366f1;
+      border-radius: 10px;
+    }
+  </style>
 </head>
-<body class="bg-opsDark text-opsLight font-sans min-h-screen flex flex-col">
+<body class="bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white font-sans">
 
-  <!-- Header -->
-  <header class="bg-opsDark border-b border-gray-700 p-4 flex justify-between items-center">
-    <div class="flex items-center space-x-2">
-      <img src="https://via.placeholder.com/40" alt="OpsLink Logo" class="w-10 h-10">
-      <h1 class="text-xl font-bold">OpsLink Support Portal</h1>
-    </div>
-    <nav class="hidden md:flex space-x-4">
-      <a href="#helpHub" class="hover:text-opsAccent transition">Help Hub</a>
-      <a href="#ticketWizard" class="hover:text-opsAccent transition">Create Ticket</a>
-    </nav>
-  </header>
-
-  <!-- Intro -->
-  <section class="p-6 text-center">
-    <h2 class="text-3xl font-bold mb-2">Welcome to OpsLink Support</h2>
-    <p class="text-gray-400 max-w-2xl mx-auto">
-      Submit requests, report issues, or manage your Discord servers securely. Choose a category to start.
-    </p>
-  </section>
-
-  <!-- Help Hub -->
-  <section id="helpHub" class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    <!-- Category Card Template -->
-    <div class="category-card bg-gray-800 rounded-lg p-5 hover:scale-105 transition cursor-pointer" data-category="serverEdits">
-      <div class="flex items-center mb-3">
-        <span class="text-2xl mr-2">🛠️</span>
-        <h3 class="text-lg font-semibold">Server Edits / Takedowns</h3>
-      </div>
-      <p class="text-gray-400 text-sm">Manage server info, request edits or removal. Owners only.</p>
-    </div>
-
-    <div class="category-card bg-gray-800 rounded-lg p-5 hover:scale-105 transition cursor-pointer" data-category="bugReports">
-      <div class="flex items-center mb-3">
-        <span class="text-2xl mr-2">🐞</span>
-        <h3 class="text-lg font-semibold">Bug / Issue Reports</h3>
-      </div>
-      <p class="text-gray-400 text-sm">Report technical issues or bugs you encounter.</p>
-    </div>
-
-    <div class="category-card bg-gray-800 rounded-lg p-5 hover:scale-105 transition cursor-pointer" data-category="featureRequests">
-      <div class="flex items-center mb-3">
-        <span class="text-2xl mr-2">💡</span>
-        <h3 class="text-lg font-semibold">Feature Requests</h3>
-      </div>
-      <p class="text-gray-400 text-sm">Suggest new features or improvements.</p>
-    </div>
-
-    <div class="category-card bg-gray-800 rounded-lg p-5 hover:scale-105 transition cursor-pointer" data-category="trustSafety">
-      <div class="flex items-center mb-3">
-        <span class="text-2xl mr-2">🛡️</span>
-        <h3 class="text-lg font-semibold">Trust & Safety Reports</h3>
-      </div>
-      <p class="text-gray-400 text-sm">Report scams, abuse, or rule violations.</p>
-    </div>
-
-    <div class="category-card bg-gray-800 rounded-lg p-5 hover:scale-105 transition cursor-pointer" data-category="accountRequests">
-      <div class="flex items-center mb-3">
-        <span class="text-2xl mr-2">👤</span>
-        <h3 class="text-lg font-semibold">Account / Personal Info Requests</h3>
-      </div>
-      <p class="text-gray-400 text-sm">Request data, account recovery, or deletions.</p>
-    </div>
-
-    <div class="category-card bg-gray-800 rounded-lg p-5 hover:scale-105 transition cursor-pointer" data-category="legalRequests">
-      <div class="flex items-center mb-3">
-        <span class="text-2xl mr-2">⚖️</span>
-        <h3 class="text-lg font-semibold">Law Enforcement / Legal</h3>
-      </div>
-      <p class="text-gray-400 text-sm">Legal or law enforcement inquiries.</p>
-    </div>
-
-    <div class="category-card bg-gray-800 rounded-lg p-5 hover:scale-105 transition cursor-pointer" data-category="appeals">
-      <div class="flex items-center mb-3">
-        <span class="text-2xl mr-2">📄</span>
-        <h3 class="text-lg font-semibold">Appeals / Disputes</h3>
-      </div>
-      <p class="text-gray-400 text-sm">Appeal bans, server actions, or account decisions.</p>
-    </div>
-
-    <div class="category-card bg-gray-800 rounded-lg p-5 hover:scale-105 transition cursor-pointer" data-category="generalSupport">
-      <div class="flex items-center mb-3">
-        <span class="text-2xl mr-2">💬</span>
-        <h3 class="text-lg font-semibold">General Support</h3>
-      </div>
-      <p class="text-gray-400 text-sm">Other questions or issues related to OpsLink.</p>
-    </div>
-
-    <div class="category-card bg-gray-800 rounded-lg p-5 hover:scale-105 transition cursor-pointer" data-category="otherRequests">
-      <div class="flex items-center mb-3">
-        <span class="text-2xl mr-2">📝</span>
-        <h3 class="text-lg font-semibold">Other Requests</h3>
-      </div>
-      <p class="text-gray-400 text-sm">Any additional requests not listed.</p>
+  <!-- Hero Section -->
+  <section class="text-center py-20 px-4 md:px-20">
+    <h1 class="text-5xl md:text-6xl font-bold mb-4">Discord Server Support Portal</h1>
+    <p class="text-gray-300 max-w-2xl mx-auto mb-8">Fast, secure, and professional support for your Discord servers. Select a category below to get started.</p>
+    <div class="flex justify-center">
+      <a href="#support-categories" class="bg-indigo-600 hover:bg-indigo-500 transition rounded-full px-6 py-3 font-semibold shadow-lg transform hover:scale-105">Get Support</a>
     </div>
   </section>
 
-  <!-- Ticket Wizard -->
-  <section id="ticketWizard" class="p-6 hidden max-w-4xl mx-auto bg-gray-900 rounded-lg shadow-lg">
-    <h2 class="text-xl font-semibold mb-4">Create a Ticket</h2>
+  <!-- Features Section -->
+  <section class="py-16 px-4 md:px-20">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Why Choose Us</h2>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="bg-gray-800 p-6 rounded-xl shadow hover:shadow-lg transform hover:scale-105 transition fade-in">
+        <h3 class="text-xl font-semibold mb-2">Verified Moderation</h3>
+        <p class="text-gray-300">We provide verified moderation and expert server management guidance.</p>
+      </div>
+      <div class="bg-gray-800 p-6 rounded-xl shadow hover:shadow-lg transform hover:scale-105 transition fade-in">
+        <h3 class="text-xl font-semibold mb-2">Manual Review</h3>
+        <p class="text-gray-300">Each request is reviewed manually to ensure accurate and safe support.</p>
+      </div>
+      <div class="bg-gray-800 p-6 rounded-xl shadow hover:shadow-lg transform hover:scale-105 transition fade-in">
+        <h3 class="text-xl font-semibold mb-2">Community First</h3>
+        <p class="text-gray-300">Our focus is on helping the community and maintaining safe Discord spaces.</p>
+      </div>
+    </div>
+  </section>
 
-    <!-- Step indicators -->
-    <div class="flex mb-4 space-x-2">
-      <div class="step-indicator flex-1 bg-gray-700 text-white p-1 rounded text-center">Category</div>
-      <div class="step-indicator flex-1 bg-gray-700 text-white p-1 rounded text-center">Questions</div>
-      <div class="step-indicator flex-1 bg-gray-700 text-white p-1 rounded text-center">Review</div>
-      <div class="step-indicator flex-1 bg-gray-700 text-white p-1 rounded text-center">Submit</div>
+  <!-- Support Categories -->
+  <section id="support-categories" class="py-16 px-4 md:px-20">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Support Categories</h2>
+    <div class="grid md:grid-cols-3 gap-6 mb-12">
+      <div onclick="showForm('serverEdits')" class="cursor-pointer bg-gray-800 p-6 rounded-xl shadow hover:shadow-lg transform hover:scale-105 transition text-center fade-in">
+        <h3 class="text-xl font-semibold mb-2">Server Edits/Takedown</h3>
+        <p class="text-gray-300">Request changes or takedown of servers.</p>
+      </div>
+      <div onclick="showForm('bugReports')" class="cursor-pointer bg-gray-800 p-6 rounded-xl shadow hover:shadow-lg transform hover:scale-105 transition text-center fade-in">
+        <h3 class="text-xl font-semibold mb-2">Bug Reports</h3>
+        <p class="text-gray-300">Report technical issues or bugs.</p>
+      </div>
+      <div onclick="showForm('accountSupport')" class="cursor-pointer bg-gray-800 p-6 rounded-xl shadow hover:shadow-lg transform hover:scale-105 transition text-center fade-in">
+        <h3 class="text-xl font-semibold mb-2">Account Support</h3>
+        <p class="text-gray-300">Issues with login, verification, or account recovery.</p>
+      </div>
+      <div onclick="showForm('featureRequests')" class="cursor-pointer bg-gray-800 p-6 rounded-xl shadow hover:shadow-lg transform hover:scale-105 transition text-center fade-in">
+        <h3 class="text-xl font-semibold mb-2">Feature Requests</h3>
+        <p class="text-gray-300">Request new features or improvements.</p>
+      </div>
+      <div onclick="showForm('legalRequests')" class="cursor-pointer bg-gray-800 p-6 rounded-xl shadow hover:shadow-lg transform hover:scale-105 transition text-center fade-in">
+        <h3 class="text-xl font-semibold mb-2">Legal Requests</h3>
+        <p class="text-gray-300">Submit DMCA or other legal inquiries.</p>
+      </div>
+      <div onclick="showForm('generalSupport')" class="cursor-pointer bg-gray-800 p-6 rounded-xl shadow hover:shadow-lg transform hover:scale-105 transition text-center fade-in">
+        <h3 class="text-xl font-semibold mb-2">General Support</h3>
+        <p class="text-gray-300">Other inquiries or assistance.</p>
+      </div>
     </div>
 
-    <form id="ticketForm" class="space-y-4">
-      <!-- Step 1: Category -->
-      <div class="step step-category hidden">
-        <p class="text-gray-400 mb-2">Selected Category: <span id="selectedCategory" class="font-semibold"></span></p>
-        <input type="hidden" id="categoryInput" name="category">
-        <button type="button" class="bg-opsPrimary hover:bg-opsAccent text-white px-4 py-2 rounded" id="nextToQuestions">Next</button>
-      </div>
-
-      <!-- Step 2: Dynamic Questions -->
-      <div class="step step-questions hidden space-y-4">
-        <div id="dynamicQuestions"></div>
-        <div class="flex justify-between">
-          <button type="button" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded" id="backToCategory">Back</button>
-          <button type="button" class="bg-opsPrimary hover:bg-opsAccent text-white px-4 py-2 rounded" id="nextToReview">Next</button>
-        </div>
-      </div>
-
-      <!-- Step 3: Review -->
-      <div class="step step-review hidden space-y-4">
-        <h3 class="font-semibold text-lg">Review Your Ticket</h3>
-        <div id="reviewContent" class="bg-gray-800 p-4 rounded space-y-2"></div>
-        <div class="flex justify-between">
-          <button type="button" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded" id="backToQuestions">Back</button>
-          <button type="button" class="bg-opsPrimary hover:bg-opsAccent text-white px-4 py-2 rounded" id="submitTicket">Submit</button>
-        </div>
-      </div>
-
-      <!-- Step 4: Submission Status -->
-      <div class="step step-submit hidden text-center">
-        <p id="submitMessage" class="text-lg"></p>
-        <button type="button" class="mt-4 bg-opsPrimary hover:bg-opsAccent text-white px-4 py-2 rounded" id="newTicket">Create Another Ticket</button>
-      </div>
-    </form>
+    <!-- Dynamic Form Container -->
+    <div id="support-form" class="bg-gray-900 p-8 rounded-xl shadow-lg transition-all duration-500 opacity-0 max-h-0 overflow-hidden"></div>
   </section>
 
   <!-- Footer -->
-  <footer class="p-4 text-center text-gray-500 text-sm">
-    &copy; 2026 OpsLink Servers. All rights reserved.
+  <footer class="bg-gray-800 py-8 px-4 md:px-20 text-center text-gray-400">
+    <p>&copy; 2026 Discord Support Portal. All rights reserved.</p>
+    <p class="text-xs mt-2">This is an unofficial support portal. For official support, refer to Discord documentation.</p>
   </footer>
 
-  <!-- JavaScript -->
+  <!-- Scripts -->
   <script>
-    // State
-    let ticketData = {};
-    let currentStep = 0;
-    const steps = document.querySelectorAll('.step');
+    const formContainer = document.getElementById('support-form');
 
-    // Dynamic Questions per Category
-    const questionsByCategory = {
-      serverEdits: [
-        { label: "Server ID", type: "text", name: "serverId", required: true, placeholder: "1234567890" },
-        { label: "Reason for Edit / Takedown", type: "textarea", name: "reason", required: true, placeholder: "Describe why this request is needed" },
-        { label: "Previous Actions Taken", type: "textarea", name: "previousActions", required: false, placeholder: "Optional" },
-        { label: "Urgency", type: "select", name: "urgency", required: true, options: ["Low","Medium","High"] }
-      ],
-      bugReports: [
-        { label: "Steps to Reproduce", type: "textarea", name: "steps", required: true },
-        { label: "Expected Behavior", type: "textarea", name: "expected", required: true },
-        { label: "Device / Browser", type: "text", name: "device", required: true },
-        { label: "Frequency", type: "text", name: "frequency", required: true },
-        { label: "Screenshots (optional)", type: "text", name: "screenshots", required: false, placeholder: "Provide links" }
-      ],
-      featureRequests: [
-        { label: "Feature Description", type: "textarea", name: "description", required: true },
-        { label: "Expected Impact", type: "textarea", name: "impact", required: true },
-        { label: "Priority Level", type: "select", name: "priority", required: true, options: ["Low","Medium","High"] },
-        { label: "Examples / References", type: "textarea", name: "examples", required: false }
-      ],
-      accountRequests: [
-        { label: "Data Requested", type: "textarea", name: "dataRequested", required: true },
-        { label: "Purpose", type: "textarea", name: "purpose", required: true },
-        { label: "Previous Communications", type: "textarea", name: "previous", required: false },
-        { label: "Verification Proof", type: "text", name: "verification", required: true }
-      ],
-      legalRequests: [
-        { label: "Agency", type: "text", name: "agency", required: true },
-        { label: "Case Number", type: "text", name: "caseNumber", required: true },
-        { label: "Contact Info", type: "text", name: "contact", required: true },
-        { label: "Request Details", type: "textarea", name: "details", required: true },
-        { label: "Urgency", type: "select", name: "urgency", required: true, options: ["Low","Medium","High"] }
-      ],
-      appeals: [
-        { label: "Server ID", type: "text", name: "serverId", required: true },
-        { label: "Issue Description", type: "textarea", name: "issue", required: true },
-        { label: "Supporting Evidence", type: "textarea", name: "evidence", required: false },
-        { label: "Previous Attempts", type: "textarea", name: "previous", required: false }
-      ],
-      trustSafety: [
-        { label: "Offender Info", type: "text", name: "offender", required: true },
-        { label: "Incident Description", type: "textarea", name: "incident", required: true },
-        { label: "Supporting Evidence", type: "textarea", name: "evidence", required: false },
-        { label: "Urgency", type: "select", name: "urgency", required: true, options: ["Low","Medium","High"] }
-      ],
-      generalSupport: [
-        { label: "Type of Request", type: "text", name: "type", required: true },
-        { label: "Details", type: "textarea", name: "details", required: true },
-        { label: "Priority", type: "select", name: "priority", required: true, options: ["Low","Medium","High"] },
-        { label: "Attachments (optional)", type: "text", name: "attachments", required: false, placeholder: "Links or file references" }
-      ],
-      otherRequests: [
-        { label: "Description", type: "textarea", name: "description", required: true },
-        { label: "Additional Info", type: "textarea", name: "additional", required: false },
-        { label: "Urgency", type: "select", name: "urgency", required: true, options: ["Low","Medium","High"] }
-      ]
+    const forms = {
+      serverEdits: `
+        <h3 class="text-2xl font-bold mb-6">Server Edits/Takedown Request</h3>
+        <form class="space-y-4" onsubmit="submitForm(event, 'Server Edits/Takedown')">
+          <div>
+            <label class="block mb-1">Server ID</label>
+            <input type="text" name="serverID" placeholder="Enter Server ID" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition" required>
+          </div>
+          <div>
+            <label class="block mb-1">Server Invite Link</label>
+            <input type="text" name="invite" placeholder="Enter server invite" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition" required>
+          </div>
+          <div>
+            <label class="block mb-1">Reason</label>
+            <textarea name="reason" placeholder="Explain your request" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition" rows="4" required></textarea>
+          </div>
+          <div>
+            <label class="block mb-1">Attachments (optional)</label>
+            <input type="file" name="file" class="w-full text-gray-200">
+          </div>
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105">Submit</button>
+        </form>
+      `,
+      bugReports: `
+        <h3 class="text-2xl font-bold mb-6">Bug Report</h3>
+        <form class="space-y-4" onsubmit="submitForm(event, 'Bug Report')">
+          <div>
+            <label class="block mb-1">Title</label>
+            <input type="text" name="title" placeholder="Short description" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition" required>
+          </div>
+          <div>
+            <label class="block mb-1">Details</label>
+            <textarea name="details" placeholder="Describe the bug" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition" rows="5" required></textarea>
+          </div>
+          <div>
+            <label class="block mb-1">Severity</label>
+            <select name="severity" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition">
+              <option>Low</option>
+              <option>Medium</option>
+              <option>High</option>
+              <option>Critical</option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-1">Attachments (optional)</label>
+            <input type="file" name="file" class="w-full text-gray-200">
+          </div>
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105">Submit</button>
+        </form>
+      `,
+      accountSupport: `
+        <h3 class="text-2xl font-bold mb-6">Account Support</h3>
+        <form class="space-y-4" onsubmit="submitForm(event, 'Account Support')">
+          <div>
+            <label class="block mb-1">Discord Username / Email</label>
+            <input type="text" name="username" placeholder="Enter username or email" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition" required>
+          </div>
+          <div>
+            <label class="block mb-1">Issue Type</label>
+            <select name="issueType" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition">
+              <option>Login Issue</option>
+              <option>Password Reset</option>
+              <option>Account Recovery</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-1">Details</label>
+            <textarea name="details" placeholder="Describe your issue" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition" rows="5" required></textarea>
+          </div>
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105">Submit</button>
+        </form>
+      `,
+      featureRequests: `
+        <h3 class="text-2xl font-bold mb-6">Feature Request</h3>
+        <form class="space-y-4" onsubmit="submitForm(event, 'Feature Request')">
+          <div>
+            <label class="block mb-1">Feature Name</label>
+            <input type="text" name="featureName" placeholder="Feature title" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition" required>
+          </div>
+          <div>
+            <label class="block mb-1">Description</label>
+            <textarea name="description" placeholder="Describe your requested feature" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition" rows="5" required></textarea>
+          </div>
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105">Submit</button>
+        </form>
+      `,
+      legalRequests: `
+        <h3 class="text-2xl font-bold mb-6">Legal Request</h3>
+        <form class="space-y-4" onsubmit="submitForm(event, 'Legal Request')">
+          <div>
+            <label class="block mb-1">Full Name</label>
+            <input type="text" name="fullName" placeholder="Your legal name" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition" required>
+          </div>
+          <div>
+            <label class="block mb-1">Email</label>
+            <input type="email" name="email" placeholder="Your email" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition" required>
+          </div>
+          <div>
+            <label class="block mb-1">Request Type</label>
+            <select name="requestType" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition">
+              <option>DMCA</option>
+              <option>Compliance Inquiry</option>
+              <option>Other Legal</option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-1">Details</label>
+            <textarea name="details" placeholder="Provide details" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition" rows="5" required></textarea>
+          </div>
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105">Submit</button>
+        </form>
+      `,
+      generalSupport: `
+        <h3 class="text-2xl font-bold mb-6">General Support</h3>
+        <form class="space-y-4" onsubmit="submitForm(event, 'General Support')">
+          <div>
+            <label class="block mb-1">Name</label>
+            <input type="text" name="name" placeholder="Your name" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition" required>
+          </div>
+          <div>
+            <label class="block mb-1">Email</label>
+            <input type="email" name="email" placeholder="Your email" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition" required>
+          </div>
+          <div>
+            <label class="block mb-1">Message</label>
+            <textarea name="message" placeholder="How can we help?" class="w-full p-3 rounded-lg border border-gray-700 bg-gray-800 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 transition" rows="5" required></textarea>
+          </div>
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105">Submit</button>
+        </form>
+      `
     };
 
-    // Utility: generate OPS Ticket ID
-    function generateTicketID() {
-      return 'OPS-' + Math.floor(Math.random()*900000 + 100000);
+    function showForm(category) {
+      formContainer.innerHTML = forms[category];
+      formContainer.classList.add('show');
+      formContainer.style.opacity = '1';
+      formContainer.style.maxHeight = '2000px';
+      document.querySelectorAll('.fade-in').forEach(el => el.classList.add('show'));
+      window.scrollTo({ top: formContainer.offsetTop - 50, behavior: 'smooth' });
     }
 
-    // Show step
-    function showStep(index) {
-      steps.forEach((s,i) => s.classList.add('hidden'));
-      steps[index].classList.remove('hidden');
-      currentStep = index;
-    }
-
-    // Category selection
-    document.querySelectorAll('.category-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const category = card.dataset.category;
-        ticketData.category = category;
-        document.getElementById('selectedCategory').textContent = card.querySelector('h3').textContent;
-        document.getElementById('categoryInput').value = category;
-
-        // Populate dynamic questions
-        const container = document.getElementById('dynamicQuestions');
-        container.innerHTML = '';
-        (questionsByCategory[category] || []).forEach(q => {
-          let html = '';
-          if(q.type === 'textarea') {
-            html = `<textarea id="${q.name}" name="${q.name}" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''} class="w-full p-2 rounded bg-gray-800 border border-gray-600 focus:border-opsAccent focus:outline-none"></textarea>`;
-          } else if(q.type === 'select') {
-            const optionsHTML = q.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
-            html = `<select id="${q.name}" name="${q.name}" ${q.required ? 'required' : ''} class="w-full p-2 rounded bg-gray-800 border border-gray-600 focus:border-opsAccent focus:outline-none">${optionsHTML}</select>`;
-          } else {
-            html = `<input type="${q.type}" id="${q.name}" name="${q.name}" placeholder="${q.placeholder || ''}" ${q.required ? 'required' : ''} class="w-full p-2 rounded bg-gray-800 border border-gray-600 focus:border-opsAccent focus:outline-none">`;
+    async function submitForm(e, category) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const payload = {
+        username: "Support Portal",
+        embeds: [
+          {
+            title: category,
+            fields: [],
+            color: 7506394
           }
-          container.insertAdjacentHTML('beforeend', `<div class="mb-2"><label class="block mb-1">${q.label} ${q.required ? '<span class="text-red-500">*</span>' : ''}</label>${html}</div>`);
-        });
+        ]
+      };
 
-        showStep(0);
-        document.getElementById('ticketWizard').classList.remove('hidden');
-        showStep(0);
+      formData.forEach((value, key) => {
+        if (value && value.name !== "file") {
+          payload.embeds[0].fields.push({ name: key, value: value.toString() });
+        }
       });
-    });
-
-    // Navigation buttons
-    document.getElementById('nextToQuestions').addEventListener('click', () => showStep(1));
-    document.getElementById('backToCategory').addEventListener('click', () => showStep(0));
-
-    document.getElementById('nextToReview').addEventListener('click', () => {
-      const form = document.getElementById('ticketForm');
-      if(!form.checkValidity()){ form.reportValidity(); return; }
-
-      // Gather data
-      (questionsByCategory[ticketData.category] || []).forEach(q => {
-        ticketData[q.name] = document.getElementById(q.name)?.value || '';
-      });
-      ticketData.ticketID = generateTicketID();
-
-      // Populate review
-      const review = document.getElementById('reviewContent');
-      review.innerHTML = '';
-      for(const key in ticketData){
-        review.innerHTML += `<div><strong>${key.replace(/([A-Z])/g, ' $1')}:</strong> ${ticketData[key]}</div>`;
-      }
-
-      showStep(2);
-    });
-
-    document.getElementById('backToQuestions').addEventListener('click', () => showStep(1));
-
-    // Submit ticket to Discord webhook
-    document.getElementById('submitTicket').addEventListener('click', async () => {
-      showStep(3);
-      const msgEl = document.getElementById('submitMessage');
-      msgEl.textContent = 'Submitting ticket...';
 
       try {
-        const webhookURL = 'YOUR_DISCORD_WEBHOOK_URL';
-        const embed = {
-          embeds:[{
-            title: `OpsLink Ticket: ${ticketData.ticketID}`,
-            description: Object.entries(ticketData).map(([k,v]) => `**${k}:** ${v}`).join('\n'),
-            color: 5814783,
-            footer: { text: 'OpsLink Support Portal' },
-            timestamp: new Date()
-          }]
-        };
-        const res = await fetch(webhookURL,{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify(embed)
+        const response = await fetch("https://discord.com/api/webhooks/1466728163848622142/rJQn0QaVAz0mYZWm8FYtyW7swrWCavt0aBXNCryM6I6rENqSOvkLYTVhOszSdZIxjyLy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
         });
-        msgEl.textContent = res.ok ? '✅ Ticket submitted successfully!' : '❌ Submission failed. Try again.';
-      } catch(err){
+
+        if (response.ok) {
+          alert("✅ Your request has been submitted successfully!");
+          form.reset();
+        } else {
+          alert("❌ Submission failed. Please try again.");
+        }
+      } catch (err) {
         console.error(err);
-        msgEl.textContent = '❌ Submission failed. Check your connection.';
+        alert("❌ Submission failed. Please check your network.");
       }
-    });
-
-    // New ticket
-    document.getElementById('newTicket').addEventListener('click', () => {
-      ticketData = {};
-      document.getElementById('ticketWizard').classList.add('hidden');
-    });
-
-    showStep(0);
+    }
   </script>
+
 </body>
 </html>
