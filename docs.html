@@ -1,160 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OpsLink Docs</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpsLink Docs Hub</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body { font-family: 'Inter', sans-serif; }
+.sidebar { position: sticky; top: 5rem; }
+.collapsible { cursor: pointer; user-select: none; }
+.content { display: none; }
+.section-title { font-size: 1.25rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; }
+</style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white">
+<body class="bg-gray-900 text-white min-h-screen">
 
-  <!-- Navbar -->
-  <nav class="flex items-center justify-between px-10 py-6 border-b border-zinc-800">
-    <div class="text-xl font-semibold tracking-wide">OpsLink Documentation</div>
-    <div class="flex items-center gap-8 text-sm">
-      <a href="index.html" class="hover:opacity-80">Home</a>
-      <a href="support.html" class="hover:opacity-80">Support</a>
-      <a href="docs.html" class="hover:opacity-80 font-semibold underline">Docs</a>
-    </div>
-  </nav>
+<!-- Navbar -->
+<nav class="flex items-center justify-between px-10 py-6 border-b border-gray-800">
+  <div class="text-2xl font-bold">OpsLink Documentation</div>
+  <div class="flex items-center gap-8 text-sm">
+    <a href="index.html" class="hover:opacity-80">Home</a>
+    <a href="support.html" class="hover:opacity-80">Support</a>
+    <a href="docs.html" class="hover:opacity-80 font-semibold underline">Docs</a>
+  </div>
+</nav>
+
+<div class="flex max-w-7xl mx-auto px-10 py-10 gap-8">
+
+  <!-- Sidebar -->
+  <aside class="sidebar w-64 hidden md:block">
+    <h2 class="text-xl font-semibold mb-4">Jump To</h2>
+    <ul class="space-y-2 text-gray-400 text-sm">
+      <li><a href="#browsing" class="hover:text-blue-400 underline">Browsing Servers</a></li>
+      <li><a href="#submission" class="hover:text-blue-400 underline">Submitting Servers</a></li>
+      <li><a href="#modals" class="hover:text-blue-400 underline">Server Modals</a></li>
+      <li><a href="#accounts" class="hover:text-blue-400 underline">User Accounts</a></li>
+      <li><a href="#dashboard" class="hover:text-blue-400 underline">Admin Dashboard</a></li>
+      <li><a href="#tags" class="hover:text-blue-400 underline">Server Tags</a></li>
+      <li><a href="#support" class="hover:text-blue-400 underline">Support & Tickets</a></li>
+      <li><a href="#reports" class="hover:text-blue-400 underline">Reporting Servers</a></li>
+      <li><a href="#faq" class="hover:text-blue-400 underline">FAQs</a></li>
+      <li><a href="#best-practices" class="hover:text-blue-400 underline">Best Practices</a></li>
+      <li><a href="#tutorials" class="hover:text-blue-400 underline">Guides & Tutorials</a></li>
+    </ul>
+  </aside>
 
   <!-- Main Content -->
-  <main class="px-10 py-10 max-w-6xl mx-auto space-y-12">
+  <main class="flex-1 space-y-12">
 
-    <h1 class="text-5xl font-bold mb-6 text-center">OpsLink Docs</h1>
-    <p class="text-zinc-400 text-center max-w-2xl mx-auto mb-12">
-      Welcome to OpsLink documentation! This guide explains every feature of the site so you can browse, submit, and manage Discord servers effectively.
+    <h1 class="text-4xl font-bold text-center mb-6">OpsLink Documentation Hub</h1>
+    <p class="text-gray-400 text-center max-w-2xl mx-auto mb-12">
+      Explore comprehensive guides, FAQs, and tutorials to help you browse, submit, and manage Discord servers on OpsLink.
     </p>
 
-    <!-- Section: Browsing Servers -->
-    <section>
-      <h2 class="text-3xl font-bold mb-4">Browsing Servers</h2>
-      <p class="text-zinc-300 mb-2">
-        The <strong>Browse Servers</strong> page lets you explore all Discord servers submitted to OpsLink.
-      </p>
-      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
-        <li><strong>Search:</strong> Use the search bar to find servers by name, description, or tags.</li>
-        <li><strong>Filter by Tag:</strong> Click on any tag to only show servers with that tag. You can also select multiple tags.</li>
-        <li><strong>NSFW Toggle:</strong> Check this box to show servers marked as NSFW (Not Safe For Work).</li>
-      </ul>
-      <p class="text-zinc-300">
-        Each server card shows its logo, description, tags, member count, and a link to join the server. Clicking a card opens a detailed modal with more info and reviews.
-      </p>
+    <!-- Browsing Servers -->
+    <section id="browsing" class="space-y-4">
+      <h2 class="text-3xl font-semibold mb-2">Browsing Servers</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">Search & Filter</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Use the search bar to find servers by name, description, or tags. Filters allow combining multiple tags to refine results.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">NSFW Content</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Toggle NSFW servers to display or hide adult content. Minors cannot view NSFW content.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">Server Cards Overview</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Each card displays server logo, name, tags, member count, and description. Click to view more details.
+        </div>
+      </div>
     </section>
 
-    <!-- Section: Submitting Servers -->
-    <section>
-      <h2 class="text-3xl font-bold mb-4">Submitting Servers</h2>
-      <p class="text-zinc-300 mb-2">
-        To submit your Discord server, go to the <strong>Submit</strong> page. You'll need:
-      </p>
-      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
-        <li>Server Name</li>
-        <li>Server Invite Link (Discord.gg link)</li>
-        <li>Description (what your server is about)</li>
-        <li>Server Logo URL</li>
-        <li>Tags (to help users find your server)</li>
-        <li>Discord Server ID (for member tracking via our bot)</li>
-        <li>Optional: Website, Rules, NSFW toggle, Server Type, Language</li>
-      </ul>
-      <p class="text-zinc-300">
-        Once submitted, your server will be <strong>pending approval</strong> by the OpsLink team. You will receive a notification when it is approved or denied.
-      </p>
+    <!-- Submitting Servers -->
+    <section id="submission" class="space-y-4">
+      <h2 class="text-3xl font-semibold mb-2">Submitting Servers</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">Required Information</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Server Name, Invite Link, Description, Logo URL, Tags, Discord Server ID, Optional: Website, Rules, NSFW toggle.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">Submission Approval</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Servers are pending review by OpsLink admins. Notifications are sent upon approval or denial.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">Editing Submissions</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Users can edit server information via their account page. Updates are reviewed again for approval.
+        </div>
+      </div>
     </section>
 
-    <!-- Section: Server Modals -->
-    <section>
-      <h2 class="text-3xl font-bold mb-4">Server Modals</h2>
-      <p class="text-zinc-300 mb-2">
-        Clicking a server card opens a detailed modal containing:
-      </p>
-      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
-        <li>Server Logo and Name</li>
-        <li>Description and Tags</li>
-        <li>Server Owner Info</li>
-        <li>Join Server button (opens Discord invite)</li>
-        <li>Reviews and Comments from other users</li>
-        <li>Option to report the server if inappropriate</li>
-      </ul>
+    <!-- Server Modals -->
+    <section id="modals" class="space-y-4">
+      <h2 class="text-3xl font-semibold mb-2">Server Modals</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">Details Panel</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Shows server logo, name, description, tags, owner info, and join button.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">User Interaction</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Users can leave reviews, comments, and report inappropriate servers directly from the modal.
+        </div>
+      </div>
     </section>
 
-    <!-- Section: User Accounts -->
-    <section>
-      <h2 class="text-3xl font-bold mb-4">User Accounts</h2>
-      <p class="text-zinc-300 mb-2">
-        Creating an account allows you to submit servers, post comments, and report servers.
-      </p>
-      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
-        <li>Login is done via Discord OAuth for easy verification.</li>
-        <li>Once logged in, you can see your username and role (user/admin) in the navbar.</li>
-        <li>Admins get access to the <strong>Admin Dashboard</strong> for managing server submissions.</li>
-      </ul>
+    <!-- User Accounts -->
+    <section id="accounts" class="space-y-4">
+      <h2 class="text-3xl font-semibold mb-2">User Accounts</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">Login & Registration</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Accounts are created via Discord OAuth. Username and role are visible in navbar.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">User Permissions</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Regular users can submit servers and comments. Admins have dashboard access for moderation.
+        </div>
+      </div>
     </section>
 
-    <!-- Section: Admin Dashboard -->
-    <section>
-      <h2 class="text-3xl font-bold mb-4">Admin Dashboard</h2>
-      <p class="text-zinc-300 mb-2">
-        Admins have a dashboard to review, approve, deny, or delete server submissions.
-      </p>
-      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
-        <li>View all pending, approved, and denied servers</li>
-        <li>Approve or deny servers with a reason</li>
-        <li>Delete inappropriate servers</li>
-        <li>View reports submitted by users</li>
-      </ul>
-      <p class="text-zinc-300">
-        Admin actions are logged and notifications are sent to a Discord webhook for transparency.
-      </p>
+    <!-- Admin Dashboard -->
+    <section id="dashboard" class="space-y-4">
+      <h2 class="text-3xl font-semibold mb-2">Admin Dashboard</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">Moderation Tools</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Review, approve, deny, or delete server submissions and reports.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">Activity Logging</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          All actions are logged and sent to a Discord webhook for accountability.
+        </div>
+      </div>
     </section>
 
-    <!-- Section: Tags -->
-    <section>
-      <h2 class="text-3xl font-bold mb-4">Server Tags</h2>
-      <p class="text-zinc-300 mb-2">
-        Tags are keywords that describe a server's focus, such as <strong>Gaming</strong>, <strong>Art</strong>, <strong>Tech</strong>, or <strong>Community</strong>.
-      </p>
-      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
-        <li>Users can filter servers by tags to find what interests them.</li>
-        <li>Tags must be unique per server and are limited in length.</li>
-        <li>New tags are automatically created when a server submits one that doesn’t exist.</li>
-      </ul>
+    <!-- Server Tags -->
+    <section id="tags" class="space-y-4">
+      <h2 class="text-3xl font-semibold mb-2">Server Tags</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">Creating Tags</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Tags describe server topics. New tags are auto-created when submitted if not existing.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">Filtering by Tags</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Users can click tags to filter server lists.
+        </div>
+      </div>
     </section>
 
-    <!-- Section: Support -->
-    <section>
-      <h2 class="text-3xl font-bold mb-4">Support</h2>
-      <p class="text-zinc-300 mb-2">
-        OpsLink provides support through:
-      </p>
-      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
-        <li><strong>Docs:</strong> This page contains explanations for all site features.</li>
-        <li><strong>Support Tickets:</strong> Users can submit tickets for help, questions, or issues.</li>
-      </ul>
-      <p class="text-zinc-300">
-        Tickets are handled by OpsLink staff, and responses are sent back to the user’s account.
-      </p>
+    <!-- Support & Tickets -->
+    <section id="support" class="space-y-4">
+      <h2 class="text-3xl font-semibold mb-2">Support & Tickets</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">Submitting Tickets</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Users submit tickets for help or questions via the Support page. Admins respond directly.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">Ticket Management</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Admins track, respond, and close tickets while maintaining a record of support history.
+        </div>
+      </div>
     </section>
 
-    <!-- Section: Reports -->
-    <section>
-      <h2 class="text-3xl font-bold mb-4">Reporting Servers</h2>
-      <p class="text-zinc-300 mb-2">
-        Users can report servers that are inappropriate, spam, or violate Discord's rules.
-      </p>
-      <ul class="list-disc list-inside text-zinc-300 mb-2 space-y-1">
-        <li>Reports are visible to admins in the dashboard.</li>
-        <li>Admins can delete servers based on reports.</li>
-        <li>Users are encouraged to provide a clear reason when reporting.</li>
-      </ul>
+    <!-- Reporting Servers -->
+    <section id="reports" class="space-y-4">
+      <h2 class="text-3xl font-semibold mb-2">Reporting Servers</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">How to Report</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Click “Report” on a server modal and provide a reason for admins to review.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">Admin Review</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Admins can delete servers violating rules based on reports.
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQs -->
+    <section id="faq" class="space-y-4">
+      <h2 class="text-3xl font-semibold mb-2">Frequently Asked Questions</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">How do I submit my server?</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Go to the Submit page, fill all required fields, and wait for admin approval.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">How do I report a server?</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Click the “Report” button on the server modal, describe the issue, and submit.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">How can I become an admin?</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Admins are selected by OpsLink staff. There is no public application.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">Can I edit my server info?</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Yes, via your user account dashboard. Updates will be reviewed for approval.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">Why is my server denied?</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Denials occur if server violates rules, contains incorrect info, or inappropriate content.
+        </div>
+      </div>
+    </section>
+
+    <!-- Best Practices -->
+    <section id="best-practices" class="space-y-4">
+      <h2 class="text-3xl font-semibold mb-2">Best Practices</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">Server Submissions</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Provide accurate, concise descriptions, use relevant tags, and upload a clear logo.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">User Interaction</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Be polite, leave constructive reviews, and avoid spamming comments.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">Moderation</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Admins should act transparently, follow rules, and log all actions for accountability.
+        </div>
+      </div>
+    </section>
+
+    <!-- Tutorials -->
+    <section id="tutorials" class="space-y-4">
+      <h2 class="text-3xl font-semibold mb-2">Guides & Tutorials</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">Creating a Server Listing</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Step-by-step guide on submitting a new server including required fields, tags, and logos.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">Managing Your Account</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          How to login, view submissions, and edit server info from your dashboard.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">Using Tags Effectively</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Tips on using relevant tags to improve server discoverability.
+        </div>
+
+        <button class="collapsible text-indigo-400 font-medium">Handling Reports</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">
+          Admin guidelines for reviewing and acting on reported servers.
+        </div>
+      </div>
     </section>
 
   </main>
+</div>
 
-  <!-- Footer -->
-  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-center">
-    © 2026 OpsLink Documentation
-  </footer>
+<footer class="px-10 py-10 border-t border-gray-800 text-sm text-gray-400 text-center">
+  © 2026 OpsLink Documentation
+</footer>
+
+<script>
+const collapsibles = document.querySelectorAll(".collapsible");
+collapsibles.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const content = btn.nextElementSibling;
+    content.style.display = content.style.display === "block" ? "none" : "block";
+  });
+});
+</script>
 
 </body>
 </html>
