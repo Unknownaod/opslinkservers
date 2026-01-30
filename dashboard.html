@@ -1,64 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Dashboard - OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
-  <!-- Navbar -->
-  <nav class="flex items-center justify-between px-10 py-6 border-b border-zinc-800">
-    <div class="text-xl font-semibold tracking-wide">OpsLink Admin Dashboard</div>
-    <div class="flex items-center gap-8 text-sm">
-      <a href="index.html" class="hover:opacity-80">Home</a>
-      <button id="logoutBtn" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Logout</button>
-    </div>
-  </nav>
+<!-- ================= NAVBAR ================= -->
+<nav class="flex items-center justify-between px-10 py-6 border-b border-zinc-800">
+  <div class="text-xl font-semibold">OpsLink Admin Dashboard</div>
+  <div class="flex items-center gap-8 text-sm">
+    <a href="index.html" class="hover:opacity-80">Home</a>
+    <button id="logoutBtn" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">
+      Logout
+    </button>
+  </div>
+</nav>
 
-  <!-- Servers Section -->
-  <section class="px-10 py-10">
-    <h1 class="text-4xl font-bold mb-6">All Server Submissions</h1>
-    <input id="searchInput" type="text" placeholder="Search by server name, submitter, or tags..." class="p-2 rounded bg-zinc-800 mb-6 w-full max-w-lg"/>
-    <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-  </section>
+<!-- ================= SERVERS ================= -->
+<section class="px-10 py-10">
+  <h1 class="text-4xl font-bold mb-6">All Server Submissions</h1>
+  <input
+    id="searchInput"
+    type="text"
+    placeholder="Search by name, submitter, or tags..."
+    class="p-2 rounded bg-zinc-800 mb-6 w-full max-w-lg"
+  />
+  <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</section>
 
-  <!-- Edit Requests Section -->
-  <section class="px-10 py-10 border-t border-zinc-800">
-    <h1 class="text-4xl font-bold mb-6">Pending Edit Requests</h1>
-    <div id="editRequestsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-  </section>
+<!-- ================= EDIT REQUESTS ================= -->
+<section class="px-10 py-10 border-t border-zinc-800">
+  <h1 class="text-4xl font-bold mb-6">Pending Edit Requests</h1>
+  <div id="editRequestsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</section>
 
-  <!-- Active Reports Section -->
-  <section class="px-10 py-10 border-t border-zinc-800">
-    <h1 class="text-4xl font-bold mb-6">Active Reports</h1>
-    <div id="reportsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-  </section>
+<!-- ================= REPORTS ================= -->
+<section class="px-10 py-10 border-t border-zinc-800">
+  <h1 class="text-4xl font-bold mb-6">Active Reports</h1>
+  <div id="reportsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</section>
 
-  <!-- Footer -->
-  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
-    <span>© 2026 OpsLink Servers</span>
-    <span>Admin Panel Only</span>
-  </footer>
+<!-- ================= FOOTER ================= -->
+<footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
+  <span>© 2026 OpsLink Servers</span>
+  <span>Admin Panel Only</span>
+</footer>
 
 <script>
+/* ======================================================
+   CONFIG
+====================================================== */
 const API_URL = 'https://opslinkservers-backend.onrender.com';
-let servers = [];
-let currentUser = null;
 const token = localStorage.getItem('token');
 const userStr = localStorage.getItem('user');
 
-// --- Admin check ---
+let servers = [];
+let currentUser = null;
+
+/* ======================================================
+   ADMIN CHECK
+====================================================== */
 async function checkAdmin() {
   if (!token || !userStr) {
-    alert('You must be logged in as admin.');
+    alert('Admin login required.');
     window.location.href = '/login.html';
     return false;
   }
 
   currentUser = JSON.parse(userStr);
-
   if (currentUser.role !== 'admin') {
     alert('Admins only.');
     window.location.href = '/';
@@ -68,162 +81,163 @@ async function checkAdmin() {
   return true;
 }
 
-// --- Load servers ---
+/* ======================================================
+   LOAD DATA
+====================================================== */
 async function loadServers() {
-  try {
-    const res = await fetch(`${API_URL}/api/servers/all`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+  const res = await fetch(`${API_URL}/api/servers/all`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
 
-    servers = await res.json();
-
-    renderServers();
-    renderEditRequests();
-    renderReports();
-
-  } catch (err) {
-    console.error(err);
-    alert('Failed to load servers.');
-  }
+  servers = await res.json();
+  renderServers();
+  renderEditRequests();
+  renderReports();
 }
 
-// --- Render servers ---
+/* ======================================================
+   SERVERS
+====================================================== */
 function renderServers() {
-  const container = document.getElementById('serversGrid');
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  container.innerHTML = '';
+  const grid = document.getElementById('serversGrid');
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  grid.innerHTML = '';
 
   const filtered = servers.filter(s =>
-    s.name?.toLowerCase().includes(search) ||
-    s.description?.toLowerCase().includes(search) ||
-    s.submitterDiscord?.username?.toLowerCase().includes(search) ||
-    s.submitterDiscord?.tag?.toLowerCase().includes(search) ||
-    s.tags?.some(tag => tag.toLowerCase().includes(search))
+    s.name?.toLowerCase().includes(q) ||
+    s.submitterDiscord?.username?.toLowerCase().includes(q) ||
+    s.tags?.some(t => t.includes(q))
   );
 
   if (!filtered.length) {
-    container.innerHTML = '<div class="col-span-full text-center text-zinc-400 mt-10">No servers to show...</div>';
+    grid.innerHTML = `<div class="col-span-full text-center text-zinc-400">No servers found.</div>`;
     return;
   }
 
   filtered.forEach(s => {
-    const card = document.createElement('div');
-    card.className = 'bg-zinc-900/80 border border-zinc-800 p-4 rounded flex flex-col justify-between';
-
     const statusColor =
       s.status === 'approved' ? 'text-green-400' :
       s.status === 'denied' ? 'text-red-400' :
       'text-yellow-400';
 
-    const inviteLink = s.invite?.startsWith('http') ? s.invite : `https://${s.invite}`;
-
-    card.innerHTML = `
-      <h3 class="text-lg font-semibold mb-1">${s.name}</h3>
-      <p class="text-sm text-zinc-300 mb-2">${s.description || 'No description'}</p>
-      <p class="text-xs text-zinc-500 mb-1">Tags: ${s.tags?.join(', ') || 'None'}</p>
-      <p class="text-xs text-zinc-500 mb-1">NSFW: ${s.nsfw ? 'Yes' : 'No'}</p>
-      <p class="text-xs text-zinc-500 mb-1">Members: ${s.members || 'N/A'}</p>
-      <p class="text-xs text-zinc-500 mb-1">Submitted by: ${s.submitterDiscord?.username || 'N/A'}</p>
-      <p class="text-sm mb-2">Status: <span class="${statusColor} font-semibold">${s.status}</span></p>
-      <div class="flex gap-2 flex-wrap"></div>
-    `;
-
-    const btnContainer = card.querySelector('div');
-
-    if (s.status === 'pending') {
-      const approveBtn = document.createElement('button');
-      approveBtn.className = 'bg-green-600 px-3 py-1 rounded';
-      approveBtn.textContent = 'Approve';
-      approveBtn.onclick = () => approveServer(s._id);
-      btnContainer.appendChild(approveBtn);
-
-      const denyBtn = document.createElement('button');
-      denyBtn.className = 'bg-red-600 px-3 py-1 rounded';
-      denyBtn.textContent = 'Deny';
-      denyBtn.onclick = () => denyServer(s._id);
-      btnContainer.appendChild(denyBtn);
-    }
-
-    container.appendChild(card);
-  });
-}
-
-// --- Render edit requests (FIXED) ---
-function renderEditRequests() {
-  const container = document.getElementById('editRequestsGrid');
-  container.innerHTML = '';
-
-  const requests = servers.flatMap(s =>
-    (s.editRequests || []).map(req => ({
-      ...req,
-      serverId: s._id,
-      originalServer: s
-    }))
-  );
-
-  if (!requests.length) {
-    container.innerHTML = '<div class="col-span-full text-center text-zinc-400 mt-10">No pending edit requests.</div>';
-    return;
-  }
-
-  requests.forEach(req => {
     const card = document.createElement('div');
-    card.className = 'bg-yellow-900/80 border border-yellow-800 p-4 rounded';
+    card.className = 'bg-zinc-900 border border-zinc-800 p-4 rounded flex flex-col justify-between';
 
     card.innerHTML = `
-      <h3 class="text-lg font-semibold mb-1">${req.name || req.originalServer.name}</h3>
-      <p class="text-xs text-zinc-300">Requested By: ${req.originalServer.submitterDiscord?.username || 'N/A'}</p>
-      <p class="text-sm mt-2">Changes:</p>
-      <p class="text-xs">Description: ${req.description || 'No change'}</p>
-      <p class="text-xs">Tags: ${req.tags?.join(', ') || 'No change'}</p>
-      <p class="text-xs">NSFW: ${req.nsfw ? 'Yes' : 'No'}</p>
+      <div>
+        <h3 class="font-semibold text-lg">${s.name}</h3>
+        <p class="text-sm text-zinc-400">${s.description}</p>
+        <p class="text-xs mt-2">Tags: ${s.tags?.join(', ') || 'None'}</p>
+        <p class="text-xs">Members: ${s.members ?? 'N/A'}</p>
+        <p class="text-xs">NSFW: ${s.nsfw ? 'Yes' : 'No'}</p>
+        <p class="text-xs">By: ${s.submitterDiscord?.username || 'Unknown'}</p>
+        <p class="mt-2">Status: <span class="${statusColor}">${s.status}</span></p>
+      </div>
       <div class="flex gap-2 mt-3"></div>
     `;
 
-    const btns = card.querySelector('div');
+    const btns = card.querySelector('div:last-child');
 
-    const approve = document.createElement('button');
-    approve.className = 'bg-green-600 px-3 py-1 rounded';
-    approve.textContent = 'Approve Edit';
-    approve.onclick = () => approveEdit(req.serverId, req._id);
+    if (s.status === 'pending') {
+      btns.appendChild(actionBtn('Approve', 'bg-green-600', () => updateStatus(s._id, 'approved')));
+      btns.appendChild(actionBtn('Deny', 'bg-red-600', () => {
+        const reason = prompt('Reason?');
+        if (reason !== null) updateStatus(s._id, 'denied', reason);
+      }));
+    }
 
-    const deny = document.createElement('button');
-    deny.className = 'bg-red-600 px-3 py-1 rounded';
-    deny.textContent = 'Deny Edit';
-    deny.onclick = () => denyEdit(req.serverId, req._id);
-
-    btns.appendChild(approve);
-    btns.appendChild(deny);
-
-    container.appendChild(card);
+    grid.appendChild(card);
   });
 }
 
-// --- Server actions ---
-async function approveServer(id) {
-  if (!confirm('Approve this server?')) return;
-  await updateServerStatus(id, 'approved');
+/* ======================================================
+   EDIT REQUESTS (FIXED)
+====================================================== */
+function renderEditRequests() {
+  const grid = document.getElementById('editRequestsGrid');
+  grid.innerHTML = '';
+
+  const edits = servers.flatMap(server =>
+    (server.editRequests || [])
+      .filter(e => e.status === 'pending')
+      .map(e => ({ server, edit: e }))
+  );
+
+  if (!edits.length) {
+    grid.innerHTML = `<div class="col-span-full text-center text-zinc-400">No pending edit requests.</div>`;
+    return;
+  }
+
+  edits.forEach(({ server, edit }) => {
+    const c = edit.changes || {};
+
+    const card = document.createElement('div');
+    card.className = 'bg-yellow-900/70 border border-yellow-800 p-4 rounded';
+
+    card.innerHTML = `
+      <h3 class="font-semibold">${server.name}</h3>
+      <p class="text-xs text-zinc-300">By: ${server.submitterDiscord?.username || 'Unknown'}</p>
+      <p class="text-xs mt-2">Description: ${c.description || '—'}</p>
+      <p class="text-xs">Tags: ${(c.tags || []).join(', ') || '—'}</p>
+      <p class="text-xs">NSFW: ${c.nsfw ? 'Yes' : 'No'}</p>
+      <div class="flex gap-2 mt-3"></div>
+    `;
+
+    const btns = card.querySelector('div:last-child');
+    btns.appendChild(actionBtn('Approve', 'bg-green-600', () => approveEdit(server._id, edit._id)));
+    btns.appendChild(actionBtn('Deny', 'bg-red-600', () => denyEdit(server._id, edit._id)));
+
+    grid.appendChild(card);
+  });
 }
 
-async function denyServer(id) {
-  const reason = prompt('Enter reason:');
-  if (reason === null) return;
-  await updateServerStatus(id, 'denied', reason);
+/* ======================================================
+   REPORTS
+====================================================== */
+function renderReports() {
+  const grid = document.getElementById('reportsGrid');
+  grid.innerHTML = '';
+
+  const reports = servers.flatMap(s =>
+    (s.reports || []).map(r => ({ server: s, report: r }))
+  );
+
+  if (!reports.length) {
+    grid.innerHTML = `<div class="col-span-full text-center text-zinc-400">No active reports.</div>`;
+    return;
+  }
+
+  reports.forEach(({ server, report }) => {
+    const card = document.createElement('div');
+    card.className = 'bg-red-900/60 border border-red-800 p-4 rounded';
+
+    card.innerHTML = `
+      <h3 class="font-semibold">${server.name}</h3>
+      <p class="text-xs mt-1">Reason: ${report.reason}</p>
+      <p class="text-xs text-zinc-300 mt-1">
+        Reported: ${new Date(report.createdAt).toLocaleString()}
+      </p>
+    `;
+
+    grid.appendChild(card);
+  });
 }
 
-async function updateServerStatus(id, status, reason = '') {
+/* ======================================================
+   ACTIONS
+====================================================== */
+async function updateStatus(id, status, rejectionReason = '') {
   await fetch(`${API_URL}/api/servers/${id}/status`, {
     method: 'PATCH',
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ status, rejectionReason: reason })
+    body: JSON.stringify({ status, rejectionReason })
   });
-  await loadServers();
+  loadServers();
 }
 
-// --- Approve / deny edits (FIXED) ---
 async function approveEdit(serverId, editId) {
   await fetch(`${API_URL}/api/servers/${serverId}/edit-approve`, {
     method: 'POST',
@@ -233,7 +247,7 @@ async function approveEdit(serverId, editId) {
     },
     body: JSON.stringify({ editId })
   });
-  await loadServers();
+  loadServers();
 }
 
 async function denyEdit(serverId, editId) {
@@ -245,18 +259,31 @@ async function denyEdit(serverId, editId) {
     },
     body: JSON.stringify({ editId })
   });
-  await loadServers();
+  loadServers();
 }
 
-// --- Init ---
+/* ======================================================
+   HELPERS
+====================================================== */
+function actionBtn(label, cls, fn) {
+  const b = document.createElement('button');
+  b.textContent = label;
+  b.className = `${cls} px-3 py-1 rounded`;
+  b.onclick = fn;
+  return b;
+}
+
+/* ======================================================
+   INIT
+====================================================== */
 document.getElementById('searchInput').addEventListener('input', renderServers);
-document.getElementById('logoutBtn').addEventListener('click', () => {
+document.getElementById('logoutBtn').onclick = () => {
   localStorage.clear();
   window.location.href = '/login.html';
-});
+};
 
 (async () => {
-  if (await checkAdmin()) await loadServers();
+  if (await checkAdmin()) loadServers();
 })();
 </script>
 
