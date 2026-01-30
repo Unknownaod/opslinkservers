@@ -21,6 +21,9 @@
   </div>
 </nav>
 
+<!-- Notifications -->
+<div id="notificationContainer" class="fixed top-4 right-4 flex flex-col gap-2 z-50"></div>
+
 <section class="px-10 py-10 max-w-3xl mx-auto">
   <h1 class="text-5xl font-bold mb-6">System Messages</h1>
   <div id="messagesContainer" class="flex flex-col gap-4">
@@ -74,9 +77,11 @@
 const API_URL = 'https://opslinkservers-backend.onrender.com';
 const messagesContainer = document.getElementById('messagesContainer');
 const loginBtn = document.getElementById('loginBtn');
+const notificationContainer = document.getElementById('notificationContainer');
 
 let user = null;
 let currentEditServer = null;
+let lastStatuses = {}; // store last status for notifications
 
 /* ================= LOGIN CHECK ================= */
 function checkLogin() {
@@ -101,6 +106,18 @@ function checkLogin() {
   return true;
 }
 
+/* ================= NOTIFICATIONS ================= */
+function notify(message, type='info') {
+  const div = document.createElement('div');
+  div.className = `px-4 py-2 rounded text-sm ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white shadow-lg`;
+  div.textContent = message;
+  notificationContainer.appendChild(div);
+
+  setTimeout(() => {
+    div.remove();
+  }, 5000);
+}
+
 /* ================= RENDER ================= */
 function renderMessages(servers) {
   const myServers = servers.filter(
@@ -116,6 +133,14 @@ function renderMessages(servers) {
   }
 
   myServers.forEach(s => {
+    // Check status change
+    const prevStatus = lastStatuses[s._id];
+    if (prevStatus && prevStatus !== s.status) {
+      if (s.status === 'approved') notify(`Server "${s.name}" approved!`, 'success');
+      if (s.status === 'denied') notify(`Server "${s.name}" denied: ${s.rejectionReason || 'No reason provided.'}`, 'error');
+    }
+    lastStatuses[s._id] = s.status;
+
     const div = document.createElement('div');
     div.className = `p-4 rounded border ${
       s.status === 'approved' ? 'border-green-500 bg-green-900/30' :
