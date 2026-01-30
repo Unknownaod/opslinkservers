@@ -8,28 +8,70 @@
 </head>
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
-  <!-- Navbar -->
-  <nav class="flex items-center justify-between px-10 py-6">
-    <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
-    <div class="flex items-center gap-8 text-sm" id="navLinks">
-      <a href="index.html" class="hover:opacity-80">Home</a>
-      <a href="browse.html" class="hover:opacity-80">Browse</a>
-      <a href="submit.html" class="hover:opacity-80">Submit</a>
-      <a href="login.html" id="loginBtn" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
-    </div>
-  </nav>
+<!-- Navbar -->
+<nav class="flex items-center justify-between px-10 py-6">
+  <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
+  <div class="flex items-center gap-8 text-sm" id="navLinks">
+    <a href="index.html" class="hover:opacity-80">Home</a>
+    <a href="browse.html" class="hover:opacity-80">Browse</a>
+    <a href="submit.html" class="hover:opacity-80">Submit</a>
+    <a href="login.html" id="loginBtn"
+      class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
+  </div>
+</nav>
 
-  <section class="px-10 py-10 max-w-3xl mx-auto">
-    <h1 class="text-5xl font-bold mb-6">System Messages</h1>
-    <div id="messagesContainer" class="flex flex-col gap-4">
-      <p class="text-zinc-400">Loading your messages...</p>
-    </div>
-  </section>
+<section class="px-10 py-10 max-w-3xl mx-auto">
+  <h1 class="text-5xl font-bold mb-6">System Messages</h1>
+  <div id="messagesContainer" class="flex flex-col gap-4">
+    <p class="text-zinc-400">Loading your messages...</p>
+  </div>
+</section>
 
-  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
-    <span>© 2026 OpsLink Servers</span>
-    <span>Not affiliated with Discord</span>
-  </footer>
+<!-- EDIT REQUEST MODAL -->
+<div id="editModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-6 z-50">
+  <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-xl w-full relative">
+
+    <button id="closeEditModal"
+      class="absolute top-3 right-3 text-zinc-400 hover:text-white text-2xl">&times;</button>
+
+    <h2 class="text-2xl font-bold mb-4">Request Server Edit</h2>
+
+    <form id="editForm" class="flex flex-col gap-3">
+
+      <input name="name" placeholder="Server Name" class="p-2 rounded bg-zinc-800" required />
+      <textarea name="description" placeholder="Description" class="p-2 rounded bg-zinc-800" required></textarea>
+      <input name="logo" placeholder="Logo URL" class="p-2 rounded bg-zinc-800" required />
+      <input name="website" placeholder="Website / Social" class="p-2 rounded bg-zinc-800" />
+      <input name="language" placeholder="Language" class="p-2 rounded bg-zinc-800" />
+      <input name="members" type="number" placeholder="Members" class="p-2 rounded bg-zinc-800" />
+
+      <select name="type" class="p-2 rounded bg-zinc-800">
+        <option value="">Server Type</option>
+        <option value="gaming">Gaming</option>
+        <option value="community">Community</option>
+        <option value="education">Education</option>
+        <option value="hobby">Hobby</option>
+        <option value="other">Other</option>
+      </select>
+
+      <label class="flex items-center gap-2">
+        <input type="checkbox" name="nsfw" />
+        NSFW
+      </label>
+
+      <button type="submit"
+        class="bg-indigo-600 py-2 rounded hover:bg-indigo-700 transition font-semibold">
+        Submit Edit Request
+      </button>
+
+    </form>
+  </div>
+</div>
+
+<footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
+  <span>© 2026 OpsLink Servers</span>
+  <span>Not affiliated with Discord</span>
+</footer>
 
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
@@ -37,90 +79,133 @@ const loginBtn = document.getElementById('loginBtn');
 const messagesContainer = document.getElementById('messagesContainer');
 
 let user = null;
+let currentEditServer = null;
 
-// Check login from localStorage
+// Check login
 function checkLogin() {
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
 
   if (!token || !userStr) {
     messagesContainer.innerHTML = '<p class="text-zinc-400">You must be logged in to view system messages.</p>';
-    loginBtn.textContent = 'Login';
-    loginBtn.href = 'login.html';
     return false;
   }
 
   user = JSON.parse(userStr);
 
-  // Update login/logout button
   loginBtn.textContent = 'Logout';
   loginBtn.href = '#';
-  loginBtn.addEventListener('click', () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.reload();
-  });
+  loginBtn.onclick = () => {
+    localStorage.clear();
+    location.reload();
+  };
 
   return true;
 }
 
-// Render system messages
+// Render messages
 function renderMessages(servers) {
   const myServers = servers.filter(s => s.submitter && s.submitter._id === user._id);
-
-  if (myServers.length === 0) {
-    messagesContainer.innerHTML = '<p class="text-zinc-400">You have not submitted any servers yet.</p>';
-    return;
-  }
 
   messagesContainer.innerHTML = '';
 
   myServers.forEach(s => {
     const div = document.createElement('div');
-    div.className = `p-4 rounded border ${s.status === 'approved' ? 'border-green-500 bg-green-900/30' : s.status === 'denied' ? 'border-red-500 bg-red-900/30' : 'border-zinc-700 bg-zinc-900/50'} cursor-pointer hover:scale-105 transition-transform`;
-    
-    let messageContent = '';
-    
-    // Status message for server submission
-    if (s.status === 'pending') {
-      messageContent = `Your server "${s.name}" has been submitted and is pending review.`;
-    } else if (s.status === 'approved') {
-      messageContent = `Your server "${s.name}" has been approved and is now live!`;
-    } else if (s.status === 'denied') {
-      messageContent = `Your server "${s.name}" has been denied. Reason: ${s.rejectionReason || 'N/A'}`;
-    } else if (s.status === 'taken down') {
-      messageContent = `Your server "${s.name}" has been taken down.`;
-    }
+    div.className = `p-4 rounded border ${
+      s.status === 'approved' ? 'border-green-500 bg-green-900/30' :
+      s.status === 'denied' ? 'border-red-500 bg-red-900/30' :
+      'border-zinc-700 bg-zinc-900/50'
+    }`;
+
+    let msg = '';
+
+    if (s.status === 'pending') msg = 'Your server is pending review.';
+    if (s.status === 'approved') msg = 'Your server has been approved and is now live!';
+    if (s.status === 'denied') msg = `Denied: ${s.rejectionReason || 'No reason provided.'}`;
 
     div.innerHTML = `
       <h3 class="font-semibold text-lg">${s.name}</h3>
-      <p class="text-sm text-zinc-300">${messageContent}</p>
-      ${s.status === 'approved' ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>` : ''}
+      <p class="text-sm text-zinc-300 mb-2">${msg}</p>
+
+      ${s.status === 'approved' ? `
+        <div class="flex gap-3">
+          <a href="${s.invite}" target="_blank"
+            class="text-blue-400 underline text-sm">Join Server</a>
+
+          <button class="requestEditBtn bg-indigo-600 px-3 py-1 rounded text-sm hover:bg-indigo-700">
+            Request Edit
+          </button>
+        </div>
+      ` : ''}
     `;
-    div.addEventListener('click', () => div.classList.toggle('bg-zinc-800/50'));
+
+    if (s.status === 'approved') {
+      div.querySelector('.requestEditBtn').onclick = () => openEditModal(s);
+    }
 
     messagesContainer.appendChild(div);
   });
 }
 
-// Fetch servers and update messages
-async function fetchAndUpdateMessages() {
-  if (!user) return;
+// Open edit modal
+function openEditModal(server) {
+  currentEditServer = server;
+  const modal = document.getElementById('editModal');
+  const form = document.getElementById('editForm');
 
-  try {
-    const res = await fetch(`${API_URL}/api/servers`);
-    const servers = await res.json();
-    renderMessages(servers);
-  } catch (err) {
-    console.error(err);
-    messagesContainer.innerHTML = '<p class="text-red-400">Failed to load messages. Try again later.</p>';
-  }
+  form.name.value = server.name || '';
+  form.description.value = server.description || '';
+  form.logo.value = server.logo || '';
+  form.website.value = server.website || '';
+  form.language.value = server.language || '';
+  form.members.value = server.members || '';
+  form.type.value = server.type || '';
+  form.nsfw.checked = server.nsfw || false;
+
+  modal.classList.remove('hidden');
 }
 
-// Initialize
+// Close modal
+document.getElementById('closeEditModal').onclick = () => {
+  document.getElementById('editModal').classList.add('hidden');
+};
+
+// Submit edit request
+document.getElementById('editForm').onsubmit = async e => {
+  e.preventDefault();
+
+  const token = localStorage.getItem('token');
+  if (!token) return alert('Login required.');
+
+  const payload = Object.fromEntries(new FormData(e.target));
+
+  payload.nsfw = e.target.nsfw.checked;
+
+  const res = await fetch(`${API_URL}/api/servers/${currentEditServer._id}/request-edit`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) return alert('Failed to submit edit request.');
+
+  alert('Edit request submitted! Staff will review it.');
+  document.getElementById('editModal').classList.add('hidden');
+};
+
+// Fetch + poll
+async function fetchAndUpdateMessages() {
+  const res = await fetch(`${API_URL}/api/servers`);
+  const servers = await res.json();
+  renderMessages(servers);
+}
+
+// Init
 if (checkLogin()) {
   fetchAndUpdateMessages();
-  // Poll every 5 seconds
   setInterval(fetchAndUpdateMessages, 5000);
 }
 </script>
