@@ -18,40 +18,30 @@
       <a href="messages.html" class="hover:opacity-80">Messages</a>
       <a href="support.html" class="hover:opacity-80">Support</a>
       <a href="login.html" id="loginBtn" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
-      <!-- Admin button will be inserted here -->
       <a href="#" id="adminBtn" class="hidden rounded-full bg-red-600 text-white px-6 py-3 hover:bg-red-700">Admin Dashboard</a>
     </div>
   </nav>
 
   <!-- Hero Section -->
-  <section class="relative px-10 pt-28 pb-10">
-    <h1 class="max-w-3xl text-5xl font-bold leading-tight">
+  <section class="relative px-10 pt-28 pb-16 text-center">
+    <h1 class="max-w-3xl mx-auto text-5xl font-bold leading-tight">
       The <span class="text-white">curated</span> Discord server directory, <br />
       trusted, moderated, and high quality.
     </h1>
 
-    <p class="mt-6 max-w-xl text-zinc-300">
-      OpsLink Servers lists only verified Discord communities.
-      Every server is manually approved. Every review is moderated.
-      No spam. No fake ratings.
+    <p class="mt-6 max-w-xl mx-auto text-zinc-300">
+      OpsLink Servers lists only verified Discord communities. Every server is manually approved. Every review is moderated. No spam. No fake ratings.
     </p>
 
-    <div class="mt-10 flex gap-4 flex-wrap">
+    <div class="mt-10 flex justify-center flex-wrap gap-4 text-center">
       <a href="browse.html" class="rounded-full bg-white text-black px-6 py-3 hover:bg-zinc-200">Browse Servers</a>
       <a href="submit.html" class="rounded-full border border-white text-white px-6 py-3 hover:bg-white/10">Submit Server</a>
     </div>
-  </section>
 
-  <!-- Live Stats -->
-  <section class="px-10 py-10 flex flex-col md:flex-row gap-8 items-center justify-center text-center text-white">
-    <div class="bg-zinc-900/80 border border-zinc-800 p-6 rounded-2xl w-64">
-      <h2 class="text-xl font-semibold mb-2">Servers</h2>
-      <p id="serverCount" class="text-3xl font-bold">0</p>
-    </div>
-    <div class="bg-zinc-900/80 border border-zinc-800 p-6 rounded-2xl w-64">
-      <h2 class="text-xl font-semibold mb-2">Members</h2>
-      <p id="memberCount" class="text-3xl font-bold">0</p>
-    </div>
+    <!-- Live Stats Inline -->
+    <p class="mt-10 text-2xl md:text-3xl font-semibold text-white">
+      Powering <span id="memberCount" class="text-green-400">0</span> users across <span id="serverCount" class="text-blue-400">0</span> communities
+    </p>
   </section>
 
   <!-- Feature Cards -->
@@ -70,34 +60,11 @@
     </div>
   </section>
 
-  <!-- Trust Section -->
-  <section class="px-10 pb-32" id="reviews">
-    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-      <div>
-        <h4 class="font-semibold mb-1">Strict Rules</h4>
-        <p class="text-sm text-zinc-300">Low-effort servers are rejected.</p>
-      </div>
-      <div>
-        <h4 class="font-semibold mb-1">Transparent Moderation</h4>
-        <p class="text-sm text-zinc-300">Clear reasons for approval or rejection.</p>
-      </div>
-      <div>
-        <h4 class="font-semibold mb-1">Community First</h4>
-        <p class="text-sm text-zinc-300">Quality over quantity, always.</p>
-      </div>
-    </div>
-  </section>
-
   <!-- Footer -->
   <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
     <span>© 2026 OpsLink Servers</span>
     <span>Not affiliated with Discord</span>
   </footer>
-
-  <!-- Popup Notification -->
-  <div id="notification" class="fixed top-4 left-1/2 transform -translate-x-1/2 p-4 bg-green-500 text-white rounded-md hidden shadow-lg cursor-pointer z-50">
-    <p id="notificationMessage" class="font-semibold">New System Message! Check now!</p>
-  </div>
 
   <!-- Scripts -->
   <script>
@@ -107,10 +74,8 @@
     const loginBtn = document.getElementById('loginBtn');
     const adminBtn = document.getElementById('adminBtn');
     const navLinks = document.getElementById('navLinks');
-    const notification = document.getElementById('notification');
-    const notificationMessage = document.getElementById('notificationMessage');
 
-    // User Auth / Admin Button
+    // User login/admin handling
     if (token && userStr) {
       const user = JSON.parse(userStr);
       loginBtn.textContent = 'Logout';
@@ -122,7 +87,7 @@
       });
       const welcomeSpan = document.createElement('span');
       welcomeSpan.textContent = `Welcome, ${user.discordUsername}`;
-      welcomeSpan.className = "text-sm text-zinc-300";
+      welcomeSpan.className = "text-sm text-zinc-300 mr-2";
       navLinks.insertBefore(welcomeSpan, loginBtn);
       if (user.role === 'admin') {
         adminBtn.classList.remove('hidden');
@@ -130,20 +95,8 @@
       }
     }
 
-    // Popup notification
-    function showNotification(message) {
-      notificationMessage.textContent = message;
-      notification.classList.remove('hidden');
-      setTimeout(() => notification.classList.add('hidden'), 5000);
-    }
-
-    // Fetch live server stats and animate
-    const serverCountEl = document.getElementById('serverCount');
-    const memberCountEl = document.getElementById('memberCount');
-    let currentServers = 0;
-    let currentMembers = 0;
-
-    function animateValue(el, start, end, duration) {
+    // Animated number function
+    function animateValue(el, start, end, duration = 1200) {
       const range = end - start;
       let startTime = null;
       function step(timestamp) {
@@ -155,6 +108,12 @@
       requestAnimationFrame(step);
     }
 
+    const serverCountEl = document.getElementById('serverCount');
+    const memberCountEl = document.getElementById('memberCount');
+    let currentServers = 0;
+    let currentMembers = 0;
+
+    // Fetch live stats from API
     async function fetchLiveStats() {
       try {
         const res = await fetch(`${API_URL}/api/servers`);
@@ -163,8 +122,8 @@
         const totalServers = approved.length;
         const totalMembers = approved.reduce((sum, s) => sum + (Number(s.members) || 0), 0);
 
-        animateValue(serverCountEl, currentServers, totalServers, 1200);
-        animateValue(memberCountEl, currentMembers, totalMembers, 1200);
+        animateValue(serverCountEl, currentServers, totalServers);
+        animateValue(memberCountEl, currentMembers, totalMembers);
 
         currentServers = totalServers;
         currentMembers = totalMembers;
@@ -173,25 +132,9 @@
       }
     }
 
-    // Initial fetch
+    // Initial load + refresh every 2–5 minutes
     fetchLiveStats();
-
-    // Refresh every 2–5 minutes
     setInterval(fetchLiveStats, 2.5 * 60 * 1000 + Math.random() * 2.5 * 60 * 1000);
-
-    // Optional: check new messages every 10 seconds
-    async function checkNewMessages() {
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
-      try {
-        const res = await fetch(`${API_URL}/api/servers`);
-        const servers = await res.json();
-        const userServers = servers.filter(s => s.submitter && s.submitter._id === user._id);
-        const recentMessages = userServers.filter(s => s.status === 'approved' || s.status === 'denied' || s.status === 'taken down');
-        if (recentMessages.length > 0) showNotification('New System Message! Check now!');
-      } catch (err) { console.error(err); }
-    }
-    setInterval(checkNewMessages, 10000);
   </script>
 </body>
 </html>
