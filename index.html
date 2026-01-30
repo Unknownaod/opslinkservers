@@ -8,7 +8,7 @@
 </head>
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
-  <!-- Navbar -->
+  <!-- Navbar above hero -->
   <nav class="flex items-center justify-between px-10 py-6">
     <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
     <div class="flex items-center gap-8 text-sm" id="navLinks">
@@ -18,13 +18,12 @@
       <a href="messages.html" class="hover:opacity-80">Messages</a>
       <a href="support.html" class="hover:opacity-80">Support</a>
       <a href="login.html" id="loginBtn" class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10">Login</a>
-      <!-- Admin button will be inserted here -->
       <a href="#" id="adminBtn" class="hidden rounded-full bg-red-600 text-white px-6 py-3 hover:bg-red-700">Admin Dashboard</a>
     </div>
   </nav>
 
   <!-- Hero Section -->
-  <section class="relative px-10 pt-28 pb-40 text-center">
+  <section class="relative px-10 pt-16 pb-40 text-center">
     <h1 class="max-w-3xl mx-auto text-5xl font-bold leading-tight">
       The <span class="text-white">curated</span> Discord server directory, <br />
       trusted, moderated, and high quality.
@@ -145,7 +144,6 @@
         const res = await fetch(`${API_URL}/api/servers`);
         const servers = await res.json();
 
-        // Only approved servers
         const approved = servers.filter(s => s.status === 'approved' || !s.status);
         const totalServers = approved.length;
         const totalMembers = approved.reduce((sum, s) => sum + (Number(s.members) || 0), 0);
