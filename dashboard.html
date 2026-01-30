@@ -170,12 +170,17 @@ function renderServers() {
   });
 }
 
-// --- Render pending edit requests ---
+// --- Render pending edit requests (FIXED) ---
 function renderEditRequests() {
   const container = document.getElementById('editRequestsGrid');
   container.innerHTML = '';
 
-  const requests = servers.flatMap(s => (s.editRequests || []).map(req => ({ ...req, serverId: s._id, original: s })));
+  const requests = servers.flatMap(s =>
+    (s.editRequests || []).map(req => ({
+      ...req,
+      serverId: s._id
+    }))
+  );
 
   if (!requests.length) {
     container.innerHTML = '<div class="col-span-full text-center text-zinc-400 mt-10">No pending edit requests.</div>';
@@ -187,14 +192,13 @@ function renderEditRequests() {
     card.className = 'bg-yellow-900/80 border border-yellow-800 p-4 rounded flex flex-col gap-2';
 
     card.innerHTML = `
-      <h3 class="text-lg font-semibold mb-1">${req.name} (Edit Request)</h3>
-      <p class="text-xs text-zinc-300 mb-1">Original Name: ${req.original.name}</p>
-      <p class="text-xs text-zinc-300 mb-1">Requested by owner: ${req.original.submitterDiscord?.username || 'N/A'}</p>
+      <h3 class="text-lg font-semibold mb-1">${req.name || 'Edit Request'}</h3>
+      <p class="text-xs text-zinc-300 mb-1">Requested by owner</p>
       <p class="text-sm mb-1">Requested changes:</p>
-      <p class="text-xs text-zinc-300 mb-1">Description: ${req.description}</p>
-      <p class="text-xs text-zinc-300 mb-1">Tags: ${req.tags?.join(', ')}</p>
+      <p class="text-xs text-zinc-300 mb-1">Description: ${req.description || 'No change'}</p>
+      <p class="text-xs text-zinc-300 mb-1">Tags: ${req.tags?.join(', ') || 'No change'}</p>
       <p class="text-xs text-zinc-300 mb-1">NSFW: ${req.nsfw ? 'Yes' : 'No'}</p>
-      <p class="text-xs text-zinc-300 mb-1">Logo: <a href="${req.logo}" target="_blank" class="underline">View</a></p>
+      ${req.logo ? `<p class="text-xs text-zinc-300 mb-1">Logo: <a href="${req.logo}" target="_blank" class="underline">View</a></p>` : ''}
       <div class="flex gap-2 flex-wrap mt-2"></div>
     `;
 
@@ -203,13 +207,13 @@ function renderEditRequests() {
     const approveBtn = document.createElement('button');
     approveBtn.className = 'bg-green-600 px-3 py-1 rounded hover:bg-green-700';
     approveBtn.textContent = 'Approve Edit';
-    approveBtn.onclick = () => approveEdit(req.serverId, req);
+    approveBtn.onclick = () => approveEdit(req.serverId, req._id);
     btnContainer.appendChild(approveBtn);
 
     const denyBtn = document.createElement('button');
     denyBtn.className = 'bg-red-600 px-3 py-1 rounded hover:bg-red-700';
     denyBtn.textContent = 'Deny Edit';
-    denyBtn.onclick = () => denyEdit(req.serverId, req);
+    denyBtn.onclick = () => denyEdit(req.serverId, req._id);
     btnContainer.appendChild(denyBtn);
 
     container.appendChild(card);
@@ -261,29 +265,75 @@ function renderReports() {
 }
 
 // --- Server actions ---
-async function approveServer(id) { if (!confirm('Approve this server?')) return; await updateServerStatus(id, 'approved'); }
-async function denyServer(id) { const reason = prompt('Enter reason for denial:'); if (reason===null) return; await updateServerStatus(id, 'denied', reason); }
-async function deleteServer(id) { if (!confirm('Delete this server?')) return; try { const res = await fetch(`${API_URL}/api/servers/${id}`, { method:'DELETE', headers:{ 'Authorization': `Bearer ${token}` } }); if(res.ok){alert('Server deleted!'); await loadServers();}else{const err=await res.json(); alert('Failed: '+(err.error||err.message));} } catch(e){console.error(e); alert('Error deleting server.'); } }
-async function updateServerStatus(id,status,reason=''){ try{ const res = await fetch(`${API_URL}/api/servers/${id}/status`,{method:'PATCH',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({status,rejectionReason:reason})}); if(res.ok){alert(`Server ${status}!`); await loadServers();}else{const err=await res.json(); alert('Failed: '+(err.error||err.message));} }catch(e){console.error(e); alert('Error updating server status.');} }
-
-// --- Approve/Deny edits ---
-async function approveEdit(serverId, reqData){
-  try{
-    const res = await fetch(`${API_URL}/api/servers/${serverId}/edit-approve`, {method:'POST', headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'}, body:JSON.stringify({edit:reqData})});
-    if(res.ok){alert('Edit approved!'); await loadServers();} else{const err=await res.json();alert('Failed: '+(err.error||err.message));}
-  } catch(e){console.error(e); alert('Error approving edit.');}
+async function approveServer(id) {
+  if (!confirm('Approve this server?')) return;
+  await updateServerStatus(id, 'approved');
 }
-async function denyEdit(serverId, reqData){
-  try{
-    const res = await fetch(`${API_URL}/api/servers/${serverId}/edit-deny`, {method:'POST', headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'}, body:JSON.stringify({edit:reqData})});
-    if(res.ok){alert('Edit denied!'); await loadServers();} else{const err=await res.json();alert('Failed: '+(err.error||err.message));}
-  } catch(e){console.error(e); alert('Error denying edit.');}
+
+async function denyServer(id) {
+  const reason = prompt('Enter reason for denial:');
+  if (reason === null) return;
+  await updateServerStatus(id, 'denied', reason);
+}
+
+async function deleteServer(id) {
+  if (!confirm('Delete this server?')) return;
+  const res = await fetch(`${API_URL}/api/servers/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (res.ok) await loadServers();
+}
+
+// --- Update server status ---
+async function updateServerStatus(id, status, reason = '') {
+  await fetch(`${API_URL}/api/servers/${id}/status`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ status, rejectionReason: reason })
+  });
+  await loadServers();
+}
+
+// --- Approve / Deny edit requests (FIXED) ---
+async function approveEdit(serverId, editId) {
+  await fetch(`${API_URL}/api/servers/${serverId}/edit-approve`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ editId })
+  });
+  await loadServers();
+}
+
+async function denyEdit(serverId, editId) {
+  await fetch(`${API_URL}/api/servers/${serverId}/edit-deny`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ editId })
+  });
+  await loadServers();
 }
 
 // --- Init ---
 document.getElementById('searchInput').addEventListener('input', renderServers);
-document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href='/login.html'; });
-(async()=>{if(await checkAdmin()) await loadServers();})();
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = '/login.html';
+});
+
+(async () => {
+  if (await checkAdmin()) await loadServers();
+})();
 </script>
 
 </body>
