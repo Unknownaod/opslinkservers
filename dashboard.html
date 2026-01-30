@@ -123,18 +123,56 @@ function renderServers() {
     const card = document.createElement('div');
     card.className = 'bg-zinc-900 border border-zinc-800 p-4 rounded flex flex-col justify-between';
 
-    card.innerHTML = `
-      <div>
-        <h3 class="font-semibold text-lg">${s.name}</h3>
-        <p class="text-sm text-zinc-400">${s.description}</p>
-        <p class="text-xs mt-2">Tags: ${s.tags?.join(', ') || 'None'}</p>
-        <p class="text-xs">Members: ${s.members ?? 'N/A'}</p>
-        <p class="text-xs">NSFW: ${s.nsfw ? 'Yes' : 'No'}</p>
-        <p class="text-xs">By: ${s.submitterDiscord?.username || 'Unknown'}</p>
-        <p class="mt-2">Status: <span class="${statusColor}">${s.status}</span></p>
-      </div>
-      <div class="flex gap-2 mt-3"></div>
-    `;
+card.innerHTML = `
+  <div class="space-y-1 text-sm">
+    <h3 class="font-semibold text-lg">${s.name}</h3>
+
+    <img src="${s.logo}" class="w-16 h-16 rounded mt-2 object-cover" />
+
+    <p class="text-zinc-400">${s.description}</p>
+
+    <p><span class="text-zinc-400">Invite:</span>
+      <a href="${s.invite}" target="_blank" class="text-indigo-400 underline">
+        ${s.invite}
+      </a>
+    </p>
+
+    <p><span class="text-zinc-400">Language:</span> ${s.language || '—'}</p>
+    <p><span class="text-zinc-400">Type:</span> ${s.type || '—'}</p>
+    <p><span class="text-zinc-400">Members:</span> ${s.members ?? '—'}</p>
+    <p><span class="text-zinc-400">NSFW:</span> ${s.nsfw ? 'Yes' : 'No'}</p>
+
+    <p><span class="text-zinc-400">Tags:</span> ${s.tags?.join(', ') || '—'}</p>
+
+    <p><span class="text-zinc-400">Website:</span>
+      ${s.website
+        ? `<a href="${s.website}" target="_blank" class="text-indigo-400 underline">${s.website}</a>`
+        : '—'}
+    </p>
+
+    <p><span class="text-zinc-400">Rules:</span> ${s.rules || '—'}</p>
+
+    <p><span class="text-zinc-400">Discord Server ID:</span> ${s.discordServerId}</p>
+
+    <p><span class="text-zinc-400">Submitted by:</span>
+      ${s.submitterDiscord?.username}#${s.submitterDiscord?.tag}
+    </p>
+
+    <p><span class="text-zinc-400">Status:</span>
+      <span class="${statusColor}">${s.status}</span>
+    </p>
+
+    ${s.rejectionReason
+      ? `<p class="text-red-400">Rejection Reason: ${s.rejectionReason}</p>`
+      : ''}
+
+    <p class="text-xs text-zinc-500">
+      Created: ${new Date(s.createdAt).toLocaleString()}
+    </p>
+  </div>
+
+  <div class="flex gap-2 mt-3"></div>
+`;
 
     const btns = card.querySelector('div:last-child');
 
