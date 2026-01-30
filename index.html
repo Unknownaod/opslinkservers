@@ -19,11 +19,12 @@
       <a href="support.html" class="hover:opacity-80">Support</a>
       <a href="login.html" id="loginBtn" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
       <!-- Admin button will be inserted here -->
+      <a href="#" id="adminBtn" class="hidden rounded-full bg-red-600 text-white px-6 py-3 hover:bg-red-700">Admin Dashboard</a>
     </div>
   </nav>
 
   <!-- Hero Section -->
-  <section class="relative px-10 pt-28 pb-40">
+  <section class="relative px-10 pt-28 pb-10">
     <h1 class="max-w-3xl text-5xl font-bold leading-tight">
       The <span class="text-white">curated</span> Discord server directory, <br />
       trusted, moderated, and high quality.
@@ -35,10 +36,21 @@
       No spam. No fake ratings.
     </p>
 
-    <div class="mt-10 flex gap-4">
+    <div class="mt-10 flex gap-4 flex-wrap">
       <a href="browse.html" class="rounded-full bg-white text-black px-6 py-3 hover:bg-zinc-200">Browse Servers</a>
       <a href="submit.html" class="rounded-full border border-white text-white px-6 py-3 hover:bg-white/10">Submit Server</a>
-      <a href="#" id="adminBtn" class="hidden rounded-full bg-red-600 text-white px-6 py-3 hover:bg-red-700">Admin Dashboard</a>
+    </div>
+  </section>
+
+  <!-- Live Stats -->
+  <section class="px-10 py-10 flex flex-col md:flex-row gap-8 items-center justify-center text-center text-white">
+    <div class="bg-zinc-900/80 border border-zinc-800 p-6 rounded-2xl w-64">
+      <h2 class="text-xl font-semibold mb-2">Servers</h2>
+      <p id="serverCount" class="text-3xl font-bold">0</p>
+    </div>
+    <div class="bg-zinc-900/80 border border-zinc-800 p-6 rounded-2xl w-64">
+      <h2 class="text-xl font-semibold mb-2">Members</h2>
+      <p id="memberCount" class="text-3xl font-bold">0</p>
     </div>
   </section>
 
@@ -87,73 +99,99 @@
     <p id="notificationMessage" class="font-semibold">New System Message! Check now!</p>
   </div>
 
-<script>
-  const token = localStorage.getItem('token');
-  const userStr = localStorage.getItem('user');
-  const loginBtn = document.getElementById('loginBtn');
-  const adminBtn = document.getElementById('adminBtn');
-  const navLinks = document.getElementById('navLinks');
-  const notification = document.getElementById('notification');
-  const notificationMessage = document.getElementById('notificationMessage');
+  <!-- Scripts -->
+  <script>
+    const API_URL = "https://opslinkservers-backend.onrender.com";
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    const loginBtn = document.getElementById('loginBtn');
+    const adminBtn = document.getElementById('adminBtn');
+    const navLinks = document.getElementById('navLinks');
+    const notification = document.getElementById('notification');
+    const notificationMessage = document.getElementById('notificationMessage');
 
-  if (token && userStr) {
-    const user = JSON.parse(userStr);
-
-    // Replace Login link with Logout and Welcome message
-    loginBtn.textContent = 'Logout';
-    loginBtn.href = '#';
-    loginBtn.addEventListener('click', () => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.reload();
-    });
-
-    // Add welcome message before Login/Logout button
-    const welcomeSpan = document.createElement('span');
-    welcomeSpan.textContent = `Welcome, ${user.discordUsername}`;
-    welcomeSpan.className = "text-sm text-zinc-300";
-    navLinks.insertBefore(welcomeSpan, loginBtn);
-
-    // Show admin button if role is admin
-    if (user.role === 'admin') {
-      adminBtn.classList.remove('hidden');
-      adminBtn.href = 'dashboard.html';
+    // User Auth / Admin Button
+    if (token && userStr) {
+      const user = JSON.parse(userStr);
+      loginBtn.textContent = 'Logout';
+      loginBtn.href = '#';
+      loginBtn.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.reload();
+      });
+      const welcomeSpan = document.createElement('span');
+      welcomeSpan.textContent = `Welcome, ${user.discordUsername}`;
+      welcomeSpan.className = "text-sm text-zinc-300";
+      navLinks.insertBefore(welcomeSpan, loginBtn);
+      if (user.role === 'admin') {
+        adminBtn.classList.remove('hidden');
+        adminBtn.href = 'dashboard.html';
+      }
     }
-  } else {
-    // User not logged in: ensure admin button hidden, Login button is correct
-    adminBtn.classList.add('hidden');
-    loginBtn.textContent = 'Login';
-    loginBtn.href = 'login.html';
-    loginBtn.replaceWith(loginBtn.cloneNode(true)); // Remove previous listeners
-  }
 
-  // Function to show popup notification
-  function showNotification(message) {
-    notificationMessage.textContent = message;
-    notification.classList.remove('hidden');
-
-    setTimeout(() => {
-      notification.classList.add('hidden');
-    }, 5000); // Hide after 5 seconds
-  }
-
-  // Simulating checking for new system messages (this could be tied to an API response in a real app)
-  async function checkNewMessages() {
-    const user = JSON.parse(localStorage.getItem('user'));
-    const res = await fetch(`https://opslinkservers-backend.onrender.com/api/servers`);
-    const servers = await res.json();
-
-    const userServers = servers.filter(s => s.submitter && s.submitter._id === user._id);
-    const recentMessages = userServers.filter(s => s.status === 'approved' || s.status === 'denied' || s.status === 'taken down');
-
-    if (recentMessages.length > 0) {
-      showNotification('New System Message! Check now!');
+    // Popup notification
+    function showNotification(message) {
+      notificationMessage.textContent = message;
+      notification.classList.remove('hidden');
+      setTimeout(() => notification.classList.add('hidden'), 5000);
     }
-  }
 
-  // Call this function to check for system messages
-  setInterval(checkNewMessages, 10000);  // Check every 10 seconds
-</script>
+    // Fetch live server stats and animate
+    const serverCountEl = document.getElementById('serverCount');
+    const memberCountEl = document.getElementById('memberCount');
+    let currentServers = 0;
+    let currentMembers = 0;
 
+    function animateValue(el, start, end, duration) {
+      const range = end - start;
+      let startTime = null;
+      function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / duration, 1);
+        el.textContent = Math.floor(start + range * progress).toLocaleString();
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    async function fetchLiveStats() {
+      try {
+        const res = await fetch(`${API_URL}/api/servers`);
+        const servers = await res.json();
+        const approved = servers.filter(s => s.status === 'approved' || !s.status);
+        const totalServers = approved.length;
+        const totalMembers = approved.reduce((sum, s) => sum + (Number(s.members) || 0), 0);
+
+        animateValue(serverCountEl, currentServers, totalServers, 1200);
+        animateValue(memberCountEl, currentMembers, totalMembers, 1200);
+
+        currentServers = totalServers;
+        currentMembers = totalMembers;
+      } catch (err) {
+        console.error("Error fetching live stats:", err);
+      }
+    }
+
+    // Initial fetch
+    fetchLiveStats();
+
+    // Refresh every 2–5 minutes
+    setInterval(fetchLiveStats, 2.5 * 60 * 1000 + Math.random() * 2.5 * 60 * 1000);
+
+    // Optional: check new messages every 10 seconds
+    async function checkNewMessages() {
+      if (!userStr) return;
+      const user = JSON.parse(userStr);
+      try {
+        const res = await fetch(`${API_URL}/api/servers`);
+        const servers = await res.json();
+        const userServers = servers.filter(s => s.submitter && s.submitter._id === user._id);
+        const recentMessages = userServers.filter(s => s.status === 'approved' || s.status === 'denied' || s.status === 'taken down');
+        if (recentMessages.length > 0) showNotification('New System Message! Check now!');
+      } catch (err) { console.error(err); }
+    }
+    setInterval(checkNewMessages, 10000);
+  </script>
 </body>
 </html>
