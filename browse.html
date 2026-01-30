@@ -384,13 +384,18 @@ document.getElementById('nsfwToggle').onchange = renderServers;
 loadServers();
 </script>
 
-<div id="transition-root"></div>
+<div id="t" style="position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.15s;z-index:9999">
+  <img src="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png?ex=697e1164&is=697cbfe4&hm=9441d7ce73ab37a2d7addce41c96205a0f0e9711def8cdd6e9b4978f83cd46b5&" style="width:90px">
+</div>
 <script>
-  fetch('/transition.html')
-    .then(res => res.text())
-    .then(html => {
-      document.getElementById('transition-root').innerHTML = html;
-    });
+document.addEventListener('click',e=>{
+  const a=e.target.closest('a'); if(!a) return;
+  const h=a.getAttribute('href');
+  if(!h||h[0]=='#'||h.startsWith('http')||a.target) return;
+  e.preventDefault();
+  t.style.opacity=1;
+  setTimeout(()=>location.href=h,1000);
+});
 </script>
 
 </body>
