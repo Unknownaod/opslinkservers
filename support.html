@@ -3,58 +3,106 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OpsLink Support</title>
+  <title>Support - OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-pap1S0DQx5iT+Kx/+9zKBlP1Fv+KpSv+T5wIeeQ8bgFjF6Rg9pF1+Mqxk5Haf3jkdzF8pG1yFJ+FLXlX7hG4XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      transition: 0.3s;
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white flex flex-col">
+<body class="bg-gray-900 text-white min-h-screen">
 
-  <!-- Navbar -->
-  <nav class="flex items-center justify-between px-10 py-6 border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-md fixed w-full z-50">
-    <div class="text-2xl font-bold tracking-wide text-indigo-500">OpsLink Support</div>
-    <div class="flex items-center gap-8 text-sm">
-      <a href="index.html" class="hover:text-indigo-400 transition">Home</a>
-      <a href="support.html" class="hover:text-indigo-400 font-semibold underline transition">Support</a>
+  <!-- Header -->
+  <header class="bg-gray-800 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold">OpsLink Support</h1>
+      <nav class="space-x-4">
+        <a href="#docs" class="hover:text-indigo-400 transition">Docs</a>
+        <a href="tickets.html" class="hover:text-indigo-400 transition">Submit a Ticket</a>
+        <a href="#legal" class="hover:text-indigo-400 transition">Legal</a>
+      </nav>
     </div>
-  </nav>
+  </header>
 
-  <!-- Main Section -->
-  <main class="flex-1 flex flex-col items-center justify-center px-6 text-center mt-24">
-    <h1 class="text-6xl md:text-7xl font-extrabold mb-6 text-white drop-shadow-lg">Welcome to OpsLink Support</h1>
-    <p class="text-zinc-400 mb-12 max-w-2xl text-lg md:text-xl leading-relaxed">
-      Need help? Access our documentation, review our legal guides, or create a support ticket. Our team will assist you quickly and efficiently.
+  <!-- Hero Section -->
+  <section class="bg-gray-800 py-16 text-center">
+    <h2 class="text-4xl font-bold mb-4">Need Help?</h2>
+    <p class="text-gray-300 max-w-2xl mx-auto mb-6">
+      Explore our documentation, submit a ticket, or check our legal guides. We're here to assist you 24/7.
     </p>
-
-    <!-- Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl">
-      
-      <!-- Docs Card -->
-      <a href="docs.html" class="group bg-zinc-800 rounded-2xl p-8 flex flex-col items-center shadow-lg hover:scale-105 hover:shadow-indigo-500/50 transition-all duration-300">
-        <i class="fas fa-book-open text-indigo-500 text-5xl mb-4 group-hover:animate-bounce"></i>
-        <h2 class="text-2xl font-semibold mb-2">Documentation</h2>
-        <p class="text-zinc-400 text-center">Find guides and instructions for all OpsLink features.</p>
-      </a>
-
-      <!-- Legal Card -->
-      <a href="legal.html" class="group bg-zinc-800 rounded-2xl p-8 flex flex-col items-center shadow-lg hover:scale-105 hover:shadow-blue-500/50 transition-all duration-300">
-        <i class="fas fa-gavel text-blue-500 text-5xl mb-4 group-hover:animate-bounce"></i>
-        <h2 class="text-2xl font-semibold mb-2">Legal</h2>
-        <p class="text-zinc-400 text-center">Review our policies, terms, and privacy guidelines.</p>
-      </a>
-
-      <!-- Support Tickets Card -->
-      <a href="tickets.html" class="group bg-zinc-800 rounded-2xl p-8 flex flex-col items-center shadow-lg hover:scale-105 hover:shadow-green-500/50 transition-all duration-300">
-        <i class="fas fa-ticket-alt text-green-500 text-5xl mb-4 group-hover:animate-bounce"></i>
-        <h2 class="text-2xl font-semibold mb-2">Support Tickets</h2>
-        <p class="text-zinc-400 text-center">Submit a ticket and our staff will help you promptly.</p>
-      </a>
-
+    <div class="flex justify-center gap-4">
+      <a href="#docs" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded font-medium transition">Docs</a>
+      <a href="tickets.html" class="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded font-medium transition">Submit Ticket</a>
+      <a href="#legal" class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded font-medium transition">Legal</a>
     </div>
+  </section>
+
+  <!-- Sections -->
+  <main class="max-w-7xl mx-auto px-4 py-16 space-y-16">
+
+    <!-- Docs -->
+    <section id="docs">
+      <h3 class="text-3xl font-bold mb-6">Documentation</h3>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="card bg-gray-800 p-6 rounded shadow hover:shadow-lg">
+          <h4 class="text-xl font-semibold mb-2">Getting Started</h4>
+          <p class="text-gray-300">Learn how to start using OpsLink efficiently and set up your first server.</p>
+          <a href="#" class="text-indigo-400 mt-2 inline-block hover:underline">Read More →</a>
+        </div>
+        <div class="card bg-gray-800 p-6 rounded shadow hover:shadow-lg">
+          <h4 class="text-xl font-semibold mb-2">FAQ</h4>
+          <p class="text-gray-300">Find answers to the most commonly asked questions about our platform.</p>
+          <a href="#" class="text-indigo-400 mt-2 inline-block hover:underline">Read More →</a>
+        </div>
+        <div class="card bg-gray-800 p-6 rounded shadow hover:shadow-lg">
+          <h4 class="text-xl font-semibold mb-2">Guides & Tutorials</h4>
+          <p class="text-gray-300">Step-by-step guides to master OpsLink features and integrations.</p>
+          <a href="#" class="text-indigo-400 mt-2 inline-block hover:underline">Read More →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Submit a Ticket CTA -->
+    <section id="ticket">
+      <div class="bg-green-600 p-12 rounded shadow text-center">
+        <h3 class="text-3xl font-bold mb-4">Need Personal Support?</h3>
+        <p class="text-gray-200 mb-6">Can't find the answer in our docs? Submit a ticket and our team will help you directly.</p>
+        <a href="tickets.html" class="bg-white text-green-600 px-8 py-3 rounded font-semibold hover:bg-gray-100 transition">Submit a Ticket</a>
+      </div>
+    </section>
+
+    <!-- Legal -->
+    <section id="legal">
+      <h3 class="text-3xl font-bold mb-6">Legal</h3>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-gray-800 p-6 rounded shadow hover:shadow-lg">
+          <h4 class="text-xl font-semibold mb-2">Terms of Service</h4>
+          <p class="text-gray-300">Review the rules and guidelines for using OpsLink services.</p>
+          <a href="#" class="text-indigo-400 mt-2 inline-block hover:underline">Read More →</a>
+        </div>
+        <div class="bg-gray-800 p-6 rounded shadow hover:shadow-lg">
+          <h4 class="text-xl font-semibold mb-2">Privacy Policy</h4>
+          <p class="text-gray-300">Understand how we collect, use, and protect your data.</p>
+          <a href="#" class="text-indigo-400 mt-2 inline-block hover:underline">Read More →</a>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- Footer -->
-  <footer class="px-10 py-6 border-t border-zinc-800 text-sm text-zinc-400 text-center mt-12">
-    © 2026 OpsLink Support Center
+  <footer class="bg-gray-800 py-6 mt-16">
+    <div class="max-w-7xl mx-auto px-4 text-center text-gray-400">
+      &copy; 2026 OpsLink. All rights reserved.
+    </div>
   </footer>
 
 </body>
