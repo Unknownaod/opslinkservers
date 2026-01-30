@@ -1,166 +1,360 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Legal - OpsLink</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpsLink Legal Hub</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body { font-family: 'Inter', sans-serif; }
+.sidebar { position: sticky; top: 5rem; }
+.collapsible { cursor: pointer; user-select: none; }
+.content { display: none; }
+.section-title { font-size: 1.25rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; }
+</style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white">
+<body class="bg-gray-900 text-white min-h-screen">
 
-  <!-- Navbar -->
-  <nav class="flex items-center justify-between px-10 py-6 border-b border-zinc-800">
-    <div class="text-xl font-semibold tracking-wide">OpsLink Legal</div>
-    <div class="flex items-center gap-8 text-sm">
-      <a href="index.html" class="hover:opacity-80">Home</a>
-      <a href="support.html" class="hover:opacity-80">Support</a>
-      <a href="docs.html" class="hover:opacity-80">Docs</a>
-      <a href="legal.html" class="hover:opacity-80 font-semibold underline">Legal</a>
-    </div>
-  </nav>
+<!-- Navbar -->
+<nav class="flex items-center justify-between px-10 py-6 border-b border-gray-800">
+  <div class="text-2xl font-bold">OpsLink Legal Hub</div>
+  <div class="flex items-center gap-8 text-sm">
+    <a href="index.html" class="hover:opacity-80">Home</a>
+    <a href="support.html" class="hover:opacity-80">Support</a>
+    <a href="docs.html" class="hover:opacity-80">Docs</a>
+    <a href="legal.html" class="hover:opacity-80 font-semibold underline">Legal</a>
+  </div>
+</nav>
+
+<div class="flex max-w-7xl mx-auto px-10 py-10 gap-8">
+
+  <!-- Sidebar -->
+  <aside class="sidebar w-64 hidden md:block">
+    <h2 class="text-xl font-semibold mb-4">Jump To</h2>
+    <ul class="space-y-2 text-gray-400 text-sm">
+      <li><a href="#terms" class="hover:text-blue-400 underline">Terms of Service</a></li>
+      <li><a href="#privacy" class="hover:text-blue-400 underline">Privacy Policy</a></li>
+      <li><a href="#disclaimer" class="hover:text-blue-400 underline">Disclaimer</a></li>
+      <li><a href="#cookies" class="hover:text-blue-400 underline">Cookies Policy</a></li>
+      <li><a href="#guidelines" class="hover:text-blue-400 underline">Community Guidelines</a></li>
+      <li><a href="#dmca" class="hover:text-blue-400 underline">DMCA & Copyright</a></li>
+      <li><a href="#liability" class="hover:text-blue-400 underline">Limitation of Liability</a></li>
+      <li><a href="#userdata" class="hover:text-blue-400 underline">User Data & Retention</a></li>
+      <li><a href="#contact" class="hover:text-blue-400 underline">Legal Contact</a></li>
+    </ul>
+  </aside>
 
   <!-- Main Content -->
-  <main class="px-10 py-10 max-w-5xl mx-auto space-y-12">
+  <main class="flex-1 space-y-12">
 
-    <h1 class="text-5xl font-bold text-center mb-12">OpsLink Legal Information</h1>
-
-    <!-- Table of Contents -->
-    <section class="mb-10">
-      <h2 class="text-3xl font-semibold mb-4">Table of Contents</h2>
-      <ul class="list-decimal list-inside space-y-2 text-zinc-300">
-        <li><a href="#terms" class="underline text-blue-400">Terms of Service</a></li>
-        <li><a href="#use-of-service" class="underline text-blue-400">Use of Service Agreement</a></li>
-        <li><a href="#privacy-policy" class="underline text-blue-400">Privacy Policy</a></li>
-        <li><a href="#content-guidelines" class="underline text-blue-400">Content Guidelines</a></li>
-        <li><a href="#liability" class="underline text-blue-400">Limitation of Liability</a></li>
-        <li><a href="#dmca" class="underline text-blue-400">DMCA & Copyright</a></li>
-        <li><a href="#user-data" class="underline text-blue-400">User Data & Retention</a></li>
-        <li><a href="#disclaimer" class="underline text-blue-400">Disclaimer</a></li>
-        <li><a href="#contact" class="underline text-blue-400">Legal Contact</a></li>
-      </ul>
-    </section>
+    <h1 class="text-4xl font-bold text-center mb-12">OpsLink Legal Hub</h1>
 
     <!-- Terms of Service -->
-    <section id="terms" class="space-y-4">
-      <h2 class="text-3xl font-semibold mb-2">1. Terms of Service</h2>
-      <p class="text-zinc-300">
-        By using OpsLink, you agree to these Terms of Service (TOS). If you do not agree, do not access or use the platform.
-      </p>
-      <ul class="list-disc list-inside text-zinc-300 space-y-1">
-        <li>Users must be at least 13 years old.</li>
-        <li>All submissions (servers, comments, tickets) must be lawful and accurate.</li>
-        <li>OpsLink may remove, edit, or reject content at its discretion.</li>
-        <li>Violations of these terms may result in account suspension or deletion.</li>
-        <li>Users are responsible for compliance with Discord Terms of Service when submitting servers.</li>
-      </ul>
-    </section>
+    <section id="terms" class="space-y-6">
+      <h2 class="text-3xl font-semibold mb-4">1. Terms of Service</h2>
+      <p class="text-gray-300">These terms define the rules for using OpsLink. Each subsection provides detailed guidance.</p>
+      
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">Introduction & Definitions</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Defines key terms and scope of the Terms of Service, including OpsLink, User, Server, and Content.</div>
 
-    <!-- Use of Service Agreement -->
-    <section id="use-of-service" class="space-y-4">
-      <h2 class="text-3xl font-semibold mb-2">2. Use of Service Agreement</h2>
-      <p class="text-zinc-300">
-        OpsLink is a platform to browse and submit Discord servers. Use of the service is governed by the following:
-      </p>
-      <ul class="list-disc list-inside text-zinc-300 space-y-1">
-        <li>You agree to provide accurate and lawful information.</li>
-        <li>Any form of spam, scams, or malicious content is strictly prohibited.</li>
-        <li>OpsLink may modify or discontinue features without notice.</li>
-        <li>Accessing the platform is at your own risk; services are provided "as is".</li>
-        <li>OpsLink retains the right to revoke access for violations or abuse.</li>
-      </ul>
+        <button class="collapsible text-indigo-400 font-medium">Acceptance of Terms</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">By accessing OpsLink, you accept these terms. Continued use constitutes agreement.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Eligibility</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Users must be at least 13 years old. Minors must obtain parental consent.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">User Accounts / Registration</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Accounts must have accurate information. Users are responsible for account security.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">User Content & Conduct</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Users are responsible for content submitted. No illegal, hateful, or misleading content.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Prohibited Uses</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Spamming, phishing, or misuse of the platform is strictly prohibited.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Intellectual Property Rights</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">All content submitted must respect third-party IP. Users grant OpsLink license to display submitted content.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Third-Party Links / Services</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">OpsLink may contain links to external services. We are not responsible for their content or practices.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Payment / Billing Terms (if applicable)</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Any paid services or features will have separate terms, invoices, and billing practices.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Disclaimers</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">OpsLink is provided “as-is” without warranties. Use at your own risk.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Limitation of Liability</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">OpsLink is not liable for indirect or direct damages resulting from platform use.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Indemnification</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Users agree to defend and hold OpsLink harmless from claims resulting from violations.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Termination</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">OpsLink may suspend or terminate accounts for violations or abuse.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Governing Law & Jurisdiction</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">These terms are governed by Canadian law. Disputes are resolved in relevant jurisdiction courts.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Changes to Terms</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">OpsLink may update these terms at any time. Users are responsible for reviewing updates.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Contact Information</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">For questions, email legal@oplsink.com or use the Support page.</div>
+      </div>
     </section>
 
     <!-- Privacy Policy -->
-    <section id="privacy-policy" class="space-y-4">
-      <h2 class="text-3xl font-semibold mb-2">3. Privacy Policy</h2>
-      <p class="text-zinc-300">
-        We respect your privacy. This policy explains the information we collect and how it is used:
-      </p>
-      <ul class="list-disc list-inside text-zinc-300 space-y-1">
-        <li>Account information: Discord username, tag, user ID.</li>
-        <li>Server information: server ID, invite link, description, logo, tags, NSFW status.</li>
-        <li>Comments and support tickets for moderation and assistance purposes.</li>
-        <li>We do not sell or share personal data to third parties for marketing.</li>
-        <li>Information may be shared to comply with legal obligations.</li>
-      </ul>
-      <p class="text-zinc-300 mt-2">
-        Cookies and tracking: OpsLink uses minimal cookies for login sessions and functional purposes only.
-      </p>
-    </section>
+    <section id="privacy" class="space-y-6">
+      <h2 class="text-3xl font-semibold mb-4">2. Privacy Policy</h2>
+      <p class="text-gray-300">Explains how OpsLink collects, uses, and protects user data.</p>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">Introduction</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">We value your privacy and strive to protect your personal information.</div>
 
-    <!-- Content Guidelines -->
-    <section id="content-guidelines" class="space-y-4">
-      <h2 class="text-3xl font-semibold mb-2">4. Content Guidelines</h2>
-      <ul class="list-disc list-inside text-zinc-300 space-y-1">
-        <li>No illegal content or activities.</li>
-        <li>No harassment, hate speech, or discriminatory content.</li>
-        <li>NSFW content must be clearly labeled.</li>
-        <li>Do not impersonate users, staff, or Discord itself.</li>
-        <li>Admins reserve the right to remove any content that violates these rules.</li>
-      </ul>
-    </section>
+        <button class="collapsible text-indigo-400 font-medium">Information You Collect</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Includes account info, server submissions, comments, support tickets.</div>
 
-    <!-- Limitation of Liability -->
-    <section id="liability" class="space-y-4">
-      <h2 class="text-3xl font-semibold mb-2">5. Limitation of Liability</h2>
-      <p class="text-zinc-300">
-        OpsLink is not responsible for any direct or indirect damages resulting from use of the platform, including:
-      </p>
-      <ul class="list-disc list-inside text-zinc-300 space-y-1">
-        <li>Loss of data, server information, or user content.</li>
-        <li>Interactions with third-party servers or external links.</li>
-        <li>Disputes between users or servers.</li>
-        <li>Service interruptions or technical failures.</li>
-      </ul>
-    </section>
+        <button class="collapsible text-indigo-400 font-medium">Personal Data</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Data identifying you directly, such as Discord username, ID.</div>
 
-    <!-- DMCA & Copyright -->
-    <section id="dmca" class="space-y-4">
-      <h2 class="text-3xl font-semibold mb-2">6. DMCA & Copyright</h2>
-      <p class="text-zinc-300">
-        OpsLink respects copyright laws. If you believe your work is infringed, you may submit a DMCA takedown request via our <a href="support.html" class="underline text-blue-400">Support page</a>.
-      </p>
-      <ul class="list-disc list-inside text-zinc-300 space-y-1">
-        <li>Include identification of the copyrighted work.</li>
-        <li>Provide identification of the infringing content.</li>
-        <li>Include your contact information and a statement of good faith.</li>
-        <li>OpsLink will process takedown requests as required by law.</li>
-      </ul>
-    </section>
+        <button class="collapsible text-indigo-400 font-medium">Usage Data</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Anonymous analytics on platform interaction and page views.</div>
 
-    <!-- User Data & Retention -->
-    <section id="user-data" class="space-y-4">
-      <h2 class="text-3xl font-semibold mb-2">7. User Data & Retention</h2>
-      <ul class="list-disc list-inside text-zinc-300 space-y-1">
-        <li>Account and server data is stored for the purpose of running OpsLink services.</li>
-        <li>Data may be retained after account deletion for legal compliance.</li>
-        <li>Users may request data deletion via support tickets, subject to applicable laws.</li>
-        <li>Anonymous browsing data may be collected for analytics but does not personally identify users.</li>
-      </ul>
+        <button class="collapsible text-indigo-400 font-medium">Cookies & Tracking</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Minimal cookies used for login sessions and analytics. Users may disable cookies.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">How You Use Information</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">We use information to provide, maintain, and improve services.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Legal Basis for Processing</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">We process data as necessary to provide services and comply with legal obligations.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Data Sharing / Disclosure</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Data may be shared with authorities as required or with service providers for operational purposes.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Third-Party Services</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">We may integrate with third-party services. These services have separate privacy policies.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Data Security</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">We implement reasonable measures to protect your data against loss or unauthorized access.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">International Transfers</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Data may be stored or processed internationally in compliance with applicable laws.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Data Retention</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Data is retained only as long as necessary to provide services or comply with legal obligations.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">User Rights</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Users may access, correct, or request deletion of personal data via Support.</div>
+      </div>
     </section>
 
     <!-- Disclaimer -->
-    <section id="disclaimer" class="space-y-4">
-      <h2 class="text-3xl font-semibold mb-2">8. Disclaimer</h2>
-      <p class="text-zinc-300">
-        OpsLink is not affiliated with Discord, Inc. or any servers listed. We provide no guarantees regarding the accuracy, reliability, or safety of server listings. Users interact with listed servers at their own risk.
-      </p>
+    <section id="disclaimer" class="space-y-6">
+      <h2 class="text-3xl font-semibold mb-4">3. Disclaimer</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">General Disclaimer</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">OpsLink provides services "as-is" without warranties of any kind.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Professional Advice Disclaimer</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Content on the platform is not professional advice; users should verify information independently.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Results Not Guaranteed</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">OpsLink does not guarantee specific outcomes from using the platform.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">External Links Disclaimer</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">We are not responsible for content on external websites linked from OpsLink.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Risk Acknowledgement</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Users acknowledge that interactions with servers or external content are at their own risk.</div>
+      </div>
+    </section>
+
+    <!-- Cookies Policy -->
+    <section id="cookies" class="space-y-6">
+      <h2 class="text-3xl font-semibold mb-4">4. Cookies Policy</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">What Cookies Are</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Cookies are small files stored on your device to enhance user experience.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">How You Use Them</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Cookies enable session management, analytics, and functional features.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Types of Cookies</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Session cookies, persistent cookies, and third-party cookies may be used.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Managing / Disabling Cookies</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Users may adjust browser settings to block or delete cookies, though some features may break.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Third-Party Cookies</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Some cookies may come from integrated third-party services.</div>
+      </div>
+    </section>
+
+    <!-- Community Guidelines -->
+    <section id="guidelines" class="space-y-6">
+      <h2 class="text-3xl font-semibold mb-4">5. Community Guidelines</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">1. Respect Others</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Treat other users respectfully and avoid harassment.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">2. Appropriate Content</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">All content must comply with applicable laws and community standards.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">3. NSFW Content</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">NSFW content must be clearly labeled; minors must not access such content.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">4. Impersonation</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Do not impersonate other users, staff, or Discord.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">5. Spam & Malicious Behavior</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Spamming, phishing, or malware distribution is prohibited.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">6. Report Violations</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Use the support system to report rule violations.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">7. Respect Intellectual Property</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Do not post content that infringes on IP rights.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">8. Server Submissions</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Ensure server listings are accurate and lawful.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">9. Enforcement</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">OpsLink staff may remove content or suspend accounts violating guidelines.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">10. Privacy Respect</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Do not share personal data of others without consent.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">11. Legal Compliance</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">All activity must comply with applicable laws.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">12. Updates to Guidelines</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Guidelines may be updated periodically. Users are responsible for staying informed.</div>
+      </div>
+    </section>
+
+    <!-- DMCA & Copyright -->
+    <section id="dmca" class="space-y-6">
+      <h2 class="text-3xl font-semibold mb-4">6. DMCA & Copyright</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">Overview</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">OpsLink respects copyright law. Infringement claims are handled under DMCA.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Submitting a Takedown</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Provide identification of copyrighted work and infringing content.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Counter-Notices</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">If you believe content was removed in error, submit a counter-notice.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Processing Timeline</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">DMCA claims are processed promptly in accordance with law.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Repeat Infringement</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Accounts repeatedly infringing copyrights may be terminated.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Third-Party Content</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">OpsLink is not responsible for content hosted externally but linked on the platform.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Legal Compliance</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">All DMCA takedowns comply with applicable Canadian and international law.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Contact for DMCA</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Use the <a href="support.html" class="underline text-blue-400">Support page</a> for DMCA inquiries.</div>
+      </div>
+    </section>
+
+    <!-- Limitation of Liability -->
+    <section id="liability" class="space-y-6">
+      <h2 class="text-3xl font-semibold mb-4">7. Limitation of Liability</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">General Limitation</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">OpsLink is not liable for direct or indirect damages from platform use.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Third-Party Interactions</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Not responsible for disputes or issues between users or servers.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Service Interruptions</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">OpsLink is not liable for downtime or technical failures.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Loss of Data</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Users are responsible for backups; OpsLink is not liable for lost data.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Third-Party Services</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">We disclaim liability for external services linked or integrated.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Assumption of Risk</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Users assume all risk when interacting with servers or content on OpsLink.</div>
+      </div>
+    </section>
+
+    <!-- User Data & Retention -->
+    <section id="userdata" class="space-y-6">
+      <h2 class="text-3xl font-semibold mb-4">8. User Data & Retention</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">Data Collected</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Account info, server submissions, tickets, comments.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Purpose</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Data used to operate, maintain, and improve OpsLink services.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Retention Period</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Data kept only as long as necessary for operational or legal reasons.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Deletion Requests</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Users can request deletion through Support; some data may be retained for legal compliance.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Anonymous Analytics</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Collect anonymous usage data for analytics and improvements.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Third-Party Services</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Third-party integrations may collect limited data; they have their own privacy policies.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Security Measures</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Reasonable measures implemented to protect data from breaches or loss.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Children’s Data</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">OpsLink does not knowingly collect personal data from children under 13.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">International Transfers</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Data may be transferred internationally while complying with applicable laws.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Changes to Data Practices</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Users will be notified of changes through policy updates.</div>
+      </div>
     </section>
 
     <!-- Legal Contact -->
-    <section id="contact" class="space-y-4">
-      <h2 class="text-3xl font-semibold mb-2">9. Legal Contact</h2>
-      <p class="text-zinc-300">
-        For legal inquiries, deletion requests, or copyright issues, contact our support team via the <a href="support.html" class="underline text-blue-400">Support page</a>. Include all relevant information for prompt handling.
-      </p>
+    <section id="contact" class="space-y-6">
+      <h2 class="text-3xl font-semibold mb-4">9. Legal Contact</h2>
+      <div class="space-y-2">
+        <button class="collapsible text-indigo-400 font-medium">Contact Methods</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Email legal@oplsink.com or use <a href="support.html" class="underline text-blue-400">Support page</a>.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Information Required</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">Include name, email, reason, and supporting documentation.</div>
+
+        <button class="collapsible text-indigo-400 font-medium">Response Time</button>
+        <div class="content text-gray-300 p-4 bg-gray-800 rounded">We aim to respond to legal inquiries within 5 business days.</div>
+      </div>
     </section>
 
   </main>
+</div>
 
-  <!-- Footer -->
-  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 text-center">
-    © 2026 OpsLink. All rights reserved.
-  </footer>
+<footer class="px-10 py-10 border-t border-gray-800 text-sm text-gray-400 text-center">
+  © 2026 OpsLink. All rights reserved.
+</footer>
 
+<script>
+const collapsibles = document.querySelectorAll(".collapsible");
+collapsibles.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const content = btn.nextElementSibling;
+    content.style.display = content.style.display === "block" ? "none" : "block";
+  });
+});
+</script>
 </body>
 </html>
