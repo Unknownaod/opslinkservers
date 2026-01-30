@@ -159,21 +159,32 @@ document.getElementById('closeEditModal').onclick = () => {
 document.getElementById('editForm').onsubmit = async e => {
   e.preventDefault();
   const token = localStorage.getItem('token');
-  const payload = Object.fromEntries(new FormData(e.target));
-  payload.nsfw = e.target.nsfw.checked;
 
+  // Collect form data
+  const formData = Object.fromEntries(new FormData(e.target));
+  formData.nsfw = e.target.nsfw.checked;
+
+  // Convert members to number
+  if (formData.members) formData.members = Number(formData.members);
+
+  // Convert entire object to JSON string for backend
+  const changesPayload = JSON.stringify(formData);
+
+  // Send edit request
   const res = await fetch(`${API_URL}/api/servers/${currentEditServer._id}/request-edit`, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    headers: { 
+      'Authorization': `Bearer ${token}`, 
+      'Content-Type': 'application/json' 
+    },
+    body: JSON.stringify({ changes: changesPayload }) // backend expects string
   });
 
   if (!res.ok) return alert('Failed to submit edit request.');
   alert('Edit request submitted.');
   document.getElementById('editModal').classList.add('hidden');
-  // Refresh my servers tab if open
-  if (!myServersDiv.classList.contains('hidden')) fetchMyServers();
 };
+
 
 /* ================= RENDER ================= */
 function renderSystemMessages(servers) {
