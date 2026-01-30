@@ -1,82 +1,92 @@
-<!-- Page Transition Overlay -->
-<div id="page-transition">
-  <img
-    id="transition-logo"
-    src="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png"
-    alt="Loading"
-  />
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Opslink Servers</title>
+  <style>
+    #page-transition {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
 
-<style>
-  #page-transition {
-    position: fixed;
-    inset: 0;
-    background: #000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-  }
-
-  #transition-logo {
-    width: 120px;
-    opacity: 0;
-    transform: scale(0.8);
-    filter: drop-shadow(0 0 0 rgba(80,200,255,0));
-  }
-
-  .transition-active #page-transition {
-    display: flex;
-  }
-
-  .transition-active #transition-logo {
-    animation: logoGlow 0.9s ease forwards;
-  }
-
-  @keyframes logoGlow {
-    0% {
+    #transition-logo {
+      width: 120px;
       opacity: 0;
       transform: scale(0.8);
-      filter: drop-shadow(0 0 0 rgba(80,200,255,0));
+      filter: drop-shadow(0 0 0 rgba(80, 200, 255, 0));
     }
-    50% {
-      opacity: 1;
-      transform: scale(1.05);
-      filter: drop-shadow(0 0 20px rgba(80,200,255,0.8));
+
+    .transition-active #page-transition {
+      display: flex;
     }
-    100% {
-      opacity: 1;
-      transform: scale(1);
-      filter: drop-shadow(0 0 40px rgba(80,200,255,1));
+
+    .transition-active #transition-logo {
+      animation: logoGlow 0.9s ease forwards;
     }
-  }
-</style>
 
-<script>
-  (function () {
-    document.addEventListener('click', e => {
-      const link = e.target.closest('a');
-      if (!link) return;
+    @keyframes logoGlow {
+      0% {
+        opacity: 0;
+        transform: scale(0.8);
+        filter: drop-shadow(0 0 0 rgba(80, 200, 255, 0));
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 20px rgba(80, 200, 255, 0.8));
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+        filter: drop-shadow(0 0 40px rgba(80, 200, 255, 1));
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Page Transition Overlay -->
+  <div id="page-transition">
+    <img
+      id="transition-logo"
+      src="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png"
+      alt="Loading"
+    />
+  </div>
 
-      const href = link.getAttribute('href');
+  <script>
+    (function () {
+      document.addEventListener('click', e => {
+        const link = e.target.closest('a');
+        if (!link) return;
 
-      if (
-        !href ||
-        href.startsWith('#') ||
-        href.startsWith('http') ||
-        link.target === '_blank'
-      ) return;
+        const href = link.getAttribute('href');
 
-      e.preventDefault();
-      document.body.classList.add('transition-active');
+        if (
+          !href ||
+          href.startsWith('#') ||
+          href.startsWith('http') ||
+          link.target === '_blank'
+        )
+          return;
 
-      setTimeout(() => {
-        window.location.href = href;
-      }, 900);
-    });
+        e.preventDefault();
+        document.body.classList.add('transition-active');
 
-    window.addEventListener('pageshow', () => {
-      document.body.classList.remove('transition-active');
-    });
-  })();
-</script>
+        setTimeout(() => {
+          window.location.href = href;
+        }, 900);
+      });
+
+      window.addEventListener('pageshow', () => {
+        document.body.classList.remove('transition-active');
+      });
+    })();
+  </script>
+</body>
+</html>
