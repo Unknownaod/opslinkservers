@@ -23,21 +23,49 @@
 
     <h1 class="text-4xl font-bold mb-6 text-center">Submit a Support Ticket</h1>
     <p class="text-zinc-400 mb-8 text-center">
-      Fill out the form below to submit a support request. Please provide as much detail as possible so we can help you quickly.
+      Fill out the form below to submit a support request. Please provide as much detail as possible.
     </p>
-
-    <!-- Info notice -->
-    <div class="bg-zinc-800 p-4 rounded mb-6 text-sm text-zinc-300 border border-zinc-700">
-      <strong>Note:</strong> When submitting a ticket, we may collect information about your account and server to process your request. Only OpsLink staff will have access to this data.
-    </div>
 
     <!-- Ticket Form -->
     <form id="ticketForm" class="space-y-6 bg-zinc-900 p-6 rounded-xl border border-zinc-800">
 
+      <!-- Ticket Number (auto-generated) -->
+      <div>
+        <label class="block text-sm font-semibold mb-1">Ticket Number</label>
+        <input type="text" id="ticketNumber" class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 outline-none" readonly />
+      </div>
+
+      <!-- Who are you? -->
+      <div>
+        <label for="discordUsername" class="block text-sm font-semibold mb-1">Discord Username</label>
+        <input type="text" id="discordUsername" placeholder="JohnDoe#1234" required
+          class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 outline-none"/>
+      </div>
+
+      <div>
+        <label for="discordId" class="block text-sm font-semibold mb-1">Discord ID</label>
+        <input type="text" id="discordId" placeholder="Your Discord ID" required
+          class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 outline-none"/>
+      </div>
+
+      <!-- Server info -->
+      <div>
+        <label for="serverName" class="block text-sm font-semibold mb-1">Server Name (if applicable)</label>
+        <input type="text" id="serverName" placeholder="Name of server" 
+          class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 outline-none"/>
+      </div>
+
+      <div>
+        <label for="serverId" class="block text-sm font-semibold mb-1">Server ID (if applicable)</label>
+        <input type="text" id="serverId" placeholder="Discord server ID" 
+          class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 outline-none"/>
+      </div>
+
+      <!-- Category -->
       <div>
         <label for="category" class="block text-sm font-semibold mb-1">Category</label>
         <select id="category" required
-          class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 focus:border-white/20 outline-none">
+          class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 outline-none">
           <option value="">Select category...</option>
           <option value="server_takedown">Server Take Down / Deletion</option>
           <option value="account_info">What Info We Have on Me</option>
@@ -46,33 +74,29 @@
         </select>
       </div>
 
+      <!-- Dynamic questions -->
+      <div id="dynamicQuestions" class="space-y-4"></div>
+
+      <!-- Ticket title & description -->
       <div>
         <label for="title" class="block text-sm font-semibold mb-1">Title</label>
         <input type="text" id="title" placeholder="Brief description of your issue" required
-          class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 focus:border-white/20 outline-none"/>
+          class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 outline-none"/>
       </div>
 
       <div>
         <label for="description" class="block text-sm font-semibold mb-1">Description</label>
-        <textarea id="description" rows="6" placeholder="Provide detailed information about your request" required
-          class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 focus:border-white/20 outline-none"></textarea>
+        <textarea id="description" rows="6" placeholder="Provide detailed information" required
+          class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 outline-none"></textarea>
       </div>
 
-      <div>
-        <label for="attachment" class="block text-sm font-semibold mb-1">Attachment (optional)</label>
-        <input type="file" id="attachment"
-          class="w-full p-2 rounded bg-zinc-800 border border-zinc-700 focus:border-white/20 outline-none"/>
-      </div>
-
-      <button type="submit"
-        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-semibold transition">
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-semibold transition">
         Submit Ticket
       </button>
     </form>
 
-    <!-- Success message -->
     <p id="successMessage" class="mt-4 text-green-400 font-semibold hidden">
-      Your ticket has been submitted! Our support staff will contact you soon.
+      Your ticket has been submitted! Support staff will contact you soon.
     </p>
 
   </main>
@@ -83,43 +107,125 @@
   </footer>
 
   <script>
-    const API_URL = 'https://opslinkservers-backend.onrender.com';
-    const token = localStorage.getItem('token');
     const ticketForm = document.getElementById('ticketForm');
     const successMessage = document.getElementById('successMessage');
+    const ticketNumberInput = document.getElementById('ticketNumber');
+    const dynamicQuestionsDiv = document.getElementById('dynamicQuestions');
+    const categorySelect = document.getElementById('category');
 
+    const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1466728163848622142/rJQn0QaVAz0mYZWm8FYtyW7swrWCavt0aBXNCryM6I6rENqSOvkLYTVhOszSdZIxjyLy';
+
+    // Generate a random ticket number
+    function generateTicketNumber() {
+      return 'OPS-' + Math.floor(1000 + Math.random() * 9000);
+    }
+
+    ticketNumberInput.value = generateTicketNumber();
+
+    // Show dynamic questions based on category
+    categorySelect.addEventListener('change', () => {
+      const value = categorySelect.value;
+      dynamicQuestionsDiv.innerHTML = '';
+
+      if (value === 'server_takedown') {
+        dynamicQuestionsDiv.innerHTML = `
+          <div>
+            <label class="block text-sm font-semibold mb-1">Reason for Take Down</label>
+            <textarea id="takedownReason" rows="3" placeholder="Explain why the server should be taken down"
+              class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 outline-none"></textarea>
+          </div>
+        `;
+      } else if (value === 'account_info') {
+        dynamicQuestionsDiv.innerHTML = `
+          <div>
+            <label class="block text-sm font-semibold mb-1">What Info Are You Requesting?</label>
+            <input type="text" id="infoRequested" placeholder="Describe what account info you want"
+              class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 outline-none"/>
+          </div>
+        `;
+      } else if (value === 'bug_report') {
+        dynamicQuestionsDiv.innerHTML = `
+          <div>
+            <label class="block text-sm font-semibold mb-1">Steps to Reproduce</label>
+            <textarea id="bugSteps" rows="3" placeholder="Describe how to reproduce the bug"
+              class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 outline-none"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1">Expected Behavior</label>
+            <textarea id="expectedBehavior" rows="2" placeholder="What should have happened?"
+              class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 outline-none"></textarea>
+          </div>
+        `;
+      }
+    });
+
+    // Submit ticket
     ticketForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      if (!token) {
-        alert('You must be logged in to submit a ticket.');
+      const ticketNumber = ticketNumberInput.value;
+      const discordUsername = document.getElementById('discordUsername').value.trim();
+      const discordId = document.getElementById('discordId').value.trim();
+      const serverName = document.getElementById('serverName').value.trim() || 'N/A';
+      const serverId = document.getElementById('serverId').value.trim() || 'N/A';
+      const category = categorySelect.value;
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+
+      if (!discordUsername || !discordId || !category || !title || !description) {
+        alert('Please fill out all required fields.');
         return;
       }
 
-      const category = document.getElementById('category').value;
-      const title = document.getElementById('title').value.trim();
-      const description = document.getElementById('description').value.trim();
-      const attachment = document.getElementById('attachment').files[0];
+      // Collect category-specific answers
+      let extraFields = [];
+      if (category === 'server_takedown') {
+        const takedownReason = document.getElementById('takedownReason').value.trim() || 'N/A';
+        extraFields.push({ name: 'Reason for Take Down', value: takedownReason, inline: false });
+      } else if (category === 'account_info') {
+        const infoRequested = document.getElementById('infoRequested').value.trim() || 'N/A';
+        extraFields.push({ name: 'Requested Info', value: infoRequested, inline: false });
+      } else if (category === 'bug_report') {
+        const steps = document.getElementById('bugSteps').value.trim() || 'N/A';
+        const expected = document.getElementById('expectedBehavior').value.trim() || 'N/A';
+        extraFields.push({ name: 'Steps to Reproduce', value: steps, inline: false });
+        extraFields.push({ name: 'Expected Behavior', value: expected, inline: false });
+      }
 
-      const formData = new FormData();
-      formData.append('category', category);
-      formData.append('title', title);
-      formData.append('description', description);
-      if (attachment) formData.append('attachment', attachment);
+      // Payload for Discord
+      const payload = {
+        username: 'OpsLink Support Bot',
+        embeds: [{
+          title: `[${ticketNumber}] ${title}`,
+          description: description,
+          color: 0x3498db,
+          fields: [
+            { name: 'Category', value: category, inline: true },
+            { name: 'Discord Username', value: discordUsername, inline: true },
+            { name: 'Discord ID', value: discordId, inline: true },
+            { name: 'Server Name', value: serverName, inline: true },
+            { name: 'Server ID', value: serverId, inline: true },
+            { name: 'Submitted At', value: new Date().toLocaleString(), inline: false },
+            ...extraFields
+          ]
+        }]
+      };
 
       try {
-        const res = await fetch(`${API_URL}/api/tickets`, {
+        const res = await fetch(DISCORD_WEBHOOK_URL, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
-          body: formData
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
 
         if (res.ok) {
           ticketForm.reset();
+          ticketNumberInput.value = generateTicketNumber();
+          dynamicQuestionsDiv.innerHTML = '';
           successMessage.classList.remove('hidden');
         } else {
-          const err = await res.json();
-          alert('Failed to submit ticket: ' + (err.error || err.message));
+          console.error(await res.text());
+          alert('Failed to submit ticket.');
         }
       } catch (err) {
         console.error(err);
