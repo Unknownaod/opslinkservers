@@ -384,17 +384,52 @@ document.getElementById('nsfwToggle').onchange = renderServers;
 loadServers();
 </script>
 
-<div id="t" style="position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.15s;z-index:9999">
-  <img src="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png?ex=697e1164&is=697cbfe4&hm=9441d7ce73ab37a2d7addce41c96205a0f0e9711def8cdd6e9b4978f83cd46b5&" style="width:90px">
+<div id="t" style="
+  position:fixed;
+  inset:0;
+  background:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s ease;
+  z-index:9999;
+">
+  <img id="tl" src="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png?ex=697e1164&is=697cbfe4&hm=9441d7ce73ab37a2d7addce41c96205a0f0e9711def8cdd6e9b4978f83cd46b5&" style="
+    width:180px;
+    opacity:0;
+    transform:scale(0.8);
+    filter:drop-shadow(0 0 0 rgba(80,200,255,0));
+    transition:opacity .3s ease, transform .6s ease, filter .6s ease;
+  ">
 </div>
+
 <script>
-document.addEventListener('click',e=>{
-  const a=e.target.closest('a'); if(!a) return;
-  const h=a.getAttribute('href');
-  if(!h||h[0]=='#'||h.startsWith('http')||a.target) return;
+document.addEventListener('click', e => {
+  const a = e.target.closest('a');
+  if(!a) return;
+  const h = a.getAttribute('href');
+  if(!h || h.startsWith('#') || h.startsWith('http') || a.target) return;
+
   e.preventDefault();
-  t.style.opacity=1;
-  setTimeout(()=>location.href=h,1000);
+
+  t.style.opacity = 1;
+  t.style.pointerEvents = 'all';
+
+  // Animate logo: scale up and glow
+  tl.style.opacity = 1;
+  tl.style.transform = 'scale(1.05)';
+  tl.style.filter = 'drop-shadow(0 0 25px rgba(80,200,255,0.8))';
+
+  // subtle pulse after first scale
+  setTimeout(() => {
+    tl.style.transform = 'scale(1)';
+    tl.style.filter = 'drop-shadow(0 0 40px rgba(80,200,255,1))';
+  }, 300);
+
+  // go to next page after 1 second
+  setTimeout(() => location.href = h, 1000);
 });
 </script>
 
