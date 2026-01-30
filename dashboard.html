@@ -44,16 +44,12 @@
   <div id="reportsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 </section>
 
-<!-- ================= FOOTER ================= -->
 <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
   <span>© 2026 OpsLink Servers</span>
   <span>Admin Panel Only</span>
 </footer>
 
 <script>
-/* ======================================================
-   CONFIG
-====================================================== */
 const API_URL = 'https://opslinkservers-backend.onrender.com';
 const token = localStorage.getItem('token');
 const userStr = localStorage.getItem('user');
@@ -61,43 +57,26 @@ const userStr = localStorage.getItem('user');
 let servers = [];
 let currentUser = null;
 
-/* ======================================================
-   ADMIN CHECK
-====================================================== */
+/* ================= ADMIN CHECK ================= */
 async function checkAdmin() {
-  if (!token || !userStr) {
-    alert('Admin login required.');
-    window.location.href = '/login.html';
-    return false;
-  }
-
+  if (!token || !userStr) return location.href = '/login.html';
   currentUser = JSON.parse(userStr);
-  if (currentUser.role !== 'admin') {
-    alert('Admins only.');
-    window.location.href = '/';
-    return false;
-  }
-
+  if (currentUser.role !== 'admin') return location.href = '/';
   return true;
 }
 
-/* ======================================================
-   LOAD DATA
-====================================================== */
+/* ================= LOAD ================= */
 async function loadServers() {
   const res = await fetch(`${API_URL}/api/servers/all`, {
     headers: { Authorization: `Bearer ${token}` }
   });
-
   servers = await res.json();
   renderServers();
   renderEditRequests();
   renderReports();
 }
 
-/* ======================================================
-   SERVERS
-====================================================== */
+/* ================= SERVERS ================= */
 function renderServers() {
   const grid = document.getElementById('serversGrid');
   const q = document.getElementById('searchInput').value.toLowerCase();
@@ -118,79 +97,63 @@ function renderServers() {
     const statusColor =
       s.status === 'approved' ? 'text-green-400' :
       s.status === 'denied' ? 'text-red-400' :
+      s.status === 'taken-down' ? 'text-orange-400' :
       'text-yellow-400';
 
     const card = document.createElement('div');
     card.className = 'bg-zinc-900 border border-zinc-800 p-4 rounded flex flex-col justify-between';
 
-card.innerHTML = `
-  <div class="space-y-1 text-sm">
-    <h3 class="font-semibold text-lg">${s.name}</h3>
-
-    <img src="${s.logo}" class="w-16 h-16 rounded mt-2 object-cover" />
-
-    <p class="text-zinc-400">${s.description}</p>
-
-    <p><span class="text-zinc-400">Invite:</span>
-      <a href="${s.invite}" target="_blank" class="text-indigo-400 underline">
-        ${s.invite}
-      </a>
-    </p>
-
-    <p><span class="text-zinc-400">Language:</span> ${s.language || '—'}</p>
-    <p><span class="text-zinc-400">Type:</span> ${s.type || '—'}</p>
-    <p><span class="text-zinc-400">Members:</span> ${s.members ?? '—'}</p>
-    <p><span class="text-zinc-400">NSFW:</span> ${s.nsfw ? 'Yes' : 'No'}</p>
-
-    <p><span class="text-zinc-400">Tags:</span> ${s.tags?.join(', ') || '—'}</p>
-
-    <p><span class="text-zinc-400">Website:</span>
-      ${s.website
-        ? `<a href="${s.website}" target="_blank" class="text-indigo-400 underline">${s.website}</a>`
-        : '—'}
-    </p>
-
-    <p><span class="text-zinc-400">Rules:</span> ${s.rules || '—'}</p>
-
-    <p><span class="text-zinc-400">Discord Server ID:</span> ${s.discordServerId}</p>
-
-    <p><span class="text-zinc-400">Submitted by:</span>
-      ${s.submitterDiscord?.username}#${s.submitterDiscord?.tag}
-    </p>
-
-    <p><span class="text-zinc-400">Status:</span>
-      <span class="${statusColor}">${s.status}</span>
-    </p>
-
-    ${s.rejectionReason
-      ? `<p class="text-red-400">Rejection Reason: ${s.rejectionReason}</p>`
-      : ''}
-
-    <p class="text-xs text-zinc-500">
-      Created: ${new Date(s.createdAt).toLocaleString()}
-    </p>
-  </div>
-
-  <div class="flex gap-2 mt-3"></div>
-`;
+    card.innerHTML = `
+      <div class="space-y-1 text-sm">
+        <h3 class="text-lg font-semibold">${s.name}</h3>
+        <img src="${s.logo}" class="w-16 h-16 rounded object-cover mt-2"/>
+        <p class="text-zinc-400">${s.description}</p>
+        <p>Invite: <a href="${s.invite}" target="_blank" class="text-indigo-400 underline">${s.invite}</a></p>
+        <p>Language: ${s.language || '—'}</p>
+        <p>Type: ${s.type || '—'}</p>
+        <p>Members: ${s.members ?? '—'}</p>
+        <p>NSFW: ${s.nsfw ? 'Yes' : 'No'}</p>
+        <p>Tags: ${s.tags?.join(', ') || '—'}</p>
+        <p>Website: ${s.website || '—'}</p>
+        <p>Rules: ${s.rules || '—'}</p>
+        <p>Discord ID: ${s.discordServerId}</p>
+        <p>By: ${s.submitterDiscord?.username}#${s.submitterDiscord?.tag}</p>
+        <p>Status: <span class="${statusColor}">${s.status}</span></p>
+        ${s.rejectionReason ? `<p class="text-red-400">Reason: ${s.rejectionReason}</p>` : ''}
+        <p class="text-xs text-zinc-500">${new Date(s.createdAt).toLocaleString()}</p>
+      </div>
+      <div class="flex flex-wrap gap-2 mt-3"></div>
+    `;
 
     const btns = card.querySelector('div:last-child');
 
     if (s.status === 'pending') {
       btns.appendChild(actionBtn('Approve', 'bg-green-600', () => updateStatus(s._id, 'approved')));
       btns.appendChild(actionBtn('Deny', 'bg-red-600', () => {
-        const reason = prompt('Reason?');
-        if (reason !== null) updateStatus(s._id, 'denied', reason);
+        const r = prompt('Rejection reason?');
+        if (r !== null) updateStatus(s._id, 'denied', r);
       }));
     }
+
+    if (s.status === 'approved') {
+      btns.appendChild(actionBtn('Take Down', 'bg-orange-600', () =>
+        updateStatus(s._id, 'taken-down', 'Taken down by admin')
+      ));
+    }
+
+    if (s.status === 'taken-down') {
+      btns.appendChild(actionBtn('Restore', 'bg-green-700', () =>
+        updateStatus(s._id, 'approved')
+      ));
+    }
+
+    btns.appendChild(actionBtn('Delete', 'bg-red-800', () => deleteServer(s._id)));
 
     grid.appendChild(card);
   });
 }
 
-/* ======================================================
-   EDIT REQUESTS (FIXED)
-====================================================== */
+/* ================= EDIT REQUESTS ================= */
 function renderEditRequests() {
   const grid = document.getElementById('editRequestsGrid');
   grid.innerHTML = '';
@@ -208,16 +171,13 @@ function renderEditRequests() {
 
   edits.forEach(({ server, edit }) => {
     const c = edit.changes || {};
-
     const card = document.createElement('div');
     card.className = 'bg-yellow-900/70 border border-yellow-800 p-4 rounded';
 
     card.innerHTML = `
       <h3 class="font-semibold">${server.name}</h3>
-      <p class="text-xs text-zinc-300">By: ${server.submitterDiscord?.username || 'Unknown'}</p>
-      <p class="text-xs mt-2">Description: ${c.description || '—'}</p>
+      <p class="text-xs">Description: ${c.description || '—'}</p>
       <p class="text-xs">Tags: ${(c.tags || []).join(', ') || '—'}</p>
-      <p class="text-xs">NSFW: ${c.nsfw ? 'Yes' : 'No'}</p>
       <div class="flex gap-2 mt-3"></div>
     `;
 
@@ -229,9 +189,7 @@ function renderEditRequests() {
   });
 }
 
-/* ======================================================
-   REPORTS
-====================================================== */
+/* ================= REPORTS ================= */
 function renderReports() {
   const grid = document.getElementById('reportsGrid');
   grid.innerHTML = '';
@@ -248,30 +206,30 @@ function renderReports() {
   reports.forEach(({ server, report }) => {
     const card = document.createElement('div');
     card.className = 'bg-red-900/60 border border-red-800 p-4 rounded';
-
     card.innerHTML = `
       <h3 class="font-semibold">${server.name}</h3>
-      <p class="text-xs mt-1">Reason: ${report.reason}</p>
-      <p class="text-xs text-zinc-300 mt-1">
-        Reported: ${new Date(report.createdAt).toLocaleString()}
-      </p>
+      <p class="text-xs">Reason: ${report.reason}</p>
+      <p class="text-xs text-zinc-400">${new Date(report.createdAt).toLocaleString()}</p>
     `;
-
     grid.appendChild(card);
   });
 }
 
-/* ======================================================
-   ACTIONS
-====================================================== */
+/* ================= ACTIONS ================= */
 async function updateStatus(id, status, rejectionReason = '') {
   await fetch(`${API_URL}/api/servers/${id}/status`, {
     method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ status, rejectionReason })
+  });
+  loadServers();
+}
+
+async function deleteServer(id) {
+  if (!confirm('Delete this server permanently?')) return;
+  await fetch(`${API_URL}/api/servers/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
   });
   loadServers();
 }
@@ -279,10 +237,7 @@ async function updateStatus(id, status, rejectionReason = '') {
 async function approveEdit(serverId, editId) {
   await fetch(`${API_URL}/api/servers/${serverId}/edit-approve`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ editId })
   });
   loadServers();
@@ -291,33 +246,26 @@ async function approveEdit(serverId, editId) {
 async function denyEdit(serverId, editId) {
   await fetch(`${API_URL}/api/servers/${serverId}/edit-deny`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ editId })
   });
   loadServers();
 }
 
-/* ======================================================
-   HELPERS
-====================================================== */
+/* ================= HELPERS ================= */
 function actionBtn(label, cls, fn) {
   const b = document.createElement('button');
   b.textContent = label;
-  b.className = `${cls} px-3 py-1 rounded`;
+  b.className = `${cls} px-3 py-1 rounded text-sm`;
   b.onclick = fn;
   return b;
 }
 
-/* ======================================================
-   INIT
-====================================================== */
+/* ================= INIT ================= */
 document.getElementById('searchInput').addEventListener('input', renderServers);
 document.getElementById('logoutBtn').onclick = () => {
   localStorage.clear();
-  window.location.href = '/login.html';
+  location.href = '/login.html';
 };
 
 (async () => {
