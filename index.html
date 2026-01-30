@@ -200,7 +200,14 @@
     setInterval(fetchLiveStats, 2.5 * 60 * 1000 + Math.random() * 2.5 * 60 * 1000);
   </script>
 
-    <?php include 'transition.html'; ?>
+<div id="transition-root"></div>
+<script>
+  fetch('/transition.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('transition-root').innerHTML = html;
+    });
+</script>
 
 </body>
 </html>
