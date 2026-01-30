@@ -6,9 +6,10 @@
   <title>System Messages - OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
-<!-- Navbar -->
+<!-- NAVBAR -->
 <nav class="flex items-center justify-between px-10 py-6">
   <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
   <div class="flex items-center gap-8 text-sm" id="navLinks">
@@ -37,10 +38,8 @@
     <h2 class="text-2xl font-bold mb-4">Request Server Edit</h2>
 
     <form id="editForm" class="flex flex-col gap-3">
-
-      <input name="name" placeholder="Server Name" class="p-2 rounded bg-zinc-800" required />
-      <textarea name="description" placeholder="Description" class="p-2 rounded bg-zinc-800" required></textarea>
-      <input name="logo" placeholder="Logo URL" class="p-2 rounded bg-zinc-800" required />
+      <textarea name="description" placeholder="Description" class="p-2 rounded bg-zinc-800"></textarea>
+      <input name="logo" placeholder="Logo URL" class="p-2 rounded bg-zinc-800" />
       <input name="website" placeholder="Website / Social" class="p-2 rounded bg-zinc-800" />
       <input name="language" placeholder="Language" class="p-2 rounded bg-zinc-800" />
       <input name="members" type="number" placeholder="Members" class="p-2 rounded bg-zinc-800" />
@@ -55,15 +54,13 @@
       </select>
 
       <label class="flex items-center gap-2">
-        <input type="checkbox" name="nsfw" />
-        NSFW
+        <input type="checkbox" name="nsfw" /> NSFW
       </label>
 
       <button type="submit"
-        class="bg-indigo-600 py-2 rounded hover:bg-indigo-700 transition font-semibold">
+        class="bg-indigo-600 py-2 rounded hover:bg-indigo-700 font-semibold">
         Submit Edit Request
       </button>
-
     </form>
   </div>
 </div>
@@ -75,19 +72,20 @@
 
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
-const loginBtn = document.getElementById('loginBtn');
 const messagesContainer = document.getElementById('messagesContainer');
+const loginBtn = document.getElementById('loginBtn');
 
 let user = null;
 let currentEditServer = null;
 
-// Check login
+/* ================= LOGIN CHECK ================= */
 function checkLogin() {
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
 
   if (!token || !userStr) {
-    messagesContainer.innerHTML = '<p class="text-zinc-400">You must be logged in to view system messages.</p>';
+    messagesContainer.innerHTML =
+      '<p class="text-zinc-400">You must be logged in to view system messages.</p>';
     return false;
   }
 
@@ -103,25 +101,33 @@ function checkLogin() {
   return true;
 }
 
-// Render messages
+/* ================= RENDER ================= */
 function renderMessages(servers) {
-  const myServers = servers.filter(s => s.submitter && s.submitter._id === user._id);
+  const myServers = servers.filter(
+    s => s.submitter?.toString() === user._id
+  );
 
   messagesContainer.innerHTML = '';
+
+  if (!myServers.length) {
+    messagesContainer.innerHTML =
+      '<p class="text-zinc-400">No servers submitted yet.</p>';
+    return;
+  }
 
   myServers.forEach(s => {
     const div = document.createElement('div');
     div.className = `p-4 rounded border ${
       s.status === 'approved' ? 'border-green-500 bg-green-900/30' :
       s.status === 'denied' ? 'border-red-500 bg-red-900/30' :
+      s.status === 'taken-down' ? 'border-orange-500 bg-orange-900/30' :
       'border-zinc-700 bg-zinc-900/50'
     }`;
 
-    let msg = '';
-
-    if (s.status === 'pending') msg = 'Your server is pending review.';
-    if (s.status === 'approved') msg = 'Your server has been approved and is now live!';
+    let msg = 'Pending review.';
+    if (s.status === 'approved') msg = 'Your server is approved and live.';
     if (s.status === 'denied') msg = `Denied: ${s.rejectionReason || 'No reason provided.'}`;
+    if (s.status === 'taken-down') msg = 'Your server was taken down by staff.';
 
     div.innerHTML = `
       <h3 class="font-semibold text-lg">${s.name}</h3>
@@ -147,13 +153,12 @@ function renderMessages(servers) {
   });
 }
 
-// Open edit modal
+/* ================= EDIT MODAL ================= */
 function openEditModal(server) {
   currentEditServer = server;
   const modal = document.getElementById('editModal');
   const form = document.getElementById('editForm');
 
-  form.name.value = server.name || '';
   form.description.value = server.description || '';
   form.logo.value = server.logo || '';
   form.website.value = server.website || '';
@@ -165,48 +170,52 @@ function openEditModal(server) {
   modal.classList.remove('hidden');
 }
 
-// Close modal
 document.getElementById('closeEditModal').onclick = () => {
   document.getElementById('editModal').classList.add('hidden');
 };
 
-// Submit edit request
+/* ================= SUBMIT EDIT ================= */
 document.getElementById('editForm').onsubmit = async e => {
   e.preventDefault();
-
   const token = localStorage.getItem('token');
-  if (!token) return alert('Login required.');
 
   const payload = Object.fromEntries(new FormData(e.target));
-
   payload.nsfw = e.target.nsfw.checked;
 
-  const res = await fetch(`${API_URL}/api/servers/${currentEditServer._id}/request-edit`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
-  });
+  const res = await fetch(
+    `${API_URL}/api/servers/${currentEditServer._id}/request-edit`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    }
+  );
 
   if (!res.ok) return alert('Failed to submit edit request.');
 
-  alert('Edit request submitted! Staff will review it.');
+  alert('Edit request submitted.');
   document.getElementById('editModal').classList.add('hidden');
 };
 
-// Fetch + poll
-async function fetchAndUpdateMessages() {
-  const res = await fetch(`${API_URL}/api/servers`);
+/* ================= FETCH ================= */
+async function fetchMessages() {
+  const token = localStorage.getItem('token');
+
+  const res = await fetch(`${API_URL}/api/servers/all`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
   const servers = await res.json();
   renderMessages(servers);
 }
 
-// Init
+/* ================= INIT ================= */
 if (checkLogin()) {
-  fetchAndUpdateMessages();
-  setInterval(fetchAndUpdateMessages, 5000);
+  fetchMessages();
+  setInterval(fetchMessages, 8000);
 }
 </script>
 
