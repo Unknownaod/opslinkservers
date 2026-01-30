@@ -41,7 +41,7 @@
   </div>
 </section>
 
-<!-- EDIT REQUEST MODAL (FIXED) -->
+<!-- EDIT REQUEST MODAL -->
 <div id="editModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-6 z-50">
   <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-xl w-full relative">
 
@@ -53,13 +53,9 @@
     <form id="editForm" class="flex flex-col gap-3">
 
       <textarea name="description" placeholder="Description" class="p-2 rounded bg-zinc-800"></textarea>
-
       <input name="logo" placeholder="Logo URL" class="p-2 rounded bg-zinc-800" />
-
       <input name="website" placeholder="Website / Social" class="p-2 rounded bg-zinc-800" />
-
       <input name="language" placeholder="Language" class="p-2 rounded bg-zinc-800" />
-
       <input name="members" type="number" placeholder="Members" class="p-2 rounded bg-zinc-800" />
 
       <select name="type" class="p-2 rounded bg-zinc-800">
@@ -75,7 +71,6 @@
         <input type="checkbox" name="nsfw" /> NSFW
       </label>
 
-      <!-- Tags input (comma-separated, up to 5 tags) -->
       <input name="tags" placeholder="Tags (comma-separated, max 5)" class="p-2 rounded bg-zinc-800" />
 
       <button type="submit" class="bg-indigo-600 py-2 rounded hover:bg-indigo-700 font-semibold">
@@ -85,13 +80,10 @@
   </div>
 </div>
 
-
 <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
   <span>© 2026 OpsLink Servers</span>
   <span>Not affiliated with Discord</span>
 </footer>
-
-<!-- ... your existing head and body ... -->
 
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
@@ -104,7 +96,7 @@ const myServersDiv = document.getElementById('myServersMessages');
 
 let user = null;
 let currentEditServer = null;
-let lastStatuses = {}; // track changes for notifications
+let lastStatuses = {};
 
 /* ================= LOGIN CHECK ================= */
 function checkLogin() {
@@ -163,31 +155,24 @@ function openEditModal(server) {
   form.members.value = server.members || '';
   form.type.value = server.type || '';
   form.nsfw.checked = server.nsfw || false;
-
-  // Prefill tags as comma-separated string
   form.tags.value = server.tags ? server.tags.join(', ') : '';
 
   modal.classList.remove('hidden');
 }
 
-// Close modal
 document.getElementById('closeEditModal').onclick = () => {
   document.getElementById('editModal').classList.add('hidden');
 };
 
-// Submit edit request
 document.getElementById('editForm').onsubmit = async e => {
   e.preventDefault();
   const token = localStorage.getItem('token');
 
-  // Collect form data
   const formData = Object.fromEntries(new FormData(e.target));
   formData.nsfw = e.target.nsfw.checked;
 
-  // Convert members to number
   if (formData.members) formData.members = Number(formData.members);
 
-  // Convert tags input (comma-separated) into array, max 5
   if (formData.tags) {
     formData.tags = formData.tags
       .split(',')
@@ -198,7 +183,6 @@ document.getElementById('editForm').onsubmit = async e => {
     formData.tags = [];
   }
 
-  // Send the object directly, not as a string
   try {
     const res = await fetch(`${API_URL}/api/servers/${currentEditServer._id}/request-edit`, {
       method: 'POST',
@@ -206,7 +190,7 @@ document.getElementById('editForm').onsubmit = async e => {
         'Authorization': `Bearer ${token}`, 
         'Content-Type': 'application/json' 
       },
-      body: JSON.stringify({ changes: formData }) // <-- send as object
+      body: JSON.stringify({ changes: formData }) // <-- works with backend now
     });
 
     if (!res.ok) throw new Error('Failed to submit edit request.');
@@ -243,7 +227,6 @@ function renderSystemMessages(servers) {
     if (s.status === 'approved') msg = 'Your server is approved and live.';
     if (s.status === 'denied') msg = `Denied: ${s.rejectionReason || 'No reason provided.'}`;
 
-    // Notify if status changed
     if (lastStatuses[s._id] && lastStatuses[s._id] !== s.status) {
       alert(`Server "${s.name}" status changed: ${s.status.toUpperCase()}`);
     }
@@ -334,7 +317,6 @@ if (checkLogin()) {
   tabSystemBtn.click();
 }
 </script>
-
 
 </body>
 </html>
