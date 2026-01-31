@@ -4,10 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Server Analytics • OpsLink</title>
-
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
 body {
   background:
@@ -15,66 +13,141 @@ body {
     radial-gradient(900px 500px at 80% 10%, rgba(34,197,94,.14), transparent),
     #020617;
   font-family: Inter, system-ui, sans-serif;
+  color:white;
 }
-
 .glass {
   background: linear-gradient(180deg, rgba(24,24,27,.88), rgba(9,9,11,.88));
-  backdrop-filter: blur(24px);
+  backdrop-filter: blur(20px);
   border: 1px solid rgba(255,255,255,.06);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.04),
-    0 30px 80px rgba(0,0,0,.6);
-  transition: all .35s ease;
-}
-
-.glass:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 40px 100px rgba(99,102,241,.35);
-}
-
-.stat {
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 14px;
-  padding: 14px;
-}
-
-canvas {
-  background: rgba(255,255,255,.04);
   border-radius: 16px;
-  padding: 12px;
+  padding: 1rem;
+  transition: all .3s;
 }
-
-.badge-approved {
-  background: linear-gradient(90deg,#22c55e,#4ade80);
-  color:#022c22;
+.glass:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(99,102,241,.3);
 }
-.badge-pending {
-  background: linear-gradient(90deg,#facc15,#f87171);
-  color:#3b0d0c;
-}
+.card-header { font-weight:600; font-size:0.85rem; color:#9ca3af; margin-bottom:0.5rem; }
+canvas { background: rgba(255,255,255,0.03); border-radius:12px; width:100%!important; height:300px!important; }
+.table-container { overflow-x:auto; }
 </style>
 </head>
-
-<body class="text-white min-h-screen">
+<body class="min-h-screen p-6 md:p-12">
 
 <!-- NAV -->
-<nav class="glass flex justify-between items-center px-12 py-6">
-  <h1 class="text-2xl font-bold tracking-wide">OpsLink</h1>
-  <a id="loginBtn" class="border border-white/10 rounded-full px-5 py-2 text-sm hover:bg-white/5 cursor-pointer">
-    Login
-  </a>
+<nav class="flex justify-between items-center mb-8">
+  <h1 class="text-2xl font-bold tracking-wide">OpsLink Analytics</h1>
+  <a id="loginBtn" class="border border-white/10 rounded-full px-5 py-2 text-sm hover:bg-white/5 cursor-pointer">Login</a>
 </nav>
 
-<!-- HEADER -->
-<header class="px-14 pt-12 pb-8">
-  <h2 class="text-5xl font-bold mb-2">Server Analytics</h2>
-  <p class="text-zinc-400 text-sm">Growth, activity, and presence insights</p>
-</header>
+<!-- TOP STATS -->
+<div class="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8">
+  <div class="glass text-center">
+    <p class="card-header">Total Messages</p>
+    <p class="text-2xl font-bold" id="totalMessages">0</p>
+  </div>
+  <div class="glass text-center">
+    <p class="card-header">Unique Members</p>
+    <p class="text-2xl font-bold" id="uniqueMembers">0</p>
+  </div>
+  <div class="glass text-center">
+    <p class="card-header">Active Boosts</p>
+    <p class="text-2xl font-bold" id="boosts">0</p>
+  </div>
+  <div class="glass text-center">
+    <p class="card-header">Unique Channels</p>
+    <p class="text-2xl font-bold" id="uniqueChannels">0</p>
+  </div>
+</div>
 
-<main class="px-14 pb-32">
-  <div id="serversContainer" class="grid grid-cols-1 2xl:grid-cols-2 gap-10"></div>
-</main>
+<!-- MESSAGES OVER TIME -->
+<div class="glass mb-8">
+  <p class="card-header mb-3">Messages Over Time</p>
+  <canvas id="messagesOverTime"></canvas>
+</div>
+
+<!-- PRESENCE STATUS -->
+<div class="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8">
+  <div class="glass text-center">
+    <p class="card-header">Online</p>
+    <p class="text-2xl font-bold" id="onlineMembers">0</p>
+  </div>
+  <div class="glass text-center">
+    <p class="card-header">Idle</p>
+    <p class="text-2xl font-bold" id="idleMembers">0</p>
+  </div>
+  <div class="glass text-center">
+    <p class="card-header">Do Not Disturb</p>
+    <p class="text-2xl font-bold" id="dndMembers">0</p>
+  </div>
+  <div class="glass text-center">
+    <p class="card-header">Offline</p>
+    <p class="text-2xl font-bold" id="offlineMembers">0</p>
+  </div>
+</div>
+
+<!-- TOP MEMBERS AND CHANNELS -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <div class="glass p-4 flex flex-col gap-4">
+    <p class="card-header">Top Members</p>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="table-container">
+        <table class="min-w-full text-left text-sm">
+          <thead>
+            <tr class="text-zinc-400">
+              <th class="px-2 py-1">Rank</th>
+              <th class="px-2 py-1">Username</th>
+              <th class="px-2 py-1">Messages</th>
+            </tr>
+          </thead>
+          <tbody id="membersTable"></tbody>
+        </table>
+      </div>
+      <div>
+        <canvas id="membersPie"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="glass p-4 flex flex-col gap-4">
+    <p class="card-header">Top Channels</p>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="table-container">
+        <table class="min-w-full text-left text-sm">
+          <thead>
+            <tr class="text-zinc-400">
+              <th class="px-2 py-1">Rank</th>
+              <th class="px-2 py-1">Channel</th>
+              <th class="px-2 py-1">Messages</th>
+            </tr>
+          </thead>
+          <tbody id="channelsTable"></tbody>
+        </table>
+      </div>
+      <div>
+        <canvas id="channelsPie"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JOINS / LEAVES -->
+<div class="glass mb-8">
+  <p class="card-header mb-3">Joins vs Leaves Over Time</p>
+  <canvas id="joinsLeavesChart"></canvas>
+</div>
+
+<!-- BOOSTS -->
+<div class="glass mb-8">
+  <p class="card-header mb-3">Boosts Over Time</p>
+  <canvas id="boostsChart"></canvas>
+</div>
+
+<!-- EMOJI USAGE -->
+<div class="glass mb-8">
+  <p class="card-header mb-3">Top Emojis</p>
+  <canvas id="emojiChart"></canvas>
+</div>
 
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
@@ -83,131 +156,105 @@ const user = JSON.parse(localStorage.getItem('user') || 'null');
 const loginBtn = document.getElementById('loginBtn');
 
 loginBtn.textContent = token ? 'Logout' : 'Login';
-loginBtn.onclick = () => {
-  localStorage.clear();
-  location.href = 'login.html';
-};
+loginBtn.onclick = () => { localStorage.clear(); location.href='login.html'; };
 
-async function fetchServers() {
-  if (!user) return;
-  const res = await fetch(`${API_URL}/api/servers/mine`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const servers = await res.json();
-  servers.forEach(renderServer);
-}
+async function fetchDashboard() {
+  if(!user) return;
 
-async function renderServer(server) {
-  const res = await fetch(`${API_URL}/api/servers/${server._id}`);
-  const a = await res.json();
+  const res = await fetch(`${API_URL}/api/servers/dashboard`, { headers: { Authorization:`Bearer ${token}` }});
+  const data = await res.json();
 
-  const card = document.createElement('div');
-  card.className = 'glass p-8 rounded-3xl flex flex-col gap-8';
+  // Top stats
+  document.getElementById('totalMessages').textContent = (data.totalMessages||0).toLocaleString();
+  document.getElementById('uniqueMembers').textContent = (data.uniqueMembers||0).toLocaleString();
+  document.getElementById('uniqueChannels').textContent = (data.uniqueChannels||0).toLocaleString();
+  document.getElementById('boosts').textContent = (data.boosts||0).toLocaleString();
 
-  card.innerHTML = `
-    <!-- HEADER -->
-    <div class="flex justify-between items-center">
-      <div class="flex gap-5 items-center">
-        <img src="${server.logo}" class="w-16 h-16 rounded-2xl object-cover border border-white/10">
-        <div>
-          <h3 class="text-xl font-semibold">${server.name}</h3>
-          <p class="text-xs text-zinc-400 max-w-sm">${server.description || 'No description'}</p>
-        </div>
-      </div>
-      <span class="px-3 py-1 text-[10px] font-bold tracking-widest rounded-full ${server.status==='approved'?'badge-approved':'badge-pending'}">
-        ${server.status.toUpperCase()}
-      </span>
-    </div>
+  // Presence
+  document.getElementById('onlineMembers').textContent = (data.presence?.online||0).toLocaleString();
+  document.getElementById('idleMembers').textContent = (data.presence?.idle||0).toLocaleString();
+  document.getElementById('dndMembers').textContent = (data.presence?.dnd||0).toLocaleString();
+  document.getElementById('offlineMembers').textContent = (data.presence?.offline||0).toLocaleString();
 
-    <!-- STATS -->
-    <div class="grid grid-cols-4 gap-4">
-      ${stat('Members', a.members)}
-      ${stat('Humans', a.humans)}
-      ${stat('Bots', a.bots)}
-      ${stat('Boosts', a.boosts)}
-    </div>
-
-    <div class="grid grid-cols-4 gap-4">
-      ${stat('Online', a.online)}
-      ${stat('Idle', a.idle)}
-      ${stat('DND', a.dnd)}
-      ${stat('Offline', a.offline)}
-    </div>
-
-    <!-- CHARTS -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <canvas id="growth-${server._id}" height="180"></canvas>
-      <canvas id="presence-${server._id}" height="180"></canvas>
-    </div>
-
-    <!-- JOINS / LEAVES -->
-    <div class="grid grid-cols-4 gap-4">
-      ${delta('Joins 24h', a.joinsLast24h, 'emerald')}
-      ${delta('Leaves 24h', a.leavesLast24h, 'rose')}
-      ${delta('Joins 7d', a.joinsLast7d, 'emerald')}
-      ${delta('Leaves 7d', a.leavesLast7d, 'rose')}
-    </div>
-
-    <p class="text-[10px] text-center text-zinc-500">
-      Data since bot install • Updated ${new Date(a.updatedAt).toLocaleString()}
-    </p>
-  `;
-
-  document.getElementById('serversContainer').appendChild(card);
-  renderCharts(server._id, a);
-}
-
-function stat(label, value) {
-  return `
-    <div class="stat text-center">
-      <p class="text-[10px] uppercase text-zinc-400">${label}</p>
-      <p class="text-xl font-semibold">${value ?? 0}</p>
-    </div>
-  `;
-}
-
-function delta(label, value, color) {
-  return `
-    <div class="stat text-center bg-${color}-500/10 border-${color}-400/20">
-      <p class="text-[10px] text-${color}-400">${label}</p>
-      <p class="text-lg font-semibold text-${color}-300">${value ?? 0}</p>
-    </div>
-  `;
-}
-
-function renderCharts(id, a) {
-  new Chart(document.getElementById(`growth-${id}`), {
-    type: 'line',
-    data: {
-      labels: (a.memberSnapshots || []).map(d => d.date),
-      datasets: [{
-        label: 'Members',
-        data: (a.memberSnapshots || []).map(d => d.count),
-        borderColor: '#6366f1',
-        tension: .4,
-        fill: false
-      }]
+  // Messages Over Time
+  new Chart(document.getElementById('messagesOverTime'), {
+    type:'line',
+    data:{
+      labels: (data.messagesOverTime||[]).map(d=>d.date),
+      datasets:[{ label:'Messages', data:(data.messagesOverTime||[]).map(d=>d.count), borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,0.2)', fill:true }]
     },
-    options: {
-      plugins:{ legend:{ display:false }},
-      scales:{ x:{ ticks:{ color:'#9ca3af'}}, y:{ ticks:{ color:'#9ca3af'}}}
-    }
+    options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#9ca3af' } }, y:{ ticks:{ color:'#9ca3af' } } } }
   });
 
-  new Chart(document.getElementById(`presence-${id}`), {
-    type: 'doughnut',
-    data: {
-      labels:['Online','Idle','DND','Offline'],
-      datasets:[{
-        data:[a.online,a.idle,a.dnd,a.offline],
-        backgroundColor:['#22c55e','#facc15','#ef4444','#6b7280']
-      }]
+  // Top Members
+  const membersTable = document.getElementById('membersTable');
+  membersTable.innerHTML='';
+  (data.topMembers||[]).forEach((m,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="px-2 py-1">${i+1}</td><td class="px-2 py-1">${m.username}</td><td class="px-2 py-1">${m.messages.toLocaleString()}</td>`;
+    membersTable.appendChild(tr);
+  });
+  new Chart(document.getElementById('membersPie'),{
+    type:'doughnut',
+    data:{
+      labels:(data.topMembers||[]).map(m=>m.username),
+      datasets:[{ data:(data.topMembers||[]).map(m=>m.messages), backgroundColor:['#22c55e','#6366f1','#facc15','#ef4444','#f87171','#10b981'] }]
     },
-    options:{ cutout:'70%', plugins:{ legend:{ labels:{ color:'#9ca3af'}}}}
+    options:{ responsive:true, cutout:'70%', plugins:{ legend:{ labels:{ color:'#9ca3af' }}} }
+  });
+
+  // Top Channels
+  const channelsTable = document.getElementById('channelsTable');
+  channelsTable.innerHTML='';
+  (data.topChannels||[]).forEach((c,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="px-2 py-1">${i+1}</td><td class="px-2 py-1">${c.name}</td><td class="px-2 py-1">${c.messages.toLocaleString()}</td>`;
+    channelsTable.appendChild(tr);
+  });
+  new Chart(document.getElementById('channelsPie'),{
+    type:'doughnut',
+    data:{
+      labels:(data.topChannels||[]).map(c=>c.name),
+      datasets:[{ data:(data.topChannels||[]).map(c=>c.messages), backgroundColor:['#22c55e','#6366f1','#facc15','#ef4444','#f87171','#10b981'] }]
+    },
+    options:{ responsive:true, cutout:'70%', plugins:{ legend:{ labels:{ color:'#9ca3af' }}} }
+  });
+
+  // Joins/Leaves Over Time
+  new Chart(document.getElementById('joinsLeavesChart'),{
+    type:'line',
+    data:{
+      labels:(data.joinsLeaves||[]).map(d=>d.date),
+      datasets:[
+        { label:'Joins', data:(data.joinsLeaves||[]).map(d=>d.joins), borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,0.2)', fill:true },
+        { label:'Leaves', data:(data.joinsLeaves||[]).map(d=>d.leaves), borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,0.2)', fill:true }
+      ]
+    },
+    options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#9ca3af' } } }, scales:{ x:{ ticks:{ color:'#9ca3af' } }, y:{ ticks:{ color:'#9ca3af' } } } }
+  });
+
+  // Boosts Over Time
+  new Chart(document.getElementById('boostsChart'),{
+    type:'bar',
+    data:{
+      labels:(data.boostsOverTime||[]).map(d=>d.date),
+      datasets:[{ label:'Boosts', data:(data.boostsOverTime||[]).map(d=>d.count), backgroundColor:'#facc15' }]
+    },
+    options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#9ca3af' } }, y:{ ticks:{ color:'#9ca3af' } } } }
+  });
+
+  // Emoji Usage
+  new Chart(document.getElementById('emojiChart'),{
+    type:'doughnut',
+    data:{
+      labels:(data.topEmojis||[]).map(e=>e.emoji),
+      datasets:[{ data:(data.topEmojis||[]).map(e=>e.count), backgroundColor:['#22c55e','#6366f1','#facc15','#ef4444','#f87171','#10b981','#a855f7','#14b8a6'] }]
+    },
+    options:{ responsive:true, cutout:'60%', plugins:{ legend:{ labels:{ color:'#9ca3af' } } } }
   });
 }
 
-fetchServers();
+fetchDashboard();
 </script>
 
 </body>
