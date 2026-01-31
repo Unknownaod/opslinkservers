@@ -89,7 +89,7 @@
 </footer>
 
 <script>
-const API_URL = 'https://opslinkservers-backend.onrender.com';
+const MONGO_ANALYTICS_URL = 'mongodb+srv://kareemkurdi002_db_user:Bq1p5VSoivfl4aZQ@servers.sqbwxae.mongodb.net/?appName=servers'; // <-- insert Mongo URL
 const params = new URLSearchParams(window.location.search);
 const serverId = params.get('server');
 
@@ -103,16 +103,16 @@ function normalizeInvite(invite) {
 
 async function fetchServerData() {
   try {
-    // Fetch server info & comments
-    const res = await fetch(`${API_URL}/servers/${serverId}`);
-    if (!res.ok) throw new Error('Failed to fetch server data');
-    const data = await res.json();
-    analytics = data;
-    renderServer(data);
+    // Fetch server metadata
+    const metaRes = await fetch(`${MONGO_ANALYTICS_URL}/servers/${serverId}`);
+    if (!metaRes.ok) throw new Error('Failed to fetch server metadata');
+    const metaData = await metaRes.json();
+    analytics = metaData;
+    renderServer(metaData);
 
     // Fetch live analytics
-    const liveRes = await fetch(`${API_URL}/servers/${data.discordServerId}/live`);
-    if (!liveRes.ok) throw new Error('Failed to fetch live analytics');
+    const liveRes = await fetch(`${MONGO_ANALYTICS_URL}/analytics/${serverId}`);
+    if (!liveRes.ok) throw new Error('Failed to fetch analytics');
     const liveData = await liveRes.json();
     renderAnalytics(liveData);
 
@@ -130,9 +130,6 @@ function renderServer(data) {
   const inviteEl = document.getElementById('serverInvite');
   inviteEl.href = invite;
   inviteEl.textContent = 'Join Server';
-  // Tags
-  if(data.tags?.length) console.log('Tags:', data.tags.join(', '));
-  // Rules, website, NSFW can be displayed similarly if desired
 }
 
 function renderAnalytics(data) {
@@ -177,7 +174,6 @@ function renderAnalytics(data) {
     topEmojis.appendChild(li);
   });
 
-  // Charts
   renderCharts(data);
 }
 
