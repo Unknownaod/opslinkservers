@@ -41,23 +41,29 @@ canvas { background: rgba(255,255,255,0.03); border-radius:12px; width:100%!impo
 </nav>
 
 <!-- TOP STATS -->
+<div class="grid grid-cols-1 sm:grid-cols-6 gap-6 mb-8">
+  <div class="glass text-center"><p class="card-header">Total Messages</p><p class="text-2xl font-bold" id="totalMessages">0</p></div>
+  <div class="glass text-center"><p class="card-header">Unique Members</p><p class="text-2xl font-bold" id="uniqueMembers">0</p></div>
+  <div class="glass text-center"><p class="card-header">Humans</p><p class="text-2xl font-bold" id="humans">0</p></div>
+  <div class="glass text-center"><p class="card-header">Bots</p><p class="text-2xl font-bold" id="bots">0</p></div>
+  <div class="glass text-center"><p class="card-header">Active Boosts</p><p class="text-2xl font-bold" id="boosts">0</p></div>
+  <div class="glass text-center"><p class="card-header">Unique Channels</p><p class="text-2xl font-bold" id="uniqueChannels">0</p></div>
+</div>
+
+<!-- CHANNEL BREAKDOWN -->
 <div class="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8">
-  <div class="glass text-center">
-    <p class="card-header">Total Messages</p>
-    <p class="text-2xl font-bold" id="totalMessages">0</p>
-  </div>
-  <div class="glass text-center">
-    <p class="card-header">Unique Members</p>
-    <p class="text-2xl font-bold" id="uniqueMembers">0</p>
-  </div>
-  <div class="glass text-center">
-    <p class="card-header">Active Boosts</p>
-    <p class="text-2xl font-bold" id="boosts">0</p>
-  </div>
-  <div class="glass text-center">
-    <p class="card-header">Unique Channels</p>
-    <p class="text-2xl font-bold" id="uniqueChannels">0</p>
-  </div>
+  <div class="glass text-center"><p class="card-header">Text Channels</p><p class="text-2xl font-bold" id="textChannels">0</p></div>
+  <div class="glass text-center"><p class="card-header">Voice Channels</p><p class="text-2xl font-bold" id="voiceChannels">0</p></div>
+  <div class="glass text-center"><p class="card-header">Categories</p><p class="text-2xl font-bold" id="categoryChannels">0</p></div>
+  <div class="glass text-center"><p class="card-header">Threads</p><p class="text-2xl font-bold" id="threads">0</p></div>
+</div>
+
+<!-- PRESENCE STATUS -->
+<div class="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8">
+  <div class="glass text-center"><p class="card-header">Online</p><p class="text-2xl font-bold" id="onlineMembers">0</p></div>
+  <div class="glass text-center"><p class="card-header">Idle</p><p class="text-2xl font-bold" id="idleMembers">0</p></div>
+  <div class="glass text-center"><p class="card-header">Do Not Disturb</p><p class="text-2xl font-bold" id="dndMembers">0</p></div>
+  <div class="glass text-center"><p class="card-header">Offline</p><p class="text-2xl font-bold" id="offlineMembers">0</p></div>
 </div>
 
 <!-- MESSAGES OVER TIME -->
@@ -66,27 +72,7 @@ canvas { background: rgba(255,255,255,0.03); border-radius:12px; width:100%!impo
   <canvas id="messagesOverTime"></canvas>
 </div>
 
-<!-- PRESENCE STATUS -->
-<div class="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8">
-  <div class="glass text-center">
-    <p class="card-header">Online</p>
-    <p class="text-2xl font-bold" id="onlineMembers">0</p>
-  </div>
-  <div class="glass text-center">
-    <p class="card-header">Idle</p>
-    <p class="text-2xl font-bold" id="idleMembers">0</p>
-  </div>
-  <div class="glass text-center">
-    <p class="card-header">Do Not Disturb</p>
-    <p class="text-2xl font-bold" id="dndMembers">0</p>
-  </div>
-  <div class="glass text-center">
-    <p class="card-header">Offline</p>
-    <p class="text-2xl font-bold" id="offlineMembers">0</p>
-  </div>
-</div>
-
-<!-- TOP MEMBERS AND CHANNELS -->
+<!-- TOP MEMBERS & CHANNELS -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
   <div class="glass p-4 flex flex-col gap-4">
     <p class="card-header">Top Members</p>
@@ -94,18 +80,12 @@ canvas { background: rgba(255,255,255,0.03); border-radius:12px; width:100%!impo
       <div class="table-container">
         <table class="min-w-full text-left text-sm">
           <thead>
-            <tr class="text-zinc-400">
-              <th class="px-2 py-1">Rank</th>
-              <th class="px-2 py-1">Username</th>
-              <th class="px-2 py-1">Messages</th>
-            </tr>
+            <tr class="text-zinc-400"><th>Rank</th><th>Username</th><th>Messages</th></tr>
           </thead>
           <tbody id="membersTable"></tbody>
         </table>
       </div>
-      <div>
-        <canvas id="membersPie"></canvas>
-      </div>
+      <div><canvas id="membersPie"></canvas></div>
     </div>
   </div>
 
@@ -115,39 +95,24 @@ canvas { background: rgba(255,255,255,0.03); border-radius:12px; width:100%!impo
       <div class="table-container">
         <table class="min-w-full text-left text-sm">
           <thead>
-            <tr class="text-zinc-400">
-              <th class="px-2 py-1">Rank</th>
-              <th class="px-2 py-1">Channel</th>
-              <th class="px-2 py-1">Messages</th>
-            </tr>
+            <tr class="text-zinc-400"><th>Rank</th><th>Channel</th><th>Messages</th></tr>
           </thead>
           <tbody id="channelsTable"></tbody>
         </table>
       </div>
-      <div>
-        <canvas id="channelsPie"></canvas>
-      </div>
+      <div><canvas id="channelsPie"></canvas></div>
     </div>
   </div>
 </div>
 
 <!-- JOINS / LEAVES -->
-<div class="glass mb-8">
-  <p class="card-header mb-3">Joins vs Leaves Over Time</p>
-  <canvas id="joinsLeavesChart"></canvas>
-</div>
+<div class="glass mb-8"><p class="card-header mb-3">Joins vs Leaves Over Time</p><canvas id="joinsLeavesChart"></canvas></div>
 
 <!-- BOOSTS -->
-<div class="glass mb-8">
-  <p class="card-header mb-3">Boosts Over Time</p>
-  <canvas id="boostsChart"></canvas>
-</div>
+<div class="glass mb-8"><p class="card-header mb-3">Boosts Over Time</p><canvas id="boostsChart"></canvas></div>
 
 <!-- EMOJI USAGE -->
-<div class="glass mb-8">
-  <p class="card-header mb-3">Top Emojis</p>
-  <canvas id="emojiChart"></canvas>
-</div>
+<div class="glass mb-8"><p class="card-header mb-3">Top Emojis</p><canvas id="emojiChart"></canvas></div>
 
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
@@ -160,23 +125,28 @@ loginBtn.onclick = () => { localStorage.clear(); location.href='login.html'; };
 
 async function fetchDashboard() {
   if(!user) return;
-
   const res = await fetch(`${API_URL}/api/servers/dashboard`, { headers: { Authorization:`Bearer ${token}` }});
   const data = await res.json();
 
-  // Top stats
+  // --- Top Stats ---
   document.getElementById('totalMessages').textContent = (data.totalMessages||0).toLocaleString();
   document.getElementById('uniqueMembers').textContent = (data.uniqueMembers||0).toLocaleString();
-  document.getElementById('uniqueChannels').textContent = (data.uniqueChannels||0).toLocaleString();
+  document.getElementById('humans').textContent = (data.humans||0).toLocaleString();
+  document.getElementById('bots').textContent = (data.bots||0).toLocaleString();
   document.getElementById('boosts').textContent = (data.boosts||0).toLocaleString();
+  document.getElementById('uniqueChannels').textContent = (data.channels?.text + data.channels?.voice + data.channels?.category + data.channels?.threads || 0).toLocaleString();
+  document.getElementById('textChannels').textContent = (data.channels?.text||0).toLocaleString();
+  document.getElementById('voiceChannels').textContent = (data.channels?.voice||0).toLocaleString();
+  document.getElementById('categoryChannels').textContent = (data.channels?.category||0).toLocaleString();
+  document.getElementById('threads').textContent = (data.channels?.threads||0).toLocaleString();
 
-  // Presence
-  document.getElementById('onlineMembers').textContent = (data.presence?.online||0).toLocaleString();
-  document.getElementById('idleMembers').textContent = (data.presence?.idle||0).toLocaleString();
-  document.getElementById('dndMembers').textContent = (data.presence?.dnd||0).toLocaleString();
-  document.getElementById('offlineMembers').textContent = (data.presence?.offline||0).toLocaleString();
+  // --- Presence ---
+  document.getElementById('onlineMembers').textContent = (data.online||0).toLocaleString();
+  document.getElementById('idleMembers').textContent = (data.idle||0).toLocaleString();
+  document.getElementById('dndMembers').textContent = (data.dnd||0).toLocaleString();
+  document.getElementById('offlineMembers').textContent = (data.offline||0).toLocaleString();
 
-  // Messages Over Time
+  // --- Messages Over Time ---
   new Chart(document.getElementById('messagesOverTime'), {
     type:'line',
     data:{
@@ -186,42 +156,34 @@ async function fetchDashboard() {
     options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#9ca3af' } }, y:{ ticks:{ color:'#9ca3af' } } } }
   });
 
-  // Top Members
-  const membersTable = document.getElementById('membersTable');
-  membersTable.innerHTML='';
+  // --- Top Members ---
+  const membersTable = document.getElementById('membersTable'); membersTable.innerHTML='';
   (data.topMembers||[]).forEach((m,i)=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td class="px-2 py-1">${i+1}</td><td class="px-2 py-1">${m.username}</td><td class="px-2 py-1">${m.messages.toLocaleString()}</td>`;
+    tr.innerHTML=`<td>${i+1}</td><td>${m.username}</td><td>${m.messages.toLocaleString()}</td>`;
     membersTable.appendChild(tr);
   });
-  new Chart(document.getElementById('membersPie'),{
+  new Chart(document.getElementById('membersPie'), {
     type:'doughnut',
-    data:{
-      labels:(data.topMembers||[]).map(m=>m.username),
-      datasets:[{ data:(data.topMembers||[]).map(m=>m.messages), backgroundColor:['#22c55e','#6366f1','#facc15','#ef4444','#f87171','#10b981'] }]
-    },
+    data:{ labels:(data.topMembers||[]).map(m=>m.username), datasets:[{ data:(data.topMembers||[]).map(m=>m.messages), backgroundColor:['#22c55e','#6366f1','#facc15','#ef4444','#f87171','#10b981'] }] },
     options:{ responsive:true, cutout:'70%', plugins:{ legend:{ labels:{ color:'#9ca3af' }}} }
   });
 
-  // Top Channels
-  const channelsTable = document.getElementById('channelsTable');
-  channelsTable.innerHTML='';
+  // --- Top Channels ---
+  const channelsTable = document.getElementById('channelsTable'); channelsTable.innerHTML='';
   (data.topChannels||[]).forEach((c,i)=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td class="px-2 py-1">${i+1}</td><td class="px-2 py-1">${c.name}</td><td class="px-2 py-1">${c.messages.toLocaleString()}</td>`;
+    tr.innerHTML=`<td>${i+1}</td><td>${c.name}</td><td>${c.messages.toLocaleString()}</td>`;
     channelsTable.appendChild(tr);
   });
-  new Chart(document.getElementById('channelsPie'),{
+  new Chart(document.getElementById('channelsPie'), {
     type:'doughnut',
-    data:{
-      labels:(data.topChannels||[]).map(c=>c.name),
-      datasets:[{ data:(data.topChannels||[]).map(c=>c.messages), backgroundColor:['#22c55e','#6366f1','#facc15','#ef4444','#f87171','#10b981'] }]
-    },
+    data:{ labels:(data.topChannels||[]).map(c=>c.name), datasets:[{ data:(data.topChannels||[]).map(c=>c.messages), backgroundColor:['#22c55e','#6366f1','#facc15','#ef4444','#f87171','#10b981'] }] },
     options:{ responsive:true, cutout:'70%', plugins:{ legend:{ labels:{ color:'#9ca3af' }}} }
   });
 
-  // Joins/Leaves Over Time
-  new Chart(document.getElementById('joinsLeavesChart'),{
+  // --- Joins/Leaves ---
+  new Chart(document.getElementById('joinsLeavesChart'), {
     type:'line',
     data:{
       labels:(data.joinsLeaves||[]).map(d=>d.date),
@@ -233,29 +195,22 @@ async function fetchDashboard() {
     options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#9ca3af' } } }, scales:{ x:{ ticks:{ color:'#9ca3af' } }, y:{ ticks:{ color:'#9ca3af' } } } }
   });
 
-  // Boosts Over Time
-  new Chart(document.getElementById('boostsChart'),{
+  // --- Boosts Over Time ---
+  new Chart(document.getElementById('boostsChart'), {
     type:'bar',
-    data:{
-      labels:(data.boostsOverTime||[]).map(d=>d.date),
-      datasets:[{ label:'Boosts', data:(data.boostsOverTime||[]).map(d=>d.count), backgroundColor:'#facc15' }]
-    },
+    data:{ labels:(data.boostsOverTime||[]).map(d=>d.date), datasets:[{ label:'Boosts', data:(data.boostsOverTime||[]).map(d=>d.count), backgroundColor:'#facc15' }] },
     options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#9ca3af' } }, y:{ ticks:{ color:'#9ca3af' } } } }
   });
 
-  // Emoji Usage
-  new Chart(document.getElementById('emojiChart'),{
+  // --- Emoji Usage ---
+  new Chart(document.getElementById('emojiChart'), {
     type:'doughnut',
-    data:{
-      labels:(data.topEmojis||[]).map(e=>e.emoji),
-      datasets:[{ data:(data.topEmojis||[]).map(e=>e.count), backgroundColor:['#22c55e','#6366f1','#facc15','#ef4444','#f87171','#10b981','#a855f7','#14b8a6'] }]
-    },
+    data:{ labels:(data.topEmojis||[]).map(e=>e.emoji), datasets:[{ data:(data.topEmojis||[]).map(e=>e.count), backgroundColor:['#22c55e','#6366f1','#facc15','#ef4444','#f87171','#10b981','#a855f7','#14b8a6'] }] },
     options:{ responsive:true, cutout:'60%', plugins:{ legend:{ labels:{ color:'#9ca3af' } } } }
   });
 }
 
 fetchDashboard();
 </script>
-
 </body>
 </html>
