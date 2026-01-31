@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Server Dashboard - OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
@@ -19,203 +20,212 @@
   </div>
 </nav>
 
-<!-- DASHBOARD SECTION -->
+<!-- DASHBOARD -->
 <section class="px-10 py-10 max-w-5xl mx-auto">
-  <div class="flex items-center gap-6 mb-8">
-    <img id="serverIcon" class="w-20 h-20 rounded-xl" src="" alt="Server Icon">
-    <h1 id="serverName" class="text-4xl font-bold"></h1>
-    <a id="serverInvite" class="ml-auto bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 text-sm" target="_blank">Join Server</a>
+  <div class="flex items-center gap-6 mb-6">
+    <img id="serverIcon" src="" class="w-20 h-20 rounded-lg border border-zinc-700" alt="Server Icon">
+    <div>
+      <h1 id="serverName" class="text-4xl font-bold"></h1>
+      <p id="serverDesc" class="text-zinc-400"></p>
+      <a id="serverInvite" href="#" target="_blank" class="text-blue-400 underline">Join Server</a>
+    </div>
   </div>
 
-  <!-- TABS -->
-  <div class="flex border-b border-zinc-700 mb-6">
-    <button id="tabDashboard" class="px-4 py-2 font-semibold border-b-2 border-indigo-600">Dashboard</button>
-    <button id="tabComments" class="px-4 py-2 font-semibold text-zinc-400 hover:text-white">Comments</button>
+  <!-- STATUS CARDS -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div class="p-4 rounded border border-zinc-700 bg-zinc-900/50">
+      <h2 class="font-semibold mb-2">Members</h2>
+      <p id="membersTotal">0</p>
+      <p class="text-sm text-zinc-400">Humans: <span id="membersHumans">0</span> | Bots: <span id="membersBots">0</span></p>
+      <p class="text-sm text-zinc-400">Online: <span id="membersOnline">0</span> | Idle: <span id="membersIdle">0</span> | DND: <span id="membersDND">0</span> | Offline: <span id="membersOffline">0</span></p>
+      <p class="text-sm text-zinc-400">Joins: <span id="membersJoins">0</span> | Leaves: <span id="membersLeaves">0</span></p>
+    </div>
+    <div class="p-4 rounded border border-zinc-700 bg-zinc-900/50">
+      <h2 class="font-semibold mb-2">Channels & Boosts</h2>
+      <p>Text: <span id="channelsText">0</span> | Voice: <span id="channelsVoice">0</span></p>
+      <p>Categories: <span id="channelsCat">0</span> | Threads: <span id="channelsThreads">0</span></p>
+      <p>Boosts: <span id="serverBoosts">0</span></p>
+    </div>
+    <div class="p-4 rounded border border-zinc-700 bg-zinc-900/50">
+      <h2 class="font-semibold mb-2">Top Members</h2>
+      <ol id="topMembers" class="list-decimal list-inside text-sm text-zinc-300"></ol>
+    </div>
   </div>
 
-  <div id="tabContent">
-    <!-- DASHBOARD CONTENT -->
-    <div id="dashboardContent">
-      <div id="analytics" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="p-4 bg-zinc-800 rounded-xl">
-          <h2 class="font-semibold text-xl mb-2">Members</h2>
-          <ul class="space-y-1">
-            <li>Total: <span id="membersTotal">0</span></li>
-            <li>Humans: <span id="humans">0</span></li>
-            <li>Bots: <span id="bots">0</span></li>
-            <li>Online: <span id="online">0</span></li>
-            <li>Idle: <span id="idle">0</span></li>
-            <li>DND: <span id="dnd">0</span></li>
-            <li>Offline: <span id="offline">0</span></li>
-          </ul>
-        </div>
-
-        <div class="p-4 bg-zinc-800 rounded-xl">
-          <h2 class="font-semibold text-xl mb-2">Channels</h2>
-          <ul class="space-y-1">
-            <li>Text: <span id="textChannels">0</span></li>
-            <li>Voice: <span id="voiceChannels">0</span></li>
-            <li>Categories: <span id="categoryChannels">0</span></li>
-            <li>Threads: <span id="threadChannels">0</span></li>
-          </ul>
-        </div>
-
-        <div class="p-4 bg-zinc-800 rounded-xl">
-          <h2 class="font-semibold text-xl mb-2">Server Activity</h2>
-          <ul class="space-y-1">
-            <li>Joins since start: <span id="joins">0</span></li>
-            <li>Leaves since start: <span id="leaves">0</span></li>
-            <li>Boosts: <span id="boosts">0</span></li>
-          </ul>
-        </div>
-
-        <div class="p-4 bg-zinc-800 rounded-xl">
-          <h2 class="font-semibold text-xl mb-2">Top Members (Messages)</h2>
-          <ul id="topMembers" class="list-decimal list-inside space-y-1"></ul>
-        </div>
-
-        <div class="p-4 bg-zinc-800 rounded-xl">
-          <h2 class="font-semibold text-xl mb-2">Top Channels (Messages)</h2>
-          <ul id="topChannels" class="list-decimal list-inside space-y-1"></ul>
-        </div>
-
-        <div class="p-4 bg-zinc-800 rounded-xl">
-          <h2 class="font-semibold text-xl mb-2">Top Emojis</h2>
-          <ul id="topEmojis" class="list-decimal list-inside space-y-1"></ul>
-        </div>
-      </div>
+  <!-- TOP CHANNELS & EMOJIS -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div class="p-4 rounded border border-zinc-700 bg-zinc-900/50">
+      <h2 class="font-semibold mb-2">Top Channels</h2>
+      <ol id="topChannels" class="list-decimal list-inside text-sm text-zinc-300"></ol>
     </div>
-
-    <!-- COMMENTS CONTENT -->
-    <div id="commentsContent" class="hidden">
-      <div id="commentsDiv" class="flex flex-col gap-4">
-        <p class="text-zinc-400">Loading comments...</p>
-      </div>
+    <div class="p-4 rounded border border-zinc-700 bg-zinc-900/50">
+      <h2 class="font-semibold mb-2">Top Emojis</h2>
+      <ol id="topEmojis" class="list-decimal list-inside text-sm text-zinc-300"></ol>
     </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div class="p-4 rounded border border-zinc-700 bg-zinc-900/50">
+      <h2 class="font-semibold mb-2">Messages per Member</h2>
+      <canvas id="msgChart"></canvas>
+    </div>
+    <div class="p-4 rounded border border-zinc-700 bg-zinc-900/50">
+      <h2 class="font-semibold mb-2">Online Presence</h2>
+      <canvas id="presenceChart"></canvas>
+    </div>
+  </div>
+
+  <!-- COMMENTS -->
+  <div class="p-4 rounded border border-zinc-700 bg-zinc-900/50 mb-6">
+    <h2 class="font-semibold mb-2">Comments</h2>
+    <div id="commentsContainer" class="flex flex-col gap-3"></div>
   </div>
 </section>
 
+<footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
+  <span>© 2026 OpsLink Servers</span>
+  <span>Not affiliated with Discord</span>
+</footer>
+
 <script>
-// URLs and server ID
 const API_URL = 'https://opslinkservers-backend.onrender.com';
-const serverId = new URLSearchParams(window.location.search).get('server');
+const params = new URLSearchParams(window.location.search);
+const serverId = params.get('server');
 
-// Tabs
-const tabDashboard = document.getElementById('tabDashboard');
-const tabComments = document.getElementById('tabComments');
-const dashboardContent = document.getElementById('dashboardContent');
-const commentsContent = document.getElementById('commentsContent');
+let analytics = {};
+let msgChart, presenceChart;
 
-// Render analytics
-function renderAnalytics(data) {
+function normalizeInvite(invite) {
+  if (!invite.startsWith('http')) return 'https://' + invite;
+  return invite;
+}
+
+async function fetchServerData() {
+  try {
+    // Fetch server info & comments
+    const res = await fetch(`${API_URL}/servers/${serverId}`);
+    if (!res.ok) throw new Error('Failed to fetch server data');
+    const data = await res.json();
+    analytics = data;
+    renderServer(data);
+
+    // Fetch live analytics
+    const liveRes = await fetch(`${API_URL}/servers/${data.discordServerId}/live`);
+    if (!liveRes.ok) throw new Error('Failed to fetch live analytics');
+    const liveData = await liveRes.json();
+    renderAnalytics(liveData);
+
+  } catch (err) {
+    console.error(err);
+    alert('Failed to load server data.');
+  }
+}
+
+function renderServer(data) {
   document.getElementById('serverName').textContent = data.name;
-  document.getElementById('serverIcon').src = data.icon || 'https://via.placeholder.com/80';
-  document.getElementById('serverInvite').href = data.invite || '#';
+  document.getElementById('serverDesc').textContent = data.description || '';
+  document.getElementById('serverIcon').src = data.logo;
+  const invite = normalizeInvite(data.invite);
+  const inviteEl = document.getElementById('serverInvite');
+  inviteEl.href = invite;
+  inviteEl.textContent = 'Join Server';
+  // Tags
+  if(data.tags?.length) console.log('Tags:', data.tags.join(', '));
+  // Rules, website, NSFW can be displayed similarly if desired
+}
 
-  document.getElementById('humans').textContent = data.humans;
-  document.getElementById('bots').textContent = data.bots;
-  document.getElementById('online').textContent = data.online;
-  document.getElementById('idle').textContent = data.idle;
-  document.getElementById('dnd').textContent = data.dnd;
-  document.getElementById('offline').textContent = data.offline;
+function renderAnalytics(data) {
+  document.getElementById('membersTotal').textContent = data.members;
+  document.getElementById('membersHumans').textContent = data.humans;
+  document.getElementById('membersBots').textContent = data.bots;
+  document.getElementById('membersOnline').textContent = data.online;
+  document.getElementById('membersIdle').textContent = data.idle;
+  document.getElementById('membersDND').textContent = data.dnd;
+  document.getElementById('membersOffline').textContent = data.offline;
+  document.getElementById('membersJoins').textContent = data.joinsSinceStart;
+  document.getElementById('membersLeaves').textContent = data.leavesSinceStart;
 
-  document.getElementById('textChannels').textContent = data.channels.text;
-  document.getElementById('voiceChannels').textContent = data.channels.voice;
-  document.getElementById('categoryChannels').textContent = data.channels.category;
-  document.getElementById('threadChannels').textContent = data.channels.threads;
+  document.getElementById('channelsText').textContent = data.channels.text;
+  document.getElementById('channelsVoice').textContent = data.channels.voice;
+  document.getElementById('channelsCat').textContent = data.channels.category;
+  document.getElementById('channelsThreads').textContent = data.channels.threads;
+  document.getElementById('serverBoosts').textContent = data.boosts;
 
-  document.getElementById('joins').textContent = data.joinsSinceStart;
-  document.getElementById('leaves').textContent = data.leavesSinceStart;
-  document.getElementById('boosts').textContent = data.boosts;
-
-  // Top members/channels/emojis
+  // Top lists
   const topMembers = document.getElementById('topMembers');
   topMembers.innerHTML = '';
-  data.topMembers.forEach(m => topMembers.innerHTML += `<li>${m[0]} - ${m[1]} messages</li>`);
+  data.topMembers.forEach(m => {
+    const li = document.createElement('li');
+    li.textContent = `${m[0]} (${m[1]})`;
+    topMembers.appendChild(li);
+  });
 
   const topChannels = document.getElementById('topChannels');
   topChannels.innerHTML = '';
-  data.topChannels.forEach(c => topChannels.innerHTML += `<li>${c[0]} - ${c[1]} messages</li>`);
+  data.topChannels.forEach(c => {
+    const li = document.createElement('li');
+    li.textContent = `${c[0]} (${c[1]})`;
+    topChannels.appendChild(li);
+  });
 
   const topEmojis = document.getElementById('topEmojis');
   topEmojis.innerHTML = '';
-  data.topEmojis.forEach(e => topEmojis.innerHTML += `<li>${e[0]} - ${e[1]} uses</li>`);
+  data.topEmojis.forEach(e => {
+    const li = document.createElement('li');
+    li.textContent = `${e[0]} (${e[1]})`;
+    topEmojis.appendChild(li);
+  });
+
+  // Charts
+  renderCharts(data);
 }
 
-// Fetch live analytics every 20s
-async function fetchAnalytics() {
-  try {
-    const res = await fetch(`${API_URL}/api/servers/${serverId}/live`);
-    if (!res.ok) throw new Error('Failed to fetch live analytics');
-    const data = await res.json();
-    renderAnalytics(data);
-  } catch (err) {
-    console.error('Analytics fetch error:', err);
-  }
+function renderCharts(data) {
+  const msgCtx = document.getElementById('msgChart').getContext('2d');
+  if(msgChart) msgChart.destroy();
+  msgChart = new Chart(msgCtx, {
+    type: 'bar',
+    data: {
+      labels: data.topMembers.map(m => m[0]),
+      datasets: [{
+        label: 'Messages',
+        data: data.topMembers.map(m => m[1]),
+        backgroundColor: 'rgba(80,200,255,0.7)'
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } } }
+  });
+
+  const presCtx = document.getElementById('presenceChart').getContext('2d');
+  if(presenceChart) presenceChart.destroy();
+  presenceChart = new Chart(presCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Online','Idle','DND','Offline'],
+      datasets: [{
+        label: 'Presence',
+        data: [data.online,data.idle,data.dnd,data.offline],
+        backgroundColor: ['#10B981','#FACC15','#F87171','#6B7280']
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+  });
+
+  // Render comments
+  const commentsDiv = document.getElementById('commentsContainer');
+  commentsDiv.innerHTML = '';
+  analytics.comments?.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'p-2 border-b border-zinc-700';
+    div.innerHTML = `<strong>${c.user}#${c.tag}</strong>: ${c.text} <span class="text-xs text-zinc-400">(${new Date(c.createdAt).toLocaleString()})</span>`;
+    commentsDiv.appendChild(div);
+  });
 }
 
-// Fetch member count separately from the backend
-async function fetchMemberCount() {
-  try {
-    const res = await fetch(`${API_URL}/api/servers/${serverId}`);
-    if (!res.ok) throw new Error('Failed to fetch member count');
-    const data = await res.json();
-    document.getElementById('membersTotal').textContent = data.members;
-  } catch (err) {
-    console.error('Member count fetch error:', err);
-  }
-}
-
-// Fetch comments
-async function fetchComments() {
-  try {
-    const res = await fetch(`${API_URL}/api/servers/${serverId}`);
-    if (!res.ok) throw new Error('Failed to fetch comments');
-    const data = await res.json();
-    const commentsDiv = document.getElementById('commentsDiv');
-    commentsDiv.innerHTML = '';
-    if (!data.comments.length) {
-      commentsDiv.innerHTML = '<p class="text-zinc-400">No comments yet.</p>';
-      return;
-    }
-    data.comments.forEach(c => {
-      const div = document.createElement('div');
-      div.className = 'p-4 bg-zinc-800 rounded-xl';
-      div.innerHTML = `<strong>${c.user}#${c.tag}:</strong> ${c.text}<br><span class="text-sm text-zinc-400">${new Date(c.createdAt).toLocaleString()}</span>`;
-      commentsDiv.appendChild(div);
-    });
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-// INITIAL FETCH
-fetchAnalytics();
-fetchMemberCount();
-setInterval(() => {
-  fetchAnalytics();    // update all analytics except member count
-  fetchMemberCount();  // update member count separately to keep DB source consistent
-}, 20000);
-
-// Tabs
-tabDashboard.onclick = () => {
-  dashboardContent.classList.remove('hidden');
-  commentsContent.classList.add('hidden');
-  tabDashboard.classList.add('border-indigo-600');
-  tabDashboard.classList.remove('text-zinc-400');
-  tabComments.classList.remove('border-indigo-600');
-  tabComments.classList.add('text-zinc-400');
-};
-
-tabComments.onclick = () => {
-  fetchComments();
-  commentsContent.classList.remove('hidden');
-  dashboardContent.classList.add('hidden');
-  tabComments.classList.add('border-indigo-600');
-  tabComments.classList.remove('text-zinc-400');
-  tabDashboard.classList.remove('border-indigo-600');
-  tabDashboard.classList.add('text-zinc-400');
-};
+// Auto-refresh every 20s
+fetchServerData();
+setInterval(fetchServerData, 20000);
 </script>
 
 </body>
