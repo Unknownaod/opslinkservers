@@ -20,16 +20,13 @@
   </div>
 </nav>
 
-<!-- Hero -->
 <header class="px-10 py-10">
   <h1 class="text-4xl font-bold mb-2">My Servers Dashboard</h1>
-  <p class="text-zinc-300">View all analytics and activity for your Discord servers.</p>
+  <p class="text-zinc-300">Live analytics for your Discord communities.</p>
 </header>
 
 <main class="px-10 pb-32">
-
-  <div id="serversContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-
+  <div id="serversContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
 </main>
 
 <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
@@ -68,10 +65,12 @@ async function fetchMyServers() {
     const res = await fetch(`${API_URL}/api/servers/mine`, {
       headers: { Authorization: `Bearer ${token}` }
     });
+
     const servers = await res.json();
 
     if (!servers.length) {
-      document.getElementById('serversContainer').innerHTML = '<p class="text-zinc-400">You have no servers submitted yet.</p>';
+      document.getElementById('serversContainer').innerHTML =
+        '<p class="text-zinc-400">You have no servers submitted yet.</p>';
       return;
     }
 
@@ -79,7 +78,8 @@ async function fetchMyServers() {
 
   } catch (err) {
     console.error(err);
-    document.getElementById('serversContainer').innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
+    document.getElementById('serversContainer').innerHTML =
+      '<p class="text-red-500">Failed to load servers.</p>';
   }
 }
 
@@ -87,13 +87,12 @@ async function fetchMyServers() {
 async function renderServerCard(server) {
   const container = document.getElementById('serversContainer');
 
-  // Fetch analytics from bot endpoint
   let analytics = {};
   try {
-    const res = await fetch(`${API_URL}/api/servers/${server._id}`); // server details including comments
+    const res = await fetch(`${API_URL}/api/servers/${server._id}`);
     analytics = await res.json();
-  } catch(err) {
-    console.error('Failed to fetch analytics for', server.name, err);
+  } catch (err) {
+    console.error('Analytics fetch failed:', err);
   }
 
   const div = document.createElement('div');
@@ -102,87 +101,113 @@ async function renderServerCard(server) {
   div.innerHTML = `
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <img src="${server.logo}" class="w-12 h-12 rounded-full object-cover border border-zinc-700"/>
+        <img src="${server.logo}" class="w-12 h-12 rounded-full border border-zinc-700 object-cover">
         <div>
           <h2 class="text-xl font-semibold">${server.name}</h2>
           <p class="text-zinc-400 text-sm">${server.description || 'No description'}</p>
         </div>
       </div>
-      <span class="px-3 py-1 rounded-full text-sm font-semibold ${server.status==='approved'?'bg-green-600':'bg-yellow-600'}">
+      <span class="px-3 py-1 rounded-full text-xs font-semibold ${server.status === 'approved' ? 'bg-green-600' : 'bg-yellow-600'}">
         ${server.status.toUpperCase()}
       </span>
     </div>
 
-    <div class="grid grid-cols-2 gap-4 mt-4">
+    <!-- STATS GRID -->
+    <div class="grid grid-cols-2 gap-3">
       <div class="bg-zinc-900 p-3 rounded">
-        <p class="text-zinc-400 text-xs">Total Members</p>
-        <p class="text-lg font-semibold">${analytics.members?.total || server.members || 0}</p>
+        <p class="text-xs text-zinc-400">Members</p>
+        <p class="text-lg font-semibold">${analytics.members || 0}</p>
       </div>
+
       <div class="bg-zinc-900 p-3 rounded">
-        <p class="text-zinc-400 text-xs">Humans / Bots</p>
-        <p class="text-lg font-semibold">${analytics.members?.humans || 0} / ${analytics.members?.bots || 0}</p>
+        <p class="text-xs text-zinc-400">Humans / Bots</p>
+        <p class="text-lg font-semibold">${analytics.humans || 0} / ${analytics.bots || 0}</p>
       </div>
+
       <div class="bg-zinc-900 p-3 rounded">
-        <p class="text-zinc-400 text-xs">Boosts</p>
+        <p class="text-xs text-zinc-400">Boosts</p>
         <p class="text-lg font-semibold">${analytics.boosts || 0}</p>
       </div>
+
       <div class="bg-zinc-900 p-3 rounded">
-        <p class="text-zinc-400 text-xs">Online / Idle / DND / Offline</p>
-        <p class="text-lg font-semibold">
-          ${analytics.presence?.online || 0} / ${analytics.presence?.idle || 0} / ${analytics.presence?.dnd || 0} / ${analytics.presence?.offline || 0}
-        </p>
+        <p class="text-xs text-zinc-400">Online</p>
+        <p class="text-lg font-semibold">${analytics.online || 0}</p>
       </div>
     </div>
 
-    <canvas id="messagesChart-${server._id}" class="mt-4 w-full h-40"></canvas>
-    <canvas id="presenceChart-${server._id}" class="mt-4 w-full h-40"></canvas>
+    <!-- CHANNEL COUNTS -->
+    <div class="grid grid-cols-3 gap-3">
+      <div class="bg-zinc-900 p-3 rounded">
+        <p class="text-xs text-zinc-400">Text</p>
+        <p class="text-lg font-semibold">${analytics.channels?.text || 0}</p>
+      </div>
 
-    <div class="mt-4">
-      <h3 class="font-semibold text-lg mb-2">Recent Comments</h3>
-      <div class="flex flex-col gap-2 max-h-48 overflow-y-auto">
-        ${analytics.comments?.length ? analytics.comments.map(c => `
-          <div class="p-2 bg-zinc-900 rounded">
-            <p class="text-sm text-zinc-300"><strong>${c.user}#${c.tag}</strong> • ${new Date(c.createdAt).toLocaleDateString()}</p>
-            <p>${c.text}</p>
-          </div>
-        `).join('') : '<p class="text-zinc-400 text-sm">No comments yet</p>'}
+      <div class="bg-zinc-900 p-3 rounded">
+        <p class="text-xs text-zinc-400">Voice</p>
+        <p class="text-lg font-semibold">${analytics.channels?.voice || 0}</p>
+      </div>
+
+      <div class="bg-zinc-900 p-3 rounded">
+        <p class="text-xs text-zinc-400">Categories</p>
+        <p class="text-lg font-semibold">${analytics.channels?.category || 0}</p>
       </div>
     </div>
+
+    <!-- CHARTS -->
+    <canvas id="messagesChart-${server._id}" class="mt-2 h-36"></canvas>
+    <canvas id="presenceChart-${server._id}" class="mt-2 h-36"></canvas>
+
+    <!-- GROWTH -->
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-zinc-900 p-3 rounded">
+        <p class="text-xs text-zinc-400">Joins (24h)</p>
+        <p class="text-lg font-semibold text-green-400">+${analytics.joinsLast24h || 0}</p>
+      </div>
+
+      <div class="bg-zinc-900 p-3 rounded">
+        <p class="text-xs text-zinc-400">Leaves (24h)</p>
+        <p class="text-lg font-semibold text-red-400">-${analytics.leavesLast24h || 0}</p>
+      </div>
+    </div>
+
+    <p class="text-xs text-zinc-500">
+      Last updated: ${analytics.updatedAt ? new Date(analytics.updatedAt).toLocaleString() : 'N/A'}
+    </p>
   `;
 
   container.appendChild(div);
 
   // ================== CHARTS ==================
-  const messagesCtx = document.getElementById(`messagesChart-${server._id}`);
-  new Chart(messagesCtx, {
+
+  new Chart(document.getElementById(`messagesChart-${server._id}`), {
     type: 'bar',
     data: {
-      labels: ['Last 24h', 'Last 7d'],
+      labels: ['24h', '7d'],
       datasets: [{
         label: 'Messages',
-        data: [analytics.messages?.last24h || 0, analytics.messages?.last7d || 0],
-        backgroundColor: ['#6366F1','#10B981']
+        data: [analytics.messagesLast24h || 0, analytics.messagesLast7d || 0]
       }]
     },
-    options: { responsive:true, plugins:{ legend:{display:false} } }
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } }
+    }
   });
 
-  const presenceCtx = document.getElementById(`presenceChart-${server._id}`);
-  new Chart(presenceCtx, {
+  new Chart(document.getElementById(`presenceChart-${server._id}`), {
     type: 'doughnut',
     data: {
-      labels: ['Online','Idle','DND','Offline'],
+      labels: ['Online', 'Idle', 'DND', 'Offline'],
       datasets: [{
         data: [
-          analytics.presence?.online || 0,
-          analytics.presence?.idle || 0,
-          analytics.presence?.dnd || 0,
-          analytics.presence?.offline || 0
-        ],
-        backgroundColor: ['#22C55E','#FACC15','#EF4444','#6B7280']
+          analytics.online || 0,
+          analytics.idle || 0,
+          analytics.dnd || 0,
+          analytics.offline || 0
+        ]
       }]
     },
-    options: { responsive:true }
+    options: { responsive: true }
   });
 }
 
