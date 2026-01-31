@@ -136,78 +136,97 @@ canvas { background: rgba(255,255,255,0.03); border-radius:12px; width:100%!impo
   <span>Not affiliated with Discord</span>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/discord.js-light-browser/dist/discord.min.js"></script>
 <script>
+/* ================= CONFIG ================= */
 const API_URL = 'https://opslinkservers-backend.onrender.com';
+const BOT_TOKEN = 'MTQ2NjQzMDM1MjIzODA1NTU4Nw.GmePNe.W2j51ZwVZz-32qu0PQBx5MEjpdGtCPA7BGL9bw'; // <-- Only you see this
+
 const urlParams = new URLSearchParams(window.location.search);
 const serverId = urlParams.get('server');
 let messagesChart;
 
-if (!serverId) {
-  document.body.innerHTML = '<h2 class="text-red-500 text-center mt-20">No server specified!</h2>';
+/* ================= DISCORD LOGIN ================= */
+async function loginBot() {
+  if (!BOT_TOKEN) {
+    alert('Bot token missing!');
+    return null;
+  }
+
+  const client = new Discord.Client({
+    intents: [
+      Discord.Intents.Guilds,
+      Discord.Intents.GuildMembers,
+      Discord.Intents.GuildPresences,
+      Discord.Intents.GuildMessages
+    ]
+  });
+
+  await client.login(BOT_TOKEN);
+  return client;
 }
 
+/* ================= FETCH ANALYTICS ================= */
 async function fetchServerData() {
   try {
-    // Fetch live analytics
-    const liveRes = await fetch(`${API_URL}/api/servers/${serverId}/live`);
-    if (!liveRes.ok) throw new Error('Failed to fetch live server data');
-    const liveData = await liveRes.json();
-
-    // Fetch server info (name, boosts) from main server route
+    // Step 1: Get server info from backend
     const serverRes = await fetch(`${API_URL}/api/servers/${serverId}`);
-    const serverData = serverRes.ok ? await serverRes.json() : {};
+    if (!serverRes.ok) throw new Error('Failed to fetch server info');
+    const serverData = await serverRes.json();
 
-    // Server name
-    document.getElementById('serverName').textContent = serverData.name || liveData.name || 'Unknown Server';
+    // Step 2: Login bot
+    const botClient = await loginBot();
+    if (!botClient) return;
 
-    // Top stats
-    const humans = liveData.humans || 0;
-    const bots = liveData.bots || 0;
-    const boosts = serverData.boosts || 0;
-    const total = liveData.members || 0;
+    // Step 3: Fetch guild using server ID from Mongo
+    const guild = await botClient.guilds.fetch(serverData.discordServerId);
+    const members = await guild.members.fetch({ withPresences: true });
+    const humans = members.filter(m => !m.user.bot).size;
+    const bots = members.filter(m => m.user.bot).size;
 
+    const online = members.filter(m => m.presence?.status === 'online').size;
+    const idle = members.filter(m => m.presence?.status === 'idle').size;
+    const dnd = members.filter(m => m.presence?.status === 'dnd').size;
+    const offline = members.size - (online + idle + dnd);
+
+    const channels = {
+      text: guild.channels.cache.filter(c => c.type === Discord.ChannelType.GuildText).size,
+      voice: guild.channels.cache.filter(c => c.type === Discord.ChannelType.GuildVoice).size,
+      category: guild.channels.cache.filter(c => c.type === Discord.ChannelType.GuildCategory).size,
+      threads: guild.channels.cache.filter(c => c.isThread()).size
+    };
+
+    // Display data
+    document.getElementById('serverName').textContent = serverData.name || 'Unknown Server';
     document.getElementById('humans').textContent = humans.toLocaleString();
     document.getElementById('bots').textContent = bots.toLocaleString();
-    document.getElementById('boosts').textContent = boosts.toLocaleString();
-    document.getElementById('totalMembers').textContent = total.toLocaleString();
+    document.getElementById('boosts').textContent = serverData.boosts || 0;
+    document.getElementById('totalMembers').textContent = members.size.toLocaleString();
 
-    // Presence
-    document.getElementById('onlineMembers').textContent = (liveData.online || 0).toLocaleString();
-    document.getElementById('idleMembers').textContent = (liveData.idle || 0).toLocaleString();
-    document.getElementById('dndMembers').textContent = (liveData.dnd || 0).toLocaleString();
-    document.getElementById('offlineMembers').textContent = (liveData.offline || 0).toLocaleString();
+    document.getElementById('onlineMembers').textContent = online.toLocaleString();
+    document.getElementById('idleMembers').textContent = idle.toLocaleString();
+    document.getElementById('dndMembers').textContent = dnd.toLocaleString();
+    document.getElementById('offlineMembers').textContent = offline.toLocaleString();
 
-    // Channels
-    document.getElementById('textChannels').textContent = (liveData.channels?.text || 0).toLocaleString();
-    document.getElementById('voiceChannels').textContent = (liveData.channels?.voice || 0).toLocaleString();
-    document.getElementById('categoryChannels').textContent = (liveData.channels?.category || 0).toLocaleString();
-    document.getElementById('threads').textContent = (liveData.channels?.threads || 0).toLocaleString();
+    document.getElementById('textChannels').textContent = channels.text.toLocaleString();
+    document.getElementById('voiceChannels').textContent = channels.voice.toLocaleString();
+    document.getElementById('categoryChannels').textContent = channels.category.toLocaleString();
+    document.getElementById('threads').textContent = channels.threads.toLocaleString();
 
-    // Messages chart placeholder
+    // Messages chart (placeholder)
     const ctx = document.getElementById('messagesOverTime');
     if (messagesChart) messagesChart.destroy();
     messagesChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: ['Now'], // live mode has no history
-        datasets: [{
-          label: 'Messages',
-          data: [0],
-          borderColor: '#22c55e',
-          backgroundColor: 'rgba(34,197,94,0.2)',
-          fill: true
-        }]
+        labels: ['Now'],
+        datasets: [{ label:'Messages', data:[0], borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,0.2)', fill:true }]
       },
-      options: {
-        responsive:true,
-        plugins:{ legend:{ display:false } },
-        scales:{ x:{ ticks:{ color:'#9ca3af' } }, y:{ ticks:{ color:'#9ca3af' } } }
-      }
+      options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#9ca3af' } }, y:{ ticks:{ color:'#9ca3af' } } } }
     });
 
-    // Top members / channels placeholders
-    document.getElementById('membersTable').innerHTML = '<tr><td colspan="3" class="text-center text-zinc-400">Live analytics only</td></tr>';
-    document.getElementById('channelsTable').innerHTML = '<tr><td colspan="3" class="text-center text-zinc-400">Live analytics only</td></tr>';
+    document.getElementById('membersTable').innerHTML = '<tr><td colspan="3" class="text-center text-zinc-400">Live analytics</td></tr>';
+    document.getElementById('channelsTable').innerHTML = '<tr><td colspan="3" class="text-center text-zinc-400">Live analytics</td></tr>';
 
   } catch(err) {
     console.error(err);
