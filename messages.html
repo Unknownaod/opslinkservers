@@ -41,45 +41,6 @@
   </div>
 </section>
 
-<!-- EDIT REQUEST MODAL -->
-<div id="editModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-6 z-50">
-  <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-xl w-full relative">
-
-    <!-- Close button -->
-    <button id="closeEditModal" class="absolute top-3 right-3 text-zinc-400 hover:text-white text-2xl">&times;</button>
-
-    <h2 class="text-2xl font-bold mb-4">Request Server Edit</h2>
-
-    <form id="editForm" class="flex flex-col gap-3">
-
-      <textarea name="description" placeholder="Description" class="p-2 rounded bg-zinc-800"></textarea>
-      <input name="logo" placeholder="Logo URL" class="p-2 rounded bg-zinc-800" />
-      <input name="website" placeholder="Website / Social" class="p-2 rounded bg-zinc-800" />
-      <input name="language" placeholder="Language" class="p-2 rounded bg-zinc-800" />
-      <input name="members" type="number" placeholder="Members" class="p-2 rounded bg-zinc-800" />
-
-      <select name="type" class="p-2 rounded bg-zinc-800">
-        <option value="">Server Type</option>
-        <option value="gaming">Gaming</option>
-        <option value="community">Community</option>
-        <option value="education">Education</option>
-        <option value="hobby">Hobby</option>
-        <option value="other">Other</option>
-      </select>
-
-      <label class="flex items-center gap-2">
-        <input type="checkbox" name="nsfw" /> NSFW
-      </label>
-
-      <input name="tags" placeholder="Tags (comma-separated, max 5)" class="p-2 rounded bg-zinc-800" />
-
-      <button type="submit" class="bg-indigo-600 py-2 rounded hover:bg-indigo-700 font-semibold">
-        Submit Edit Request
-      </button>
-    </form>
-  </div>
-</div>
-
 <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
   <span>© 2026 OpsLink Servers</span>
   <span>Not affiliated with Discord</span>
@@ -95,7 +56,6 @@ const systemMessagesDiv = document.getElementById('systemMessages');
 const myServersDiv = document.getElementById('myServersMessages');
 
 let user = null;
-let currentEditServer = null;
 let lastStatuses = {};
 
 /* ================= LOGIN CHECK ================= */
@@ -142,67 +102,6 @@ tabMyServersBtn.onclick = () => {
   fetchMyServers();
 };
 
-/* ================= EDIT MODAL ================= */
-function openEditModal(server) {
-  currentEditServer = server;
-  const modal = document.getElementById('editModal');
-  const form = document.getElementById('editForm');
-
-  form.description.value = server.description || '';
-  form.logo.value = server.logo || '';
-  form.website.value = server.website || '';
-  form.language.value = server.language || '';
-  form.members.value = server.members || '';
-  form.type.value = server.type || '';
-  form.nsfw.checked = server.nsfw || false;
-  form.tags.value = server.tags ? server.tags.join(', ') : '';
-
-  modal.classList.remove('hidden');
-}
-
-document.getElementById('closeEditModal').onclick = () => {
-  document.getElementById('editModal').classList.add('hidden');
-};
-
-document.getElementById('editForm').onsubmit = async e => {
-  e.preventDefault();
-  const token = localStorage.getItem('token');
-
-  const formData = Object.fromEntries(new FormData(e.target));
-  formData.nsfw = e.target.nsfw.checked;
-
-  if (formData.members) formData.members = Number(formData.members);
-
-  if (formData.tags) {
-    formData.tags = formData.tags
-      .split(',')
-      .map(tag => tag.trim())
-      .filter(Boolean)
-      .slice(0, 5);
-  } else {
-    formData.tags = [];
-  }
-
-  try {
-    const res = await fetch(`${API_URL}/api/servers/${currentEditServer._id}/request-edit`, {
-      method: 'POST',
-      headers: { 
-        'Authorization': `Bearer ${token}`, 
-        'Content-Type': 'application/json' 
-      },
-      body: JSON.stringify({ changes: formData }) // <-- works with backend now
-    });
-
-    if (!res.ok) throw new Error('Failed to submit edit request.');
-
-    alert('Edit request submitted.');
-    document.getElementById('editModal').classList.add('hidden');
-  } catch (err) {
-    console.error(err);
-    alert('Failed to submit edit request.');
-  }
-};
-
 /* ================= RENDER ================= */
 function renderSystemMessages(servers) {
   systemMessagesDiv.innerHTML = '';
@@ -232,8 +131,10 @@ function renderSystemMessages(servers) {
     }
     lastStatuses[s._id] = s.status;
 
-    div.innerHTML = `<h3 class="font-semibold text-lg">${s.name}</h3>
-                     <p class="text-sm text-zinc-300">${msg}</p>`;
+    div.innerHTML = `
+      <h3 class="font-semibold text-lg">${s.name}</h3>
+      <p class="text-sm text-zinc-300">${msg}</p>
+    `;
     systemMessagesDiv.appendChild(div);
   });
 }
@@ -260,13 +161,17 @@ function renderMyServers(servers) {
       ${s.status === 'approved' ? `
         <div class="flex gap-3">
           <a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>
-          <button class="requestEditBtn bg-indigo-600 px-3 py-1 rounded text-sm hover:bg-indigo-700">Request Edit</button>
+          <button class="dashboardBtn bg-indigo-600 px-3 py-1 rounded text-sm hover:bg-indigo-700">
+            My Dashboard
+          </button>
         </div>
       ` : ''}
     `;
 
     if (s.status === 'approved') {
-      div.querySelector('.requestEditBtn').onclick = () => openEditModal(s);
+      div.querySelector('.dashboardBtn').onclick = () => {
+        location.href = `myserver.html?server=${s._id}`;
+      };
     }
 
     myServersDiv.appendChild(div);
@@ -318,7 +223,7 @@ if (checkLogin()) {
 }
 </script>
 
-
+<!-- PAGE TRANSITION -->
 <div id="t" style="
   position:fixed;
   inset:0;
@@ -331,7 +236,7 @@ if (checkLogin()) {
   transition:opacity .2s ease;
   z-index:9999;
 ">
-  <img id="tl" src="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png?ex=697e1164&is=697cbfe4&hm=9441d7ce73ab37a2d7addce41c96205a0f0e9711def8cdd6e9b4978f83cd46b5&" style="
+  <img id="tl" src="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png" style="
     width:180px;
     opacity:0;
     transform:scale(0.8);
@@ -342,7 +247,7 @@ if (checkLogin()) {
 
 <script>
 document.addEventListener('click', e => {
-  const a = e.target.closest('a');
+  const a = e.target.closest('a, button');
   if(!a) return;
   const h = a.getAttribute('href');
   if(!h || h.startsWith('#') || h.startsWith('http') || a.target) return;
@@ -352,21 +257,18 @@ document.addEventListener('click', e => {
   t.style.opacity = 1;
   t.style.pointerEvents = 'all';
 
-  // Animate logo: scale up and glow
   tl.style.opacity = 1;
   tl.style.transform = 'scale(1.05)';
   tl.style.filter = 'drop-shadow(0 0 25px rgba(80,200,255,0.8))';
 
-  // subtle pulse after first scale
   setTimeout(() => {
     tl.style.transform = 'scale(1)';
     tl.style.filter = 'drop-shadow(0 0 40px rgba(80,200,255,1))';
   }, 300);
 
-  // go to next page after 1 second
   setTimeout(() => location.href = h, 1000);
 });
 </script>
-  
+
 </body>
 </html>
