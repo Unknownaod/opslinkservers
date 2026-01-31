@@ -3,157 +3,191 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Server Analytics — OpsLink</title>
-
+  <title>My Servers • OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+<body class="bg-zinc-900 text-white min-h-screen">
 
-<body class="bg-gradient-to-br from-black via-zinc-900 to-black text-white min-h-screen">
-
+<!-- Navbar -->
 <nav class="flex justify-between items-center px-10 py-6 border-b border-zinc-800">
-  <div class="font-semibold text-xl">OpsLink • Server Analytics</div>
-  <button id="logout" class="text-red-400 hover:text-red-300 text-sm">Logout</button>
+  <div class="text-xl font-semibold">OpsLink</div>
+  <div class="flex items-center gap-6">
+    <a href="index.html" class="hover:opacity-80">Home</a>
+    <a href="browse.html" class="hover:opacity-80">Browse</a>
+    <a href="support.html" class="hover:opacity-80">Support</a>
+    <a href="#" id="loginBtn" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
+  </div>
 </nav>
 
-<main class="max-w-7xl mx-auto px-10 py-10 space-y-12">
+<!-- Hero -->
+<header class="px-10 py-10">
+  <h1 class="text-4xl font-bold mb-2">My Servers Dashboard</h1>
+  <p class="text-zinc-300">View all analytics and activity for your Discord servers.</p>
+</header>
 
-<!-- HEADER -->
-<section class="flex items-center gap-6">
-  <img id="icon" class="w-20 h-20 rounded-xl border border-zinc-700 bg-zinc-800">
-  <div>
-    <h1 id="name" class="text-4xl font-bold">Loading…</h1>
-    <p id="meta" class="text-zinc-400 text-sm"></p>
-  </div>
-</section>
+<main class="px-10 pb-32">
 
-<!-- OVERVIEW -->
-<section class="grid grid-cols-2 md:grid-cols-4 gap-6">
-  <div class="card"><p>Members</p><h2 id="members"></h2></div>
-  <div class="card"><p>Active (24h)</p><h2 id="active"></h2></div>
-  <div class="card"><p>Messages (24h)</p><h2 id="messages"></h2></div>
-  <div class="card"><p>Health Score</p><h2 id="health"></h2></div>
-</section>
-
-<!-- CHARTS -->
-<section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-  <div class="panel"><h3>Member Growth</h3><canvas id="growthChart"></canvas></div>
-  <div class="panel"><h3>Message Volume</h3><canvas id="messageChart"></canvas></div>
-</section>
-
-<section class="panel">
-  <h3>Moderation Load</h3>
-  <canvas id="modChart"></canvas>
-</section>
-
-<!-- TABLES -->
-<section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-  <div class="panel">
-    <h3>Channel Activity</h3>
-    <table class="w-full text-sm text-zinc-300">
-      <thead><tr><th>Channel</th><th>Messages</th></tr></thead>
-      <tbody id="channels"></tbody>
-    </table>
-  </div>
-
-  <div class="panel">
-    <h3>Invites</h3>
-    <table class="w-full text-sm text-zinc-300">
-      <thead><tr><th>Code</th><th>Joins</th></tr></thead>
-      <tbody id="invites"></tbody>
-    </table>
-  </div>
-</section>
-
-<section class="panel">
-  <h3>System & Bot Events</h3>
-  <div id="events" class="space-y-2 text-sm"></div>
-</section>
+  <div id="serversContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
 </main>
 
-<footer class="px-10 py-6 border-t border-zinc-800 text-zinc-400 text-sm">
-  Analytics powered by OpsLink Bot
+<footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
+  <span>© 2026 OpsLink Servers</span>
+  <span>Not affiliated with Discord</span>
 </footer>
 
-<style>
-.card {
-  background:#18181b;
-  border:1px solid #27272a;
-  padding:1.25rem;
-  border-radius:1rem;
-}
-.card p { color:#a1a1aa;font-size:.8rem }
-.card h2 { font-size:1.8rem;font-weight:700 }
-.panel {
-  background:#18181b;
-  border:1px solid #27272a;
-  padding:1.5rem;
-  border-radius:1rem;
-}
-.panel h3 { font-weight:600;margin-bottom:.75rem }
-</style>
-
 <script>
-const API = "https://opslinkservers-backend.onrender.com";
-const id = new URLSearchParams(location.search).get('server');
+const API_URL = 'https://opslinkservers-backend.onrender.com';
+const loginBtn = document.getElementById('loginBtn');
+
+let user = null;
+
+// ================== LOGIN CHECK ==================
 const token = localStorage.getItem('token');
+const userStr = localStorage.getItem('user');
 
-if (!id || !token) location.href = 'login.html';
+if (!token || !userStr) {
+  loginBtn.textContent = 'Login';
+  loginBtn.href = 'login.html';
+} else {
+  user = JSON.parse(userStr);
+  loginBtn.textContent = 'Logout';
+  loginBtn.href = '#';
+  loginBtn.onclick = () => {
+    localStorage.clear();
+    location.reload();
+  };
+}
 
-logout.onclick = () => { localStorage.clear(); location.href='index.html'; };
+// ================== FETCH MY SERVERS ==================
+async function fetchMyServers() {
+  if (!user) return;
 
-(async () => {
-  const res = await fetch(`${API}/api/servers/${id}/analytics/full`, {
-    headers:{Authorization:`Bearer ${token}`}
+  try {
+    const res = await fetch(`${API_URL}/api/servers/mine`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const servers = await res.json();
+
+    if (!servers.length) {
+      document.getElementById('serversContainer').innerHTML = '<p class="text-zinc-400">You have no servers submitted yet.</p>';
+      return;
+    }
+
+    servers.forEach(renderServerCard);
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('serversContainer').innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
+  }
+}
+
+// ================== RENDER SERVER CARD ==================
+async function renderServerCard(server) {
+  const container = document.getElementById('serversContainer');
+
+  // Fetch analytics from bot endpoint
+  let analytics = {};
+  try {
+    const res = await fetch(`${API_URL}/api/servers/${server._id}`); // server details including comments
+    analytics = await res.json();
+  } catch(err) {
+    console.error('Failed to fetch analytics for', server.name, err);
+  }
+
+  const div = document.createElement('div');
+  div.className = 'bg-zinc-800 p-6 rounded-xl border border-zinc-700 shadow-lg flex flex-col gap-4';
+
+  div.innerHTML = `
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <img src="${server.logo}" class="w-12 h-12 rounded-full object-cover border border-zinc-700"/>
+        <div>
+          <h2 class="text-xl font-semibold">${server.name}</h2>
+          <p class="text-zinc-400 text-sm">${server.description || 'No description'}</p>
+        </div>
+      </div>
+      <span class="px-3 py-1 rounded-full text-sm font-semibold ${server.status==='approved'?'bg-green-600':'bg-yellow-600'}">
+        ${server.status.toUpperCase()}
+      </span>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mt-4">
+      <div class="bg-zinc-900 p-3 rounded">
+        <p class="text-zinc-400 text-xs">Total Members</p>
+        <p class="text-lg font-semibold">${analytics.members?.total || server.members || 0}</p>
+      </div>
+      <div class="bg-zinc-900 p-3 rounded">
+        <p class="text-zinc-400 text-xs">Humans / Bots</p>
+        <p class="text-lg font-semibold">${analytics.members?.humans || 0} / ${analytics.members?.bots || 0}</p>
+      </div>
+      <div class="bg-zinc-900 p-3 rounded">
+        <p class="text-zinc-400 text-xs">Boosts</p>
+        <p class="text-lg font-semibold">${analytics.boosts || 0}</p>
+      </div>
+      <div class="bg-zinc-900 p-3 rounded">
+        <p class="text-zinc-400 text-xs">Online / Idle / DND / Offline</p>
+        <p class="text-lg font-semibold">
+          ${analytics.presence?.online || 0} / ${analytics.presence?.idle || 0} / ${analytics.presence?.dnd || 0} / ${analytics.presence?.offline || 0}
+        </p>
+      </div>
+    </div>
+
+    <canvas id="messagesChart-${server._id}" class="mt-4 w-full h-40"></canvas>
+    <canvas id="presenceChart-${server._id}" class="mt-4 w-full h-40"></canvas>
+
+    <div class="mt-4">
+      <h3 class="font-semibold text-lg mb-2">Recent Comments</h3>
+      <div class="flex flex-col gap-2 max-h-48 overflow-y-auto">
+        ${analytics.comments?.length ? analytics.comments.map(c => `
+          <div class="p-2 bg-zinc-900 rounded">
+            <p class="text-sm text-zinc-300"><strong>${c.user}#${c.tag}</strong> • ${new Date(c.createdAt).toLocaleDateString()}</p>
+            <p>${c.text}</p>
+          </div>
+        `).join('') : '<p class="text-zinc-400 text-sm">No comments yet</p>'}
+      </div>
+    </div>
+  `;
+
+  container.appendChild(div);
+
+  // ================== CHARTS ==================
+  const messagesCtx = document.getElementById(`messagesChart-${server._id}`);
+  new Chart(messagesCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Last 24h', 'Last 7d'],
+      datasets: [{
+        label: 'Messages',
+        data: [analytics.messages?.last24h || 0, analytics.messages?.last7d || 0],
+        backgroundColor: ['#6366F1','#10B981']
+      }]
+    },
+    options: { responsive:true, plugins:{ legend:{display:false} } }
   });
 
-  if (!res.ok) return alert("Unauthorized");
-
-  const d = await res.json();
-
-  icon.src = d.server.icon;
-  name.textContent = d.server.name;
-  meta.textContent = `Boosts: ${d.server.boosts} • Level ${d.server.boostLevel} • ${d.server.features.join(', ')}`;
-
-  members.textContent = d.members.total;
-  active.textContent = d.activity.active24h;
-  messages.textContent = d.messages.count24h;
-  health.textContent = d.health.score;
-
-  new Chart(growthChart,{
-    type:'line',
-    data:{labels:d.members.history.labels,datasets:[{data:d.members.history.values,tension:.4}]}
+  const presenceCtx = document.getElementById(`presenceChart-${server._id}`);
+  new Chart(presenceCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Online','Idle','DND','Offline'],
+      datasets: [{
+        data: [
+          analytics.presence?.online || 0,
+          analytics.presence?.idle || 0,
+          analytics.presence?.dnd || 0,
+          analytics.presence?.offline || 0
+        ],
+        backgroundColor: ['#22C55E','#FACC15','#EF4444','#6B7280']
+      }]
+    },
+    options: { responsive:true }
   });
+}
 
-  new Chart(messageChart,{
-    type:'bar',
-    data:{labels:d.messages.history.labels,datasets:[{data:d.messages.history.values}]}
-  });
-
-  new Chart(modChart,{
-    type:'bar',
-    data:{labels:['Warnings','Timeouts','Kicks','Bans'],
-    datasets:[{data:[
-      d.moderation.warnings,
-      d.moderation.timeouts,
-      d.moderation.kicks,
-      d.moderation.bans
-    ]}]}
-  });
-
-  channels.innerHTML = d.channels.top.map(c =>
-    `<tr><td>${c.name}</td><td>${c.messages}</td></tr>`
-  ).join('');
-
-  invites.innerHTML = d.invites.map(i =>
-    `<tr><td>${i.code}</td><td>${i.joins}</td></tr>`
-  ).join('');
-
-  events.innerHTML = d.events.map(e =>
-    `<div class="border border-zinc-700 rounded p-2">${e}</div>`
-  ).join('');
-})();
+// ================== INIT ==================
+fetchMyServers();
 </script>
 
 </body>
