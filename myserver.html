@@ -89,32 +89,34 @@
 </footer>
 
 <script>
-const MONGO_ANALYTICS_URL = 'mongodb+srv://kareemkurdi002_db_user:Bq1p5VSoivfl4aZQ@servers.sqbwxae.mongodb.net/?appName=servers'; // <-- insert Mongo URL
+const API_BASE = 'https://opslinkservers-backend.onrender.com';
 const params = new URLSearchParams(window.location.search);
-const serverId = params.get('server');
+const serverMongoId = params.get('server');
 
-let analytics = {};
+let serverMeta = null;
 let msgChart, presenceChart;
 
-function normalizeInvite(invite) {
-  if (!invite.startsWith('http')) return 'https://' + invite;
-  return invite;
-}
-
+// =======================
+// FETCH DATA
+// =======================
 async function fetchServerData() {
   try {
-    // Fetch server metadata
-    const metaRes = await fetch(`${MONGO_ANALYTICS_URL}/servers/${serverId}`);
+    // 1️⃣ Fetch server metadata (Mongo _id)
+    const metaRes = await fetch(`${API_BASE}/servers/${serverMongoId}`);
     if (!metaRes.ok) throw new Error('Failed to fetch server metadata');
-    const metaData = await metaRes.json();
-    analytics = metaData;
-    renderServer(metaData);
+    serverMeta = await metaRes.json();
+    renderServer(serverMeta);
 
-    // Fetch live analytics
-    const liveRes = await fetch(`${MONGO_ANALYTICS_URL}/analytics/${serverId}`);
-    if (!liveRes.ok) throw new Error('Failed to fetch analytics');
+    // 2️⃣ Fetch live analytics (Discord server ID)
+    if (!serverMeta.discordServerId) return;
+
+    const liveRes = await fetch(
+      `${API_BASE}/servers/${serverMeta.discordServerId}/live`
+    );
+
+    if (!liveRes.ok) throw new Error('Live analytics unavailable');
     const liveData = await liveRes.json();
-    renderAnalytics(liveData);
+    renderAnalytics(liveData, serverMeta);
 
   } catch (err) {
     console.error(err);
@@ -122,107 +124,130 @@ async function fetchServerData() {
   }
 }
 
+// =======================
+// RENDER SERVER INFO
+// =======================
 function renderServer(data) {
   document.getElementById('serverName').textContent = data.name;
   document.getElementById('serverDesc').textContent = data.description || '';
-  document.getElementById('serverIcon').src = data.logo;
-  const invite = normalizeInvite(data.invite);
-  const inviteEl = document.getElementById('serverInvite');
-  inviteEl.href = invite;
-  inviteEl.textContent = 'Join Server';
+  document.getElementById('serverIcon').src = data.logo || '';
+  document.getElementById('serverInvite').href = normalizeInvite(data.invite);
 }
 
-function renderAnalytics(data) {
-  document.getElementById('membersTotal').textContent = data.members;
-  document.getElementById('membersHumans').textContent = data.humans;
-  document.getElementById('membersBots').textContent = data.bots;
-  document.getElementById('membersOnline').textContent = data.online;
-  document.getElementById('membersIdle').textContent = data.idle;
-  document.getElementById('membersDND').textContent = data.dnd;
-  document.getElementById('membersOffline').textContent = data.offline;
-  document.getElementById('membersJoins').textContent = data.joinsSinceStart;
-  document.getElementById('membersLeaves').textContent = data.leavesSinceStart;
+function normalizeInvite(invite) {
+  if (!invite) return '#';
+  if (!invite.startsWith('http')) return 'https://' + invite;
+  return invite;
+}
 
-  document.getElementById('channelsText').textContent = data.channels.text;
-  document.getElementById('channelsVoice').textContent = data.channels.voice;
-  document.getElementById('channelsCat').textContent = data.channels.category;
-  document.getElementById('channelsThreads').textContent = data.channels.threads;
-  document.getElementById('serverBoosts').textContent = data.boosts;
+// =======================
+// RENDER ANALYTICS
+// =======================
+function renderAnalytics(data, meta) {
+  // Members
+  membersTotal.textContent = data.members;
+  membersHumans.textContent = data.humans;
+  membersBots.textContent = data.bots;
+  membersOnline.textContent = data.online;
+  membersIdle.textContent = data.idle;
+  membersDND.textContent = data.dnd;
+  membersOffline.textContent = data.offline;
+  membersJoins.textContent = data.joinsSinceStart;
+  membersLeaves.textContent = data.leavesSinceStart;
 
-  // Top lists
-  const topMembers = document.getElementById('topMembers');
+  // Channels
+  channelsText.textContent = data.channels.text;
+  channelsVoice.textContent = data.channels.voice;
+  channelsCat.textContent = data.channels.category;
+  channelsThreads.textContent = data.channels.threads;
+  serverBoosts.textContent = data.boosts;
+
+  // Top members
   topMembers.innerHTML = '';
   data.topMembers.forEach(m => {
     const li = document.createElement('li');
-    li.textContent = `${m[0]} (${m[1]})`;
+    li.textContent = `${m.userId} (${m.count})`;
     topMembers.appendChild(li);
   });
 
-  const topChannels = document.getElementById('topChannels');
+  // Top channels
   topChannels.innerHTML = '';
   data.topChannels.forEach(c => {
     const li = document.createElement('li');
-    li.textContent = `${c[0]} (${c[1]})`;
+    li.textContent = `${c.channelId} (${c.count})`;
     topChannels.appendChild(li);
   });
 
-  const topEmojis = document.getElementById('topEmojis');
+  // Top emojis
   topEmojis.innerHTML = '';
   data.topEmojis.forEach(e => {
     const li = document.createElement('li');
-    li.textContent = `${e[0]} (${e[1]})`;
+    li.textContent = `${e.emoji} (${e.count})`;
     topEmojis.appendChild(li);
   });
 
   renderCharts(data);
+
+  // Comments (from metadata route)
+  renderComments(meta.comments || []);
 }
 
+// =======================
+// CHARTS
+// =======================
 function renderCharts(data) {
-  const msgCtx = document.getElementById('msgChart').getContext('2d');
-  if(msgChart) msgChart.destroy();
-  msgChart = new Chart(msgCtx, {
+  if (msgChart) msgChart.destroy();
+  msgChart = new Chart(msgChartCanvas.getContext('2d'), {
     type: 'bar',
     data: {
-      labels: data.topMembers.map(m => m[0]),
+      labels: data.topMembers.map(m => m.userId),
       datasets: [{
         label: 'Messages',
-        data: data.topMembers.map(m => m[1]),
+        data: data.topMembers.map(m => m.count),
         backgroundColor: 'rgba(80,200,255,0.7)'
       }]
     },
-    options: { responsive: true, plugins: { legend: { display: false } } }
+    options: { plugins: { legend: { display: false } } }
   });
 
-  const presCtx = document.getElementById('presenceChart').getContext('2d');
-  if(presenceChart) presenceChart.destroy();
-  presenceChart = new Chart(presCtx, {
+  if (presenceChart) presenceChart.destroy();
+  presenceChart = new Chart(presenceChartCanvas.getContext('2d'), {
     type: 'doughnut',
     data: {
-      labels: ['Online','Idle','DND','Offline'],
+      labels: ['Online', 'Idle', 'DND', 'Offline'],
       datasets: [{
-        label: 'Presence',
-        data: [data.online,data.idle,data.dnd,data.offline],
+        data: [data.online, data.idle, data.dnd, data.offline],
         backgroundColor: ['#10B981','#FACC15','#F87171','#6B7280']
       }]
-    },
-    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-  });
-
-  // Render comments
-  const commentsDiv = document.getElementById('commentsContainer');
-  commentsDiv.innerHTML = '';
-  analytics.comments?.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'p-2 border-b border-zinc-700';
-    div.innerHTML = `<strong>${c.user}#${c.tag}</strong>: ${c.text} <span class="text-xs text-zinc-400">(${new Date(c.createdAt).toLocaleString()})</span>`;
-    commentsDiv.appendChild(div);
+    }
   });
 }
 
-// Auto-refresh every 20s
+// =======================
+// COMMENTS
+// =======================
+function renderComments(comments) {
+  commentsContainer.innerHTML = '';
+  comments.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'p-2 border-b border-zinc-700';
+    div.innerHTML = `
+      <strong>${c.user}#${c.tag}</strong>: ${c.text}
+      <span class="text-xs text-zinc-400">
+        (${new Date(c.createdAt).toLocaleString()})
+      </span>
+    `;
+    commentsContainer.appendChild(div);
+  });
+}
+
+// =======================
+// INIT
+// =======================
 fetchServerData();
 setInterval(fetchServerData, 20000);
 </script>
+
 
 </body>
 </html>
