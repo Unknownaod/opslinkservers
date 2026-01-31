@@ -152,11 +152,11 @@ if (!serverId) {
 // Charts placeholders
 let messagesChart;
 
-// Fetch and render server analytics
+// Fetch and render server analytics from the live route
 async function fetchServerData() {
   try {
-    const res = await fetch(`${API_URL}/api/servers/${serverId}`);
-    if (!res.ok) throw new Error('Failed to fetch server data');
+    const res = await fetch(`${API_URL}/api/servers/${serverId}/live`);
+    if (!res.ok) throw new Error('Failed to fetch live server data');
     const data = await res.json();
 
     document.getElementById('serverName').textContent = data.name || 'Unknown Server';
@@ -181,35 +181,24 @@ async function fetchServerData() {
     document.getElementById('categoryChannels').textContent = (data.channels?.category || 0).toLocaleString();
     document.getElementById('threads').textContent = (data.channels?.threads || 0).toLocaleString();
 
-    // Messages chart
+    // Messages chart placeholder (live route has no message history)
     const ctx = document.getElementById('messagesOverTime');
     if (messagesChart) messagesChart.destroy();
     messagesChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: (data.messagesOverTime || []).map(d => d.date),
-        datasets: [{ label: 'Messages', data: (data.messagesOverTime || []).map(d => d.count), borderColor: '#22c55e', backgroundColor:'rgba(34,197,94,0.2)', fill:true }]
+        labels: [],
+        datasets: [{ label: 'Messages', data: [], borderColor: '#22c55e', backgroundColor:'rgba(34,197,94,0.2)', fill:true }]
       },
       options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#9ca3af' } }, y:{ ticks:{ color:'#9ca3af' } } } }
     });
 
-    // Top members
+    // Top members / top channels placeholders (live route has no top messages data)
     const membersTable = document.getElementById('membersTable');
-    membersTable.innerHTML = '';
-    (data.topMembers || []).forEach((m,i)=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td class="px-2 py-1">${i+1}</td><td class="px-2 py-1">${m.username}</td><td class="px-2 py-1">${m.messages.toLocaleString()}</td>`;
-      membersTable.appendChild(tr);
-    });
+    membersTable.innerHTML = '<tr><td colspan="3" class="text-center text-zinc-400">Not available in live mode</td></tr>';
 
-    // Top channels
     const channelsTable = document.getElementById('channelsTable');
-    channelsTable.innerHTML = '';
-    (data.topChannels || []).forEach((c,i)=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td class="px-2 py-1">${i+1}</td><td class="px-2 py-1">${c.name}</td><td class="px-2 py-1">${c.messages.toLocaleString()}</td>`;
-      channelsTable.appendChild(tr);
-    });
+    channelsTable.innerHTML = '<tr><td colspan="3" class="text-center text-zinc-400">Not available in live mode</td></tr>';
 
   } catch(err) {
     console.error(err);
