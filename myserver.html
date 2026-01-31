@@ -3,239 +3,213 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Server Dashboard • OpsLink</title>
+<title>My Server Dashboard - OpsLink</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-body {
-  background: radial-gradient(1200px 600px at 20% -10%, rgba(99,102,241,.18), transparent),
-              radial-gradient(900px 500px at 80% 10%, rgba(34,197,94,.14), transparent),
-              #020617;
-  font-family: Inter, system-ui, sans-serif;
-  color:white;
-}
-.glass {
-  background: linear-gradient(180deg, rgba(24,24,27,.88), rgba(9,9,11,.88));
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,.06);
-  border-radius: 16px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-}
-.card-header { font-weight:600; font-size:0.85rem; color:#9ca3af; margin-bottom:0.5rem; }
-canvas { background: rgba(255,255,255,0.03); border-radius:12px; width:100%!important; height:300px!important; }
-.table-container { overflow-x:auto; }
-</style>
 </head>
-<body class="min-h-screen p-6 md:p-12">
+<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
-<h1 class="text-4xl font-bold mb-6" id="serverName">Loading...</h1>
+<!-- NAVBAR -->
+<nav class="flex items-center justify-between px-10 py-6">
+  <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
+  <div class="flex items-center gap-8 text-sm" id="navLinks">
+    <a href="index.html" class="hover:opacity-80">Home</a>
+    <a href="browse.html" class="hover:opacity-80">Browse</a>
+    <a href="submit.html" class="hover:opacity-80">Submit</a>
+    <a href="login.html" id="loginBtn" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
+  </div>
+</nav>
 
-<!-- TOP STATS -->
-<div class="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8">
-  <div class="glass text-center">
-    <p class="card-header">Humans</p>
-    <p class="text-2xl font-bold" id="humans">0</p>
-  </div>
-  <div class="glass text-center">
-    <p class="card-header">Bots</p>
-    <p class="text-2xl font-bold" id="bots">0</p>
-  </div>
-  <div class="glass text-center">
-    <p class="card-header">Boosts</p>
-    <p class="text-2xl font-bold" id="boosts">0</p>
-  </div>
-  <div class="glass text-center">
-    <p class="card-header">Total Members</p>
-    <p class="text-2xl font-bold" id="totalMembers">0</p>
-  </div>
-</div>
-
-<!-- PRESENCE -->
-<div class="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8">
-  <div class="glass text-center">
-    <p class="card-header">Online</p>
-    <p class="text-2xl font-bold" id="onlineMembers">0</p>
-  </div>
-  <div class="glass text-center">
-    <p class="card-header">Idle</p>
-    <p class="text-2xl font-bold" id="idleMembers">0</p>
-  </div>
-  <div class="glass text-center">
-    <p class="card-header">DND</p>
-    <p class="text-2xl font-bold" id="dndMembers">0</p>
-  </div>
-  <div class="glass text-center">
-    <p class="card-header">Offline</p>
-    <p class="text-2xl font-bold" id="offlineMembers">0</p>
-  </div>
-</div>
-
-<!-- CHANNELS -->
-<div class="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8">
-  <div class="glass text-center">
-    <p class="card-header">Text Channels</p>
-    <p class="text-2xl font-bold" id="textChannels">0</p>
-  </div>
-  <div class="glass text-center">
-    <p class="card-header">Voice Channels</p>
-    <p class="text-2xl font-bold" id="voiceChannels">0</p>
-  </div>
-  <div class="glass text-center">
-    <p class="card-header">Categories</p>
-    <p class="text-2xl font-bold" id="categoryChannels">0</p>
-  </div>
-  <div class="glass text-center">
-    <p class="card-header">Threads</p>
-    <p class="text-2xl font-bold" id="threads">0</p>
-  </div>
-</div>
-
-<!-- CHARTS -->
-<div class="glass mb-8">
-  <p class="card-header mb-3">Messages Over Time</p>
-  <canvas id="messagesOverTime"></canvas>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-  <div class="glass p-4 flex flex-col gap-4">
-    <p class="card-header">Top Members</p>
-    <div class="table-container">
-      <table class="min-w-full text-left text-sm">
-        <thead>
-          <tr class="text-zinc-400">
-            <th class="px-2 py-1">Rank</th>
-            <th class="px-2 py-1">Username</th>
-            <th class="px-2 py-1">Messages</th>
-          </tr>
-        </thead>
-        <tbody id="membersTable"></tbody>
-      </table>
+<!-- DASHBOARD SECTION -->
+<section class="px-10 py-10 max-w-5xl mx-auto">
+  <div id="serverHeader" class="flex items-center gap-6 mb-6">
+    <img id="serverIcon" src="" alt="Server Icon" class="w-24 h-24 rounded-full bg-zinc-800">
+    <div>
+      <h1 id="serverName" class="text-4xl font-bold"></h1>
+      <p id="serverStatus" class="text-zinc-400"></p>
+      <a id="serverInvite" href="#" target="_blank" class="text-blue-400 underline text-sm mt-1 inline-block">Join Server</a>
     </div>
   </div>
 
-  <div class="glass p-4 flex flex-col gap-4">
-    <p class="card-header">Top Channels</p>
-    <div class="table-container">
-      <table class="min-w-full text-left text-sm">
-        <thead>
-          <tr class="text-zinc-400">
-            <th class="px-2 py-1">Rank</th>
-            <th class="px-2 py-1">Channel</th>
-            <th class="px-2 py-1">Messages</th>
-          </tr>
-        </thead>
-        <tbody id="channelsTable"></tbody>
-      </table>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+    <!-- MEMBER & PRESENCE STATS -->
+    <div class="p-4 rounded border border-zinc-700 bg-zinc-900/50">
+      <h2 class="font-semibold text-xl mb-4">Members & Presence</h2>
+      <ul id="memberStats" class="text-sm space-y-1">
+        <li>Total Members: <span id="totalMembers">-</span></li>
+        <li>Humans: <span id="humans">-</span></li>
+        <li>Bots: <span id="bots">-</span></li>
+        <li>Online: <span id="online">-</span></li>
+        <li>Idle: <span id="idle">-</span></li>
+        <li>Do Not Disturb: <span id="dnd">-</span></li>
+        <li>Offline: <span id="offline">-</span></li>
+        <li>Boosts: <span id="boosts">-</span></li>
+      </ul>
+    </div>
+
+    <!-- CHANNEL STATS -->
+    <div class="p-4 rounded border border-zinc-700 bg-zinc-900/50">
+      <h2 class="font-semibold text-xl mb-4">Channels</h2>
+      <ul id="channelStats" class="text-sm space-y-1">
+        <li>Text Channels: <span id="textChannels">-</span></li>
+        <li>Voice Channels: <span id="voiceChannels">-</span></li>
+        <li>Categories: <span id="categories">-</span></li>
+        <li>Threads: <span id="threads">-</span></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- TOP ACTIVITY -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="p-4 rounded border border-zinc-700 bg-zinc-900/50">
+      <h2 class="font-semibold text-xl mb-2">Top Members</h2>
+      <ul id="topMembers" class="text-sm space-y-1"></ul>
+    </div>
+    <div class="p-4 rounded border border-zinc-700 bg-zinc-900/50">
+      <h2 class="font-semibold text-xl mb-2">Top Channels</h2>
+      <ul id="topChannels" class="text-sm space-y-1"></ul>
+    </div>
+    <div class="p-4 rounded border border-zinc-700 bg-zinc-900/50">
+      <h2 class="font-semibold text-xl mb-2">Top Emojis</h2>
+      <ul id="topEmojis" class="text-sm space-y-1"></ul>
     </div>
   </div>
-</div>
 
-<footer class="text-sm text-zinc-400 mt-12 flex justify-between">
+  <!-- JOIN/LEAVE COUNTERS -->
+  <div class="p-4 rounded border border-zinc-700 bg-zinc-900/50 mb-8">
+    <h2 class="font-semibold text-xl mb-2">Server Activity</h2>
+    <p>Joins since bot started: <span id="joins">-</span></p>
+    <p>Leaves since bot started: <span id="leaves">-</span></p>
+  </div>
+
+  <!-- RECENT MESSAGES -->
+  <div class="p-4 rounded border border-zinc-700 bg-zinc-900/50">
+    <h2 class="font-semibold text-xl mb-2">Message Activity</h2>
+    <ul id="recentMessages" class="text-sm space-y-1"></ul>
+  </div>
+
+</section>
+
+<footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
   <span>© 2026 OpsLink Servers</span>
   <span>Not affiliated with Discord</span>
 </footer>
 
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
-const urlParams = new URLSearchParams(window.location.search);
-const serverId = urlParams.get('server');
+const loginBtn = document.getElementById('loginBtn');
 
-let messagesChart;
+let user = null;
 
-if (!serverId) {
-  document.body.innerHTML = '<h2 class="text-red-500 text-center mt-20">No server specified!</h2>';
+/* ================= LOGIN CHECK ================= */
+function checkLogin() {
+  const token = localStorage.getItem('token');
+  const userStr = localStorage.getItem('user');
+
+  if (!token || !userStr) {
+    alert('You must be logged in to view this dashboard.');
+    location.href = 'login.html';
+    return false;
+  }
+
+  user = JSON.parse(userStr);
+
+  loginBtn.textContent = 'Logout';
+  loginBtn.href = '#';
+  loginBtn.onclick = () => {
+    localStorage.clear();
+    location.reload();
+  };
+
+  return true;
 }
 
-// Fetch server info and live analytics
+/* ================= FETCH SERVER DATA ================= */
 async function fetchServerData() {
+  const params = new URLSearchParams(window.location.search);
+  const serverId = params.get('server');
+  if (!serverId) return;
+
   try {
-    // Server info (static, e.g., name, boosts)
-    const serverRes = await fetch(`${API_URL}/api/servers/${serverId}`);
-    const serverData = serverRes.ok ? await serverRes.json() : {};
-
-    // Live analytics (updated by bot)
-    const liveRes = await fetch(`${API_URL}/api/servers/${serverId}/live`);
-    const liveData = liveRes.ok ? await liveRes.json() : {};
-
-    // Server name
-    document.getElementById('serverName').textContent = serverData.name || liveData.name || 'Unknown Server';
-
-    // Top stats
-    document.getElementById('humans').textContent = (liveData.humans || 0).toLocaleString();
-    document.getElementById('bots').textContent = (liveData.bots || 0).toLocaleString();
-    document.getElementById('boosts').textContent = (liveData.boosts || 0).toLocaleString();
-    document.getElementById('totalMembers').textContent = (liveData.members || 0).toLocaleString();
-
-    // Presence
-    document.getElementById('onlineMembers').textContent = (liveData.online || 0).toLocaleString();
-    document.getElementById('idleMembers').textContent = (liveData.idle || 0).toLocaleString();
-    document.getElementById('dndMembers').textContent = (liveData.dnd || 0).toLocaleString();
-    document.getElementById('offlineMembers').textContent = (liveData.offline || 0).toLocaleString();
-
-    // Channels
-    document.getElementById('textChannels').textContent = (liveData.channels?.text || 0).toLocaleString();
-    document.getElementById('voiceChannels').textContent = (liveData.channels?.voice || 0).toLocaleString();
-    document.getElementById('categoryChannels').textContent = (liveData.channels?.category || 0).toLocaleString();
-    document.getElementById('threads').textContent = (liveData.channels?.threads || 0).toLocaleString();
-
-    // Messages chart placeholder
-    const ctx = document.getElementById('messagesOverTime');
-    if (messagesChart) messagesChart.destroy();
-    messagesChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ['Now'], // no history yet
-        datasets: [{
-          label: 'Messages',
-          data: [0], // TODO: add historical message counts if stored
-          borderColor: '#22c55e',
-          backgroundColor: 'rgba(34,197,94,0.2)',
-          fill: true
-        }]
-      },
-      options: {
-        responsive:true,
-        plugins:{ legend:{ display:false } },
-        scales:{ x:{ ticks:{ color:'#9ca3af' } }, y:{ ticks:{ color:'#9ca3af' } } }
-      }
+    const token = localStorage.getItem('token');
+    // Server info from backend
+    const resServer = await fetch(`${API_URL}/api/servers/mine`, {
+      headers: { Authorization: `Bearer ${token}` }
     });
+    const servers = await resServer.json();
+    const server = servers.find(s => s._id === serverId);
+    if (!server) throw new Error('Server not found or you do not own it');
 
-    // Top members table
-    if (liveData.topMembers?.length) {
-      document.getElementById('membersTable').innerHTML = liveData.topMembers.map((m,i)=>`
-        <tr>
-          <td class="px-2 py-1">${i+1}</td>
-          <td class="px-2 py-1">${m[0]}</td>
-          <td class="px-2 py-1">${m[1]}</td>
-        </tr>
-      `).join('');
+    document.getElementById('serverName').textContent = server.name;
+    document.getElementById('serverStatus').textContent = `Status: ${server.status}`;
+    document.getElementById('serverInvite').href = server.invite || '#';
+    document.getElementById('serverIcon').src = server.icon || 'https://via.placeholder.com/128';
+
+    // Fetch live analytics
+    const resLive = await fetch(`${API_URL}/api/servers/${serverId}/live`);
+    if (!resLive.ok) throw new Error('Failed to fetch live analytics');
+    const live = await resLive.json();
+
+    // MEMBER STATS
+    document.getElementById('totalMembers').textContent = live.members || '-';
+    document.getElementById('humans').textContent = live.humans || '-';
+    document.getElementById('bots').textContent = live.bots || '-';
+    document.getElementById('online').textContent = live.online || '-';
+    document.getElementById('idle').textContent = live.idle || '-';
+    document.getElementById('dnd').textContent = live.dnd || '-';
+    document.getElementById('offline').textContent = live.offline || '-';
+    document.getElementById('boosts').textContent = live.boosts || '-';
+
+    // CHANNEL STATS
+    document.getElementById('textChannels').textContent = live.channels?.text || '-';
+    document.getElementById('voiceChannels').textContent = live.channels?.voice || '-';
+    document.getElementById('categories').textContent = live.channels?.category || '-';
+    document.getElementById('threads').textContent = live.channels?.threads || '-';
+
+    // TOP ACTIVITY
+    const renderList = (id, items) => {
+      const ul = document.getElementById(id);
+      ul.innerHTML = '';
+      if (!items || !items.length) { ul.innerHTML = '<li>-</li>'; return; }
+      items.forEach(([name, count]) => {
+        const li = document.createElement('li');
+        li.textContent = `${name}: ${count}`;
+        ul.appendChild(li);
+      });
+    };
+    renderList('topMembers', live.topMembers);
+    renderList('topChannels', live.topChannels);
+    renderList('topEmojis', live.topEmojis);
+
+    // JOINS / LEAVES
+    document.getElementById('joins').textContent = live.joinsSinceStart || 0;
+    document.getElementById('leaves').textContent = live.leavesSinceStart || 0;
+
+    // RECENT MESSAGES (aggregate top 10 members)
+    const recentUl = document.getElementById('recentMessages');
+    recentUl.innerHTML = '';
+    if (live.topMembers?.length) {
+      live.topMembers.slice(0,10).forEach(([name, count]) => {
+        const li = document.createElement('li');
+        li.textContent = `${name} sent ${count} messages`;
+        recentUl.appendChild(li);
+      });
     } else {
-      document.getElementById('membersTable').innerHTML = '<tr><td colspan="3" class="text-center text-zinc-400">No data yet</td></tr>';
+      recentUl.innerHTML = '<li>-</li>';
     }
 
-    // Top channels table
-    if (liveData.topChannels?.length) {
-      document.getElementById('channelsTable').innerHTML = liveData.topChannels.map((c,i)=>`
-        <tr>
-          <td class="px-2 py-1">${i+1}</td>
-          <td class="px-2 py-1">${c[0]}</td>
-          <td class="px-2 py-1">${c[1]}</td>
-        </tr>
-      `).join('');
-    } else {
-      document.getElementById('channelsTable').innerHTML = '<tr><td colspan="3" class="text-center text-zinc-400">No data yet</td></tr>';
-    }
-
-  } catch(err) {
+  } catch (err) {
+    alert(err.message);
     console.error(err);
-    document.body.innerHTML = '<h2 class="text-red-500 text-center mt-20">Failed to load server data.</h2>';
   }
 }
 
-fetchServerData();
-setInterval(fetchServerData, 15000);
+/* ================= INIT ================= */
+if (checkLogin()) {
+  fetchServerData();
+  setInterval(fetchServerData, 15000); // refresh every 15s
+}
 </script>
-
 </body>
 </html>
