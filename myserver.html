@@ -4,33 +4,98 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Servers • OpsLink</title>
+
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="bg-zinc-900 text-white min-h-screen">
 
-<!-- Navbar -->
-<nav class="flex justify-between items-center px-10 py-6 border-b border-zinc-800">
-  <div class="text-xl font-semibold">OpsLink</div>
-  <div class="flex items-center gap-6">
-    <a href="index.html" class="hover:opacity-80">Home</a>
-    <a href="browse.html" class="hover:opacity-80">Browse</a>
-    <a href="support.html" class="hover:opacity-80">Support</a>
-    <a href="#" id="loginBtn" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
+  <style>
+    body {
+      background: radial-gradient(circle at top, #111827, #020617);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .glass {
+      background: rgba(24, 24, 27, 0.75);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .glass:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(99,102,241,0.25);
+    }
+
+    .badge-approved {
+      background: linear-gradient(90deg,#22c55e,#4ade80);
+      color: #111827;
+    }
+
+    .badge-pending {
+      background: linear-gradient(90deg,#facc15,#f87171);
+      color: #111827;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 0.75rem;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(99,102,241,0.15);
+    }
+
+    canvas {
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      padding: 8px;
+    }
+
+    .header-text {
+      text-shadow: 0 0 10px rgba(99,102,241,0.5);
+    }
+
+    a {
+      transition: all 0.2s ease;
+    }
+
+    a:hover {
+      color: #6366f1;
+    }
+  </style>
+</head>
+
+<body class="text-white min-h-screen">
+
+<!-- NAVBAR -->
+<nav class="flex justify-between items-center px-12 py-6 border-b border-white/5 glass">
+  <div class="text-2xl font-bold tracking-wide header-text">OpsLink</div>
+  <div class="flex gap-8 text-sm">
+    <a href="index.html" class="opacity-80 hover:opacity-100">Home</a>
+    <a href="browse.html" class="opacity-80 hover:opacity-100">Browse</a>
+    <a href="support.html" class="opacity-80 hover:opacity-100">Support</a>
+    <a href="#" id="loginBtn" class="border border-white/10 rounded-full px-5 py-2 hover:bg-white/5">Login</a>
   </div>
 </nav>
 
-<header class="px-10 py-10">
-  <h1 class="text-4xl font-bold mb-2">My Servers Dashboard</h1>
-  <p class="text-zinc-300">Live analytics for your Discord communities.</p>
+<!-- HEADER -->
+<header class="px-14 pt-12 pb-8">
+  <h1 class="text-5xl font-bold tracking-tight mb-2 header-text">Server Analytics</h1>
+  <p class="text-zinc-400 text-sm">Premium insights across your Discord communities</p>
 </header>
 
-<main class="px-10 pb-32">
-  <div id="serversContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+<!-- GRID -->
+<main class="px-14 pb-32">
+  <div id="serversContainer" class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-8"></div>
 </main>
 
-<footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
-  <span>© 2026 OpsLink Servers</span>
+<footer class="px-14 py-10 border-t border-white/5 text-xs text-zinc-500 flex justify-between">
+  <span>© 2026 OpsLink Systems</span>
   <span>Not affiliated with Discord</span>
 </footer>
 
@@ -38,11 +103,9 @@
 const API_URL = 'https://opslinkservers-backend.onrender.com';
 const loginBtn = document.getElementById('loginBtn');
 
-let user = null;
-
-// ================== LOGIN CHECK ==================
 const token = localStorage.getItem('token');
 const userStr = localStorage.getItem('user');
+let user = null;
 
 if (!token || !userStr) {
   loginBtn.textContent = 'Login';
@@ -50,168 +113,137 @@ if (!token || !userStr) {
 } else {
   user = JSON.parse(userStr);
   loginBtn.textContent = 'Logout';
-  loginBtn.href = '#';
   loginBtn.onclick = () => {
     localStorage.clear();
     location.reload();
   };
 }
 
-// ================== FETCH MY SERVERS ==================
+// ================= FETCH =================
 async function fetchMyServers() {
   if (!user) return;
-
-  try {
-    const res = await fetch(`${API_URL}/api/servers/mine`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    const servers = await res.json();
-
-    if (!servers.length) {
-      document.getElementById('serversContainer').innerHTML =
-        '<p class="text-zinc-400">You have no servers submitted yet.</p>';
-      return;
-    }
-
-    servers.forEach(renderServerCard);
-
-  } catch (err) {
-    console.error(err);
-    document.getElementById('serversContainer').innerHTML =
-      '<p class="text-red-500">Failed to load servers.</p>';
-  }
+  const res = await fetch(`${API_URL}/api/servers/mine`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const servers = await res.json();
+  servers.forEach(renderServerCard);
 }
 
-// ================== RENDER SERVER CARD ==================
+// ================= CARD =================
 async function renderServerCard(server) {
-  const container = document.getElementById('serversContainer');
-
-  let analytics = {};
-  try {
-    const res = await fetch(`${API_URL}/api/servers/${server._id}`);
-    analytics = await res.json();
-  } catch (err) {
-    console.error('Analytics fetch failed:', err);
-  }
+  const res = await fetch(`${API_URL}/api/servers/${server._id}`);
+  const analytics = await res.json();
 
   const div = document.createElement('div');
-  div.className = 'bg-zinc-800 p-6 rounded-xl border border-zinc-700 shadow-lg flex flex-col gap-4';
+  div.className = 'glass p-6 rounded-2xl flex flex-col gap-5';
 
   div.innerHTML = `
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <img src="${server.logo}" class="w-12 h-12 rounded-full border border-zinc-700 object-cover">
+        <img src="${server.logo}" class="w-14 h-14 rounded-full border border-white/10 object-cover">
         <div>
           <h2 class="text-xl font-semibold">${server.name}</h2>
-          <p class="text-zinc-400 text-sm">${server.description || 'No description'}</p>
+          <p class="text-xs text-zinc-400">${server.description || 'No description'}</p>
         </div>
       </div>
-      <span class="px-3 py-1 rounded-full text-xs font-semibold ${server.status === 'approved' ? 'bg-green-600' : 'bg-yellow-600'}">
+      <span class="px-3 py-1 rounded-full text-[10px] tracking-wider font-semibold ${server.status==='approved'?'badge-approved':'badge-pending'}">
         ${server.status.toUpperCase()}
       </span>
     </div>
 
-    <!-- STATS GRID -->
-    <div class="grid grid-cols-2 gap-3">
-      <div class="bg-zinc-900 p-3 rounded">
-        <p class="text-xs text-zinc-400">Members</p>
-        <p class="text-lg font-semibold">${analytics.members || 0}</p>
-      </div>
+    <div class="grid grid-cols-4 gap-3 text-center mt-4">
+      ${stat('Members', analytics.members)}
+      ${stat('Humans', analytics.humans)}
+      ${stat('Bots', analytics.bots)}
+      ${stat('Boosts', analytics.boosts)}
+    </div>
 
-      <div class="bg-zinc-900 p-3 rounded">
-        <p class="text-xs text-zinc-400">Humans / Bots</p>
-        <p class="text-lg font-semibold">${analytics.humans || 0} / ${analytics.bots || 0}</p>
-      </div>
+    <div class="grid grid-cols-4 gap-3 text-center mt-2">
+      ${stat('Online', analytics.online)}
+      ${stat('Idle', analytics.idle)}
+      ${stat('DND', analytics.dnd)}
+      ${stat('Offline', analytics.offline)}
+    </div>
 
-      <div class="bg-zinc-900 p-3 rounded">
-        <p class="text-xs text-zinc-400">Boosts</p>
-        <p class="text-lg font-semibold">${analytics.boosts || 0}</p>
-      </div>
+    <div class="grid grid-cols-3 gap-3 text-center mt-2">
+      ${stat('Text', analytics.channels?.text)}
+      ${stat('Voice', analytics.channels?.voice)}
+      ${stat('Categories', analytics.channels?.category)}
+    </div>
 
-      <div class="bg-zinc-900 p-3 rounded">
-        <p class="text-xs text-zinc-400">Online</p>
-        <p class="text-lg font-semibold">${analytics.online || 0}</p>
+    <div class="grid grid-cols-2 gap-4 mt-4">
+      <canvas id="msg-${server._id}" height="140"></canvas>
+      <canvas id="presence-${server._id}" height="140"></canvas>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 mt-4">
+      <div class="bg-emerald-600/10 border border-emerald-500/20 rounded-lg p-3 text-center">
+        <p class="text-xs text-emerald-400">Joins 24h</p>
+        <p class="text-lg font-semibold text-emerald-300">+${analytics.joinsLast24h || 0}</p>
+      </div>
+      <div class="bg-rose-600/10 border border-rose-500/20 rounded-lg p-3 text-center">
+        <p class="text-xs text-rose-400">Leaves 24h</p>
+        <p class="text-lg font-semibold text-rose-300">-${analytics.leavesLast24h || 0}</p>
       </div>
     </div>
 
-    <!-- CHANNEL COUNTS -->
-    <div class="grid grid-cols-3 gap-3">
-      <div class="bg-zinc-900 p-3 rounded">
-        <p class="text-xs text-zinc-400">Text</p>
-        <p class="text-lg font-semibold">${analytics.channels?.text || 0}</p>
-      </div>
-
-      <div class="bg-zinc-900 p-3 rounded">
-        <p class="text-xs text-zinc-400">Voice</p>
-        <p class="text-lg font-semibold">${analytics.channels?.voice || 0}</p>
-      </div>
-
-      <div class="bg-zinc-900 p-3 rounded">
-        <p class="text-xs text-zinc-400">Categories</p>
-        <p class="text-lg font-semibold">${analytics.channels?.category || 0}</p>
-      </div>
-    </div>
-
-    <!-- CHARTS -->
-    <canvas id="messagesChart-${server._id}" class="mt-2 h-36"></canvas>
-    <canvas id="presenceChart-${server._id}" class="mt-2 h-36"></canvas>
-
-    <!-- GROWTH -->
-    <div class="grid grid-cols-2 gap-3">
-      <div class="bg-zinc-900 p-3 rounded">
-        <p class="text-xs text-zinc-400">Joins (24h)</p>
-        <p class="text-lg font-semibold text-green-400">+${analytics.joinsLast24h || 0}</p>
-      </div>
-
-      <div class="bg-zinc-900 p-3 rounded">
-        <p class="text-xs text-zinc-400">Leaves (24h)</p>
-        <p class="text-lg font-semibold text-red-400">-${analytics.leavesLast24h || 0}</p>
-      </div>
-    </div>
-
-    <p class="text-xs text-zinc-500">
-      Last updated: ${analytics.updatedAt ? new Date(analytics.updatedAt).toLocaleString() : 'N/A'}
+    <p class="text-[10px] text-zinc-500 text-center mt-2">
+      Updated ${analytics.updatedAt ? new Date(analytics.updatedAt).toLocaleString() : 'N/A'}
     </p>
   `;
 
-  container.appendChild(div);
+  document.getElementById('serversContainer').appendChild(div);
+  renderCharts(server._id, analytics);
+}
 
-  // ================== CHARTS ==================
+// ================= COMPONENT =================
+function stat(label, value) {
+  return `
+    <div class="stat-card">
+      <p class="text-[10px] text-zinc-400 uppercase tracking-wider">${label}</p>
+      <p class="text-lg font-semibold">${value ?? 0}</p>
+    </div>
+  `;
+}
 
-  new Chart(document.getElementById(`messagesChart-${server._id}`), {
+// ================= CHARTS =================
+function renderCharts(id, a) {
+  new Chart(document.getElementById(`msg-${id}`), {
     type: 'bar',
     data: {
       labels: ['24h', '7d'],
       datasets: [{
-        label: 'Messages',
-        data: [analytics.messagesLast24h || 0, analytics.messagesLast7d || 0]
+        data: [a.messagesLast24h || 0, a.messagesLast7d || 0],
+        backgroundColor: ['#6366f1','#22c55e'],
+        borderRadius: 12
       }]
     },
     options: {
-      responsive: true,
-      plugins: { legend: { display: false } }
+      plugins:{ legend:{ display:false }},
+      scales: {
+        x:{ ticks:{ color:'#9ca3af' }, grid:{ display:false }},
+        y:{ ticks:{ color:'#9ca3af' }, grid:{ color:'rgba(255,255,255,.08)' }}
+      }
     }
   });
 
-  new Chart(document.getElementById(`presenceChart-${server._id}`), {
+  new Chart(document.getElementById(`presence-${id}`), {
     type: 'doughnut',
     data: {
-      labels: ['Online', 'Idle', 'DND', 'Offline'],
-      datasets: [{
-        data: [
-          analytics.online || 0,
-          analytics.idle || 0,
-          analytics.dnd || 0,
-          analytics.offline || 0
-        ]
+      labels:['Online','Idle','DND','Offline'],
+      datasets:[{
+        data:[a.online,a.idle,a.dnd,a.offline],
+        backgroundColor:['#22c55e','#facc15','#ef4444','#6b7280']
       }]
     },
-    options: { responsive: true }
+    options:{
+      cutout:'70%',
+      plugins:{ legend:{ labels:{ color:'#9ca3af' }}}
+    }
   });
 }
 
-// ================== INIT ==================
+// ================= INIT =================
 fetchMyServers();
 </script>
 
