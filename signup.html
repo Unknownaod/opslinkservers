@@ -19,18 +19,17 @@
     </div>
   </nav>
 
+  <!-- Sign Up Section -->
   <section class="px-10 py-10 max-w-md mx-auto">
     <h1 class="text-4xl font-bold mb-6">Create an Account</h1>
 
     <div class="bg-zinc-900/80 border border-zinc-800 p-6 rounded">
       <form id="signupForm" class="flex flex-col gap-4">
 
-        <!-- Account Info -->
         <input name="email" type="email" placeholder="Email" class="p-2 rounded bg-zinc-800" required />
         <input name="password" type="password" placeholder="Password" class="p-2 rounded bg-zinc-800" required />
         <input name="confirmPassword" type="password" placeholder="Confirm Password" class="p-2 rounded bg-zinc-800" required />
 
-        <!-- Discord Info -->
         <input name="discordUsername" type="text" placeholder="Discord Username (without tag)" class="p-2 rounded bg-zinc-800" required />
         <input name="discordUserID" type="text" placeholder="Discord User ID" class="p-2 rounded bg-zinc-800" required />
         <input name="discordTag" type="text" placeholder="Discord Tag (optional)" class="p-2 rounded bg-zinc-800" />
@@ -38,113 +37,92 @@
         <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">Sign Up</button>
       </form>
 
-      <!-- Login Link -->
       <p class="mt-4 text-sm text-zinc-400">
         Already have an account? <a href="login.html" class="text-white underline hover:text-zinc-300">Login here</a>
       </p>
     </div>
   </section>
 
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-4 rounded shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+    <strong id="toastTitle" class="block font-bold text-lg">Success!</strong>
+    <span id="toastMessage" class="block mt-1">Your account has been created successfully! Redirecting to login...</span>
+  </div>
+
+  <!-- Footer -->
   <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
     <span>© 2026 OpsLink Servers</span>
     <span>Not affiliated with Discord</span>
   </footer>
 
-  <script>
-    document.getElementById('signupForm').addEventListener('submit', async e => {
-      e.preventDefault();
-
-      const data = Object.fromEntries(new FormData(e.target));
-
-      // Check password confirmation
-      if (data.password !== data.confirmPassword) {
-        alert('Passwords do not match');
-        return;
-      }
-
-      // Build payload for backend
-      const payload = {
-        email: data.email,
-        password: data.password,
-        discordUsername: data.discordUsername,
-        discordUserID: data.discordUserID,
-      };
-
-      // Add discordTag only if provided (optional)
-      if (data.discordTag && data.discordTag.trim() !== '') {
-        payload.discordTag = data.discordTag.trim();
-      }
-
-      try {
-        const res = await fetch('https://opslinkservers-backend.onrender.com/api/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-
-        if (res.ok) {
-          alert('Account created successfully! Please login.');
-          e.target.reset();
-          window.location.href = 'login.html';
-        } else {
-          const err = await res.json();
-          alert('Signup failed: ' + (err.error || 'Unknown error'));
-        }
-      } catch (err) {
-        alert('Signup failed. Please try again later.');
-        console.error(err);
-      }
-    });
-  </script>
-
-<div id="t" style="
-  position:fixed;
-  inset:0;
-  background:#000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .2s ease;
-  z-index:9999;
-">
-  <img id="tl" src="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png?ex=6986a324&is=698551a4&hm=54999e764c98066670f6bd6fe08a2d05a4d222002c29c2205b416d01971d9e49&" style="
-    width:180px;
-    opacity:0;
-    transform:scale(0.8);
-    filter:drop-shadow(0 0 0 rgba(80,200,255,0));
-    transition:opacity .3s ease, transform .6s ease, filter .6s ease;
-  ">
-</div>
-
 <script>
-document.addEventListener('click', e => {
-  const a = e.target.closest('a');
-  if(!a) return;
-  const h = a.getAttribute('href');
-  if(!h || h.startsWith('#') || h.startsWith('http') || a.target) return;
+  const toast = document.getElementById('toast');
+  const toastTitle = document.getElementById('toastTitle');
+  const toastMessage = document.getElementById('toastMessage');
 
-  e.preventDefault();
+  function showToast({ title = "Success!", message = "", type = "success", duration = 3000 }) {
+    toastTitle.textContent = title;
+    toastMessage.textContent = message;
 
-  t.style.opacity = 1;
-  t.style.pointerEvents = 'all';
+    if (type === "success") {
+      toast.classList.remove("bg-red-500");
+      toast.classList.add("bg-green-500");
+    } else if (type === "error") {
+      toast.classList.remove("bg-green-500");
+      toast.classList.add("bg-red-500");
+    }
 
-  // Animate logo: scale up and glow
-  tl.style.opacity = 1;
-  tl.style.transform = 'scale(1.05)';
-  tl.style.filter = 'drop-shadow(0 0 25px rgba(80,200,255,0.8))';
+    toast.style.opacity = 1;
+    toast.style.pointerEvents = "all";
 
-  // subtle pulse after first scale
-  setTimeout(() => {
-    tl.style.transform = 'scale(1)';
-    tl.style.filter = 'drop-shadow(0 0 40px rgba(80,200,255,1))';
-  }, 300);
+    setTimeout(() => {
+      toast.style.opacity = 0;
+      toast.style.pointerEvents = "none";
+    }, duration);
+  }
 
-  // go to next page after 1 second
-  setTimeout(() => location.href = h, 1000);
-});
+  document.getElementById('signupForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target));
+
+    if (data.password !== data.confirmPassword) {
+      showToast({ title: "Error!", message: "Passwords do not match.", type: "error" });
+      return;
+    }
+
+    const payload = {
+      email: data.email,
+      password: data.password,
+      discordUsername: data.discordUsername,
+      discordUserID: data.discordUserID,
+    };
+    if (data.discordTag && data.discordTag.trim() !== '') payload.discordTag = data.discordTag.trim();
+
+    try {
+      const res = await fetch('https://opslinkservers-backend.onrender.com/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        showToast({
+          title: "Success!",
+          message: "Your account has been created successfully! Redirecting to login...",
+          type: "success",
+          duration: 2500
+        });
+        e.target.reset();
+        setTimeout(() => window.location.href = 'login.html', 2500);
+      } else {
+        const err = await res.json();
+        showToast({ title: "Error!", message: err.error || "Signup failed.", type: "error", duration: 3000 });
+      }
+    } catch (err) {
+      console.error(err);
+      showToast({ title: "Error!", message: "Signup failed. Please try again later.", type: "error", duration: 3000 });
+    }
+  });
 </script>
-  
 </body>
 </html>
