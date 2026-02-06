@@ -44,9 +44,12 @@
   </section>
 
   <!-- Toast Notification -->
-  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-4 rounded shadow-lg opacity-0 pointer-events-none transition-all duration-300 z-50 max-w-lg text-center">
-    <strong id="toastTitle" class="block font-bold text-lg">Success!</strong>
-    <span id="toastMessage" class="block mt-1">Your account has been created successfully! Redirecting to login...</span>
+  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 
+      bg-green-500 text-white px-6 py-4 rounded shadow-lg 
+      opacity-0 pointer-events-none transition-all duration-300 z-50 
+      max-w-3xl w-auto text-center break-words whitespace-normal min-w-[280px]">
+    <strong id="toastTitle" class="block font-bold text-lg mb-1">Success!</strong>
+    <span id="toastMessage" class="block text-sm"></span>
   </div>
 
   <!-- Footer -->
@@ -55,103 +58,110 @@
     <span>Not affiliated with Discord</span>
   </footer>
 
-  <script>
-    const toast = document.getElementById('toast');
-    const toastTitle = document.getElementById('toastTitle');
-    const toastMessage = document.getElementById('toastMessage');
+<script>
+  const API_URL = 'https://opslinkservers-backend.onrender.com'; // your backend URL
+  const toast = document.getElementById('toast');
+  const toastTitle = document.getElementById('toastTitle');
+  const toastMessage = document.getElementById('toastMessage');
 
-    function showToast({ title = "Success!", message = "", type = "success", duration = 4000 }) {
-      toastTitle.textContent = title;
-      toastMessage.innerHTML = message; // allow links
+  function showToast({ title = "Success!", message = "", type = "success", duration = 4000 }) {
+    toastTitle.textContent = title;
+    toastMessage.innerHTML = message;
 
-      if (type === "success") {
-        toast.classList.remove("bg-red-500");
-        toast.classList.add("bg-green-500");
-      } else if (type === "error") {
-        toast.classList.remove("bg-green-500");
-        toast.classList.add("bg-red-500");
-      }
-
-      toast.style.opacity = 1;
-      toast.style.pointerEvents = "all";
-      toast.style.transform = "translateY(0)";
-
-      setTimeout(() => {
-        toast.style.opacity = 0;
-        toast.style.pointerEvents = "none";
-        toast.style.transform = "translateY(-20px)";
-      }, duration);
+    if (type === "success") {
+      toast.classList.remove("bg-red-500");
+      toast.classList.add("bg-green-500");
+    } else if (type === "error") {
+      toast.classList.remove("bg-green-500");
+      toast.classList.add("bg-red-500");
     }
 
-    document.getElementById('signupForm').addEventListener('submit', async e => {
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target));
+    toast.style.opacity = 1;
+    toast.style.pointerEvents = "all";
+    toast.style.transform = "translateY(0)";
 
-      if (data.password !== data.confirmPassword) {
-        showToast({ title: "Error!", message: "Passwords do not match.", type: "error" });
-        return;
-      }
+    setTimeout(() => {
+      toast.style.opacity = 0;
+      toast.style.pointerEvents = "none";
+      toast.style.transform = "translateY(-20px)";
+    }, duration);
+  }
 
-      const payload = {
-        email: data.email,
-        password: data.password,
-        discordUsername: data.discordUsername,
-        discordUserID: data.discordUserID,
-      };
-      if (data.discordTag && data.discordTag.trim() !== '') payload.discordTag = data.discordTag.trim();
+  document.getElementById('signupForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target));
 
-      try {
-        const res = await fetch('https://opslinkservers-backend.onrender.com/api/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
+    if (data.password !== data.confirmPassword) {
+      showToast({ title: "Error!", message: "Passwords do not match.", type: "error" });
+      return;
+    }
 
-        const result = await res.json();
+    const payload = {
+      email: data.email,
+      password: data.password,
+      discordUsername: data.discordUsername,
+      discordUserID: data.discordUserID,
+    };
+    if (data.discordTag && data.discordTag.trim() !== '') payload.discordTag = data.discordTag.trim();
 
-        if (res.ok) {
-          showToast({
-            title: "Success!",
-            message: "Your account has been created successfully! Redirecting to login...",
-            type: "success",
-            duration: 2500
-          });
-          e.target.reset();
-          setTimeout(() => window.location.href = 'login.html', 2500);
+    try {
+      const res = await fetch(`${API_URL}/api/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-        } else {
-          // Smart error for existing account
-          if ((result.error === "Account with this email already exists" || result.error === "Account with this Discord ID already exists") 
-              && result.existingUser) {
-            const discordName = result.existingUser.discordUsername;
-            const loginLink = `<a href="login.html" class="underline hover:text-gray-200 font-semibold">${discordName}</a>`;
-            showToast({
-              title: "Account Exists!",
-              message: `An account already exists with this email or Discord ID. Wanna login as ${loginLink}?`,
-              type: "error",
-              duration: 5000
-            });
-          } else {
-            // generic backend error
-            showToast({
-              title: "Error!",
-              message: result.error || "Signup failed.",
-              type: "error",
-              duration: 4000
-            });
-          }
-        }
+      const result = await res.json();
 
-      } catch (err) {
-        console.error(err);
+      if (res.ok) {
         showToast({
-          title: "Error!",
-          message: "Signup failed. Please try again later.",
-          type: "error",
-          duration: 4000
+          title: "Success!",
+          message: "Your account has been created successfully! Redirecting to login...",
+          type: "success",
+          duration: 2500
         });
+        e.target.reset();
+        setTimeout(() => window.location.href = 'login.html', 2500);
+
+      } else {
+        // Smart backend duplicate check
+        if (result.existingUser) {
+          const discordName = result.existingUser.discordUsername || "UnknownUser";
+          const loginLink = `<a href="login.html" class="underline hover:text-gray-200 font-semibold">${discordName}</a>`;
+          showToast({
+            title: "Account Exists!",
+            message: `An account already exists with this email or Discord ID. Wanna login as ${loginLink}?`,
+            type: "error",
+            duration: 5000
+          });
+        } else if (result.errors) {
+          // multiple backend errors array
+          showToast({
+            title: "Error!",
+            message: result.errors.join("<br>"),
+            type: "error",
+            duration: 5000
+          });
+        } else {
+          showToast({
+            title: "Error!",
+            message: result.error || "Signup failed.",
+            type: "error",
+            duration: 4000
+          });
+        }
       }
-    });
-  </script>
+
+    } catch (err) {
+      console.error(err);
+      showToast({
+        title: "Error!",
+        message: "Signup failed. Please try again later.",
+        type: "error",
+        duration: 4000
+      });
+    }
+  });
+</script>
 </body>
 </html>
