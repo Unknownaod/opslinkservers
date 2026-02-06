@@ -36,48 +36,47 @@
     </div>
   </section>
 
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-4 rounded shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+    <strong id="toastTitle" class="block font-bold text-lg">Success!</strong>
+    <span id="toastMessage" class="block mt-1">You have been logged in successfully! Redirecting Now!</span>
+  </div>
+
   <!-- Footer -->
   <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
     <span>© 2026 OpsLink Servers</span>
     <span>Not affiliated with Discord</span>
   </footer>
 
-  <!-- Overlay for login success -->
-  <div id="t" style="
-    position:fixed;
-    inset:0;
-    background:#000;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .2s ease;
-    z-index:9999;
-  ">
-    <img id="tl" src="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png" style="
-      width:180px;
-      opacity:0;
-      transform:scale(0.8);
-      filter:drop-shadow(0 0 0 rgba(80,200,255,0));
-      transition:opacity .3s ease, transform .6s ease, filter .6s ease;
-    ">
-    <p id="statusText" style="
-      margin-top:20px;
-      font-size:18px;
-      letter-spacing:0.4px;
-      color:#d4f1ff;
-      opacity:0;
-      transition:opacity .3s ease;
-    "></p>
-  </div>
-
 <script>
   const API_URL = 'https://opslinkservers-backend.onrender.com';
-  const t = document.getElementById('t');
-  const tl = document.getElementById('tl');
-  const statusText = document.getElementById('statusText');
+  const toast = document.getElementById('toast');
+  const toastTitle = document.getElementById('toastTitle');
+  const toastMessage = document.getElementById('toastMessage');
+
+  function showToast({ title = "Success!", message = "", type = "success", duration = 3000 }) {
+    toastTitle.textContent = title;
+    toastMessage.textContent = message;
+
+    // Green for success, red for error
+    if (type === "success") {
+      toast.classList.remove("bg-red-500");
+      toast.classList.add("bg-green-500");
+    } else if (type === "error") {
+      toast.classList.remove("bg-green-500");
+      toast.classList.add("bg-red-500");
+    }
+
+    // Show toast
+    toast.style.opacity = 1;
+    toast.style.pointerEvents = "all";
+
+    // Hide after duration
+    setTimeout(() => {
+      toast.style.opacity = 0;
+      toast.style.pointerEvents = "none";
+    }, duration);
+  }
 
   // Login Form
   document.getElementById('loginForm').addEventListener('submit', async e => {
@@ -99,64 +98,37 @@
         localStorage.setItem('user', JSON.stringify(user));
         e.target.reset();
 
-        // Show custom success screen
-        t.style.opacity = 1;
-        t.style.pointerEvents = 'all';
+        // Show green success toast
+        showToast({
+          title: "Success!",
+          message: "You have been logged in successfully! Redirecting Now!",
+          type: "success",
+          duration: 2500
+        });
 
-        tl.style.opacity = 1;
-        tl.style.transform = 'scale(1.05)';
-        tl.style.filter = 'drop-shadow(0 0 25px rgba(80,200,255,0.9))';
-
-        statusText.textContent = 'Logged in successfully';
-        statusText.style.opacity = 1;
-
-        // Subtle pulse
-        setTimeout(() => {
-          tl.style.transform = 'scale(1)';
-          tl.style.filter = 'drop-shadow(0 0 40px rgba(80,200,255,1))';
-        }, 300);
-
-        // Redirect after animation
+        // Redirect after 2.5 seconds
         setTimeout(() => {
           window.location.href = 'index.html';
-        }, 1200);
+        }, 2500);
 
       } else {
         const err = await res.json();
-        statusText.textContent = 'Login failed: ' + (err.error || 'Unknown error');
-        statusText.style.color = '#ff6b6b';
-        statusText.style.opacity = 1;
+        showToast({
+          title: "Error!",
+          message: err.error || "Login failed",
+          type: "error",
+          duration: 3000
+        });
       }
     } catch (err) {
-      statusText.textContent = 'Login failed. Please try again later.';
-      statusText.style.color = '#ff6b6b';
-      statusText.style.opacity = 1;
       console.error(err);
+      showToast({
+        title: "Error!",
+        message: "Login failed. Please try again later.",
+        type: "error",
+        duration: 3000
+      });
     }
-  });
-
-  // Page link animation
-  document.addEventListener('click', e => {
-    const a = e.target.closest('a');
-    if(!a) return;
-    const h = a.getAttribute('href');
-    if(!h || h.startsWith('#') || h.startsWith('http') || a.target) return;
-
-    e.preventDefault();
-
-    t.style.opacity = 1;
-    t.style.pointerEvents = 'all';
-
-    tl.style.opacity = 1;
-    tl.style.transform = 'scale(1.05)';
-    tl.style.filter = 'drop-shadow(0 0 25px rgba(80,200,255,0.8))';
-
-    setTimeout(() => {
-      tl.style.transform = 'scale(1)';
-      tl.style.filter = 'drop-shadow(0 0 40px rgba(80,200,255,1))';
-    }, 300);
-
-    setTimeout(() => location.href = h, 1000);
   });
 </script>
 </body>
