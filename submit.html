@@ -112,9 +112,6 @@
 
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
-const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1466334565600722964/s8_WSyxjW72m9_6-jITEtc1cTjDb-fD0IySLYFX0WKjyjVV0jdQFyJJWV4heZe9eXi2e';
-const DISCORD_PING_ROLE_ID = '1467033041137438864';
-
 let tags = [];
 let currentUser = null;
 
@@ -216,14 +213,13 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
     logo: logoInput.value.trim(),
     nsfw: e.target.nsfw.checked,
     tags: tags,
-    discordServerId: e.target.discordServerId.value.trim()
+    discordServerId: e.target.discordServerId.value.trim() // required for bot
   };
 
   if (!payload.logo) return alert('Server logo is required.');
   if (!payload.discordServerId) return alert('You must add the OpsLink bot and provide your server ID.');
 
   try {
-    // ---------------- Submit to backend ----------------
     const res = await fetch(`${API_URL}/api/servers`, {
       method: 'POST',
       headers: {
@@ -232,42 +228,12 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
       },
       body: JSON.stringify(payload)
     });
+
     const data = await res.json();
+
     if (!res.ok) return alert(data.error || 'Submission failed');
 
-    // ---------------- Send Discord webhook ----------------
-    const webhookPayload = {
-      content: `<@&${DISCORD_PING_ROLE_ID}> New server submitted!`,
-      embeds: [
-        {
-          title: payload.name,
-          url: payload.invite,
-          description: payload.description,
-          color: 0x1abc9c,
-          thumbnail: { url: payload.logo },
-          fields: [
-            { name: 'Owner', value: currentUser.discordUsername, inline: true },
-            { name: 'Discord Server ID', value: payload.discordServerId, inline: true },
-            { name: 'Members', value: payload.members?.toString() || 'N/A', inline: true },
-            { name: 'Server Type', value: payload.type || 'N/A', inline: true },
-            { name: 'Primary Language', value: payload.language || 'N/A', inline: true },
-            { name: 'NSFW', value: payload.nsfw ? 'Yes' : 'No', inline: true },
-            { name: 'Rules', value: payload.rules || 'None', inline: false },
-            { name: 'Website / Links', value: payload.website || 'None', inline: false },
-            { name: 'Tags', value: payload.tags.join(', ') || 'None', inline: false }
-          ],
-          timestamp: new Date().toISOString()
-        }
-      ]
-    };
-
-    await fetch(DISCORD_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(webhookPayload)
-    });
-
-    alert('Server submitted! Notification sent to Discord.');
+    alert('Server submitted! Awaiting approval.');
     e.target.reset();
     tags = [];
     renderTags();
