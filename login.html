@@ -181,54 +181,57 @@
     }
   });
 
-// ======================
-// QR Login
-// ======================
-qrBtn.addEventListener('click', async () => {
-  try {
-    const res = await fetch(`${API_URL}/api/auth/qr-generate`);
-    const { token } = await res.json();
+  // ======================
+  // QR Login
+  // ======================
+  const qrBtn = document.getElementById('qrLoginBtn');
+  const qrModal = document.getElementById('qrModal');
+  const qrCanvas = document.getElementById('qrCanvas');
+  const spinLogo = document.getElementById('spinLogo');
+  const qrMessage = document.getElementById('qrMessage');
+  const closeQR = document.getElementById('closeQR');
 
-    // Show modal and QR
-    qrModal.classList.remove('hidden');
-    qrCanvas.style.display = 'block';
-    spinLogo.classList.add('hidden');
-    qrMessage.textContent = 'Scan this code with your mobile OpsLink app to login.';
-    new QRious({ element: qrCanvas, value: token, size: 200 });
+  qrBtn.addEventListener('click', async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/auth/qr-generate`);
+      if (!res.ok) throw new Error("Failed to generate QR");
+      const { token } = await res.json();
 
-    // Connect socket and subscribe to QR token
-    const socket = io(API_URL);
+      // Show modal and QR
+      qrModal.classList.remove('hidden');
+      qrCanvas.style.display = 'block';
+      spinLogo.classList.add('hidden');
+      qrMessage.textContent = 'Scan this code with your mobile OpsLink app to login.';
+      new QRious({ element: qrCanvas, value: token, size: 200 });
 
-    // Wait until socket is connected
-    socket.on('connect', () => {
-      console.log('Socket connected for QR login');
-      socket.emit('subscribe-token', token);
-    });
+      // Connect socket and subscribe to QR token
+      const socket = io(API_URL);
 
-    // Listen for login success specifically for this token
-    socket.on(`login-success-${token}`, ({ token: jwt, user }) => {
-      console.log('QR login approved', user);
-      localStorage.setItem('token', jwt);
-      localStorage.setItem('user', JSON.stringify(user));
-      showToast({ title: "Success!", message: `Logged in as ${user.discordUsername}`, type: "success" });
+      socket.on('connect', () => {
+        console.log('Socket connected for QR login');
+        socket.emit('subscribe-token', token);
+      });
 
-      // Switch visuals
-      qrCanvas.style.display = 'none';
-      spinLogo.classList.remove('hidden');
-      qrMessage.textContent = 'Login approved! Redirecting...';
+      socket.on(`login-success-${token}`, ({ token: jwt, user }) => {
+        localStorage.setItem('token', jwt);
+        localStorage.setItem('user', JSON.stringify(user));
+        showToast({ title: "Success!", message: `Logged in as ${user.discordUsername}`, type: "success" });
 
-      setTimeout(() => window.location.href = 'index.html', 1500);
+        qrCanvas.style.display = 'none';
+        spinLogo.classList.remove('hidden');
+        qrMessage.textContent = 'Login approved! Redirecting...';
 
-      // Disconnect socket after success
-      socket.disconnect();
-    });
+        setTimeout(() => window.location.href = 'index.html', 1500);
+        socket.disconnect();
+      });
 
-  } catch (err) {
-    console.error(err);
-    showToast({ title: "Error!", message: "Failed to generate QR code", type: "error" });
-  }
-});
+    } catch (err) {
+      console.error(err);
+      showToast({ title: "Error!", message: "Failed to generate QR code", type: "error" });
+    }
+  });
 
+  closeQR.addEventListener('click', () => qrModal.classList.add('hidden'));
 </script>
 </body>
 </html>
