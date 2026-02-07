@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Verification Failed - OpsLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white flex items-center justify-center px-6">
+
+  <div class="max-w-md w-full bg-zinc-900/80 border border-zinc-800 p-8 rounded-lg text-center shadow-xl">
+
+    <div class="text-red-500 text-5xl mb-4">✕</div>
+
+    <h1 class="text-3xl font-bold mb-3">Verification Failed</h1>
+    <p class="text-zinc-400 mb-6">
+      This verification link is invalid or expired. You can resend the email below.
+    </p>
+
+    <form id="resendForm" class="flex flex-col gap-4">
+      <input
+        type="email"
+        id="email"
+        placeholder="Enter your email"
+        required
+        class="p-2 rounded bg-zinc-800 border border-zinc-700"
+      />
+
+      <button
+        type="submit"
+        class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">
+        Resend Verification Email
+      </button>
+    </form>
+
+    <p id="message" class="text-sm mt-4"></p>
+
+  </div>
+
+<script>
+  const API_URL = 'https://opslinkservers-backend.onrender.com';
+
+  document.getElementById('resendForm').addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const msg = document.getElementById('message');
+
+    try {
+      const res = await fetch(`${API_URL}/api/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        msg.textContent = "Verification email sent! Check your inbox.";
+        msg.className = "text-green-400 text-sm mt-4";
+      } else {
+        msg.textContent = data.error || "Failed to resend email.";
+        msg.className = "text-red-400 text-sm mt-4";
+      }
+    } catch (err) {
+      msg.textContent = "Server error. Try again later.";
+      msg.className = "text-red-400 text-sm mt-4";
+    }
+  });
+</script>
+
+</body>
+</html>
