@@ -79,7 +79,7 @@ function scan() {
   const code = jsQR(imageData.data, imageData.width, imageData.height);
 
   if (code) {
-    statusEl.textContent = '⌛ QR code detected! Sending...';
+    statusEl.textContent = '⌛ QR code detected! Verifying...';
     spinner.classList.remove('hidden');
 
     fetch(`${API_URL}/api/auth/qr-scan`, {
@@ -94,39 +94,28 @@ function scan() {
     .then(data => {
       spinner.classList.add('hidden');
 
-      if (data.success && data.user && data.token) {
-        // Approved
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-
-        statusEl.textContent = `✅ Login approved! Welcome, ${data.user.discordUsername}`;
-        statusEl.classList.remove('text-zinc-400');
-        statusEl.classList.remove('text-red-500');
+      if (data.success) {
+        statusEl.textContent = '✅ Logged in successfully';
+        statusEl.classList.remove('text-zinc-400', 'text-red-500');
         statusEl.classList.add('text-green-500');
 
-        // Stop camera stream
-        video.srcObject.getTracks().forEach(track => track.stop());
-
         setTimeout(() => window.location.href = 'index.html', 1500);
-      } else if (data.error) {
-        statusEl.textContent = `❌ ${data.error}`;
-        statusEl.classList.remove('text-zinc-400');
-        statusEl.classList.add('text-red-500');
-        requestAnimationFrame(scan);
       } else {
-        statusEl.textContent = '❌ Unknown error';
-        statusEl.classList.remove('text-zinc-400');
+        statusEl.textContent = '❌ ' + (data.message || 'Invalid or expired QR code');
+        statusEl.classList.remove('text-zinc-400', 'text-green-500');
         statusEl.classList.add('text-red-500');
-        requestAnimationFrame(scan);
+
+        requestAnimationFrame(scan); // keep scanning
       }
     })
     .catch(err => {
       spinner.classList.add('hidden');
       console.error(err);
-      statusEl.textContent = '❌ Error sending QR code.';
-      statusEl.classList.remove('text-zinc-400');
+      statusEl.textContent = '❌ Unknown error';
+      statusEl.classList.remove('text-zinc-400', 'text-green-500');
       statusEl.classList.add('text-red-500');
-      requestAnimationFrame(scan); // continue scanning
+
+      requestAnimationFrame(scan); // keep scanning
     });
   } else {
     requestAnimationFrame(scan);
