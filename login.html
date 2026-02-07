@@ -27,6 +27,14 @@
       <form id="loginForm" class="flex flex-col gap-4">
         <input name="email" type="email" placeholder="Email" class="p-2 rounded bg-zinc-800" required />
         <input name="password" type="password" placeholder="Password" class="p-2 rounded bg-zinc-800" required />
+
+        <!-- Forgot Password Button -->
+        <div class="flex justify-end mb-2">
+          <button type="button" id="forgotPasswordBtn" class="text-sm text-indigo-400 hover:text-indigo-500 underline">
+            Forgot Password?
+          </button>
+        </div>
+
         <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">Login</button>
       </form>
 
@@ -35,6 +43,18 @@
       </p>
     </div>
   </section>
+
+  <!-- Confirmation Modal -->
+  <div id="forgotModal" class="fixed inset-0 flex items-center justify-center bg-black/50 hidden z-50">
+    <div class="bg-zinc-900 p-6 rounded-xl max-w-sm w-full text-center">
+      <h2 class="text-xl font-bold mb-4">Reset Password</h2>
+      <p class="text-zinc-400 mb-6">Are you sure you want to reset your password? A reset link will be sent to your email.</p>
+      <div class="flex justify-center gap-4">
+        <button id="confirmReset" class="bg-green-500 px-4 py-2 rounded hover:bg-green-600">Yes</button>
+        <button id="cancelReset" class="bg-red-500 px-4 py-2 rounded hover:bg-red-600">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Toast Notification -->
   <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-4 rounded shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 z-50">
@@ -58,7 +78,6 @@
     toastTitle.textContent = title;
     toastMessage.textContent = message;
 
-    // Green for success, red for error
     if (type === "success") {
       toast.classList.remove("bg-red-500");
       toast.classList.add("bg-green-500");
@@ -67,11 +86,9 @@
       toast.classList.add("bg-red-500");
     }
 
-    // Show toast
     toast.style.opacity = 1;
     toast.style.pointerEvents = "all";
 
-    // Hide after duration
     setTimeout(() => {
       toast.style.opacity = 0;
       toast.style.pointerEvents = "none";
@@ -92,13 +109,10 @@
 
       if (res.ok) {
         const { token, user } = await res.json();
-
-        // Save auth
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
         e.target.reset();
 
-        // Show green success toast
         showToast({
           title: "Success!",
           message: "You have been logged in successfully! Redirecting Now!",
@@ -106,7 +120,6 @@
           duration: 2500
         });
 
-        // Redirect after 2.5 seconds
         setTimeout(() => {
           window.location.href = 'index.html';
         }, 2500);
@@ -128,6 +141,54 @@
         type: "error",
         duration: 3000
       });
+    }
+  });
+
+  // Forgot Password Modal Logic
+  const forgotBtn = document.getElementById('forgotPasswordBtn');
+  const modal = document.getElementById('forgotModal');
+  const confirmBtn = document.getElementById('confirmReset');
+  const cancelBtn = document.getElementById('cancelReset');
+  const emailInput = document.querySelector('input[name="email"]');
+
+  forgotBtn.addEventListener('click', () => {
+    if (!emailInput.value) {
+      showToast({ title: "Error!", message: "Please enter your email first.", type: "error" });
+      return;
+    }
+    modal.classList.remove('hidden');
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+  });
+
+  confirmBtn.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    if (!email) return;
+
+    try {
+      // Call API to send reset email
+      const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send reset email");
+
+      showToast({ title: "Success!", message: "Reset email sent! Check your inbox.", type: "success" });
+      modal.classList.add('hidden');
+
+      // Redirect to verify.html
+      setTimeout(() => {
+        window.location.href = 'verify.html';
+      }, 1000);
+
+    } catch (err) {
+      showToast({ title: "Error!", message: err.message || "Failed to send reset email", type: "error" });
+      modal.classList.add('hidden');
     }
   });
 </script>
