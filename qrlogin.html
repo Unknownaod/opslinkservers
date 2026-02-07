@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Login</title>
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: sans-serif;
+    height: 100vh;
+    margin: 0;
+    background: #f0f2f5;
+  }
+  h1 {
+    margin-bottom: 20px;
+    color: #333;
+  }
+  video {
+    width: 90%;
+    max-width: 400px;
+    border-radius: 12px;
+    border: 2px solid #555;
+  }
+  #status {
+    margin-top: 20px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<h1>Scan QR Code</h1>
+<video id="video" autoplay></video>
+<div id="status">Waiting for QR code...</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+<script>
+const jwt = localStorage.getItem('token'); // JWT from login
+
+if (!jwt) {
+  alert('You must be logged in to scan QR codes.');
+  window.location.href = '/login.html';
+}
+
+const video = document.getElementById('video');
+const statusEl = document.getElementById('status');
+
+navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+  .then(stream => {
+    video.srcObject = stream;
+    video.play();
+    requestAnimationFrame(scan);
+  })
+  .catch(err => {
+    statusEl.textContent = 'Camera access denied.';
+    console.error(err);
+  });
+
+function scan() {
+  if (video.readyState !== video.HAVE_ENOUGH_DATA) {
+    requestAnimationFrame(scan);
+    return;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+  if (code) {
+    statusEl.textContent = 'QR code detected! Sending...';
+    fetch('/qr-scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: code.data, jwt })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        statusEl.textContent = '✅ Login approved!';
+      } else {
+        statusEl.textContent = '❌ Invalid or expired QR code.';
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      statusEl.textContent = '❌ Error sending QR code.';
+    });
+  } else {
+    requestAnimationFrame(scan);
+  }
+}
+</script>
+
+</body>
+</html>
