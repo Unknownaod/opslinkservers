@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login - OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
@@ -29,14 +31,24 @@
         <input name="password" type="password" placeholder="Password" class="p-2 rounded bg-zinc-800" required />
 
         <!-- Forgot Password Button -->
-        <div class="flex justify-end mb-2">
-          <button type="button" id="forgotPasswordBtn" class="text-sm text-indigo-400 hover:text-indigo-500 underline">
-            Forgot Password?
-          </button>
-        </div>
+<!-- Forgot Password Button -->
+        <div class="flex justify-center mb-2">
+         <button type="button" id="forgotPasswordBtn" class="text-sm text-indigo-400 hover:text-indigo-500               underline">
+         Forgot Password?
+         </button>
+         </div>
 
         <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">Login</button>
       </form>
+
+      <!-- QR Login Button -->
+      <button
+        type="button"
+        id="qrLoginBtn"
+        class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+      >
+        Login with QR Code
+      </button>
 
       <p class="mt-4 text-sm text-zinc-400">
         Don't have an account? <a href="signup.html" class="text-white underline hover:text-zinc-300">Register here</a>
@@ -44,7 +56,7 @@
     </div>
   </section>
 
-  <!-- Confirmation Modal -->
+  <!-- Forgot Password Modal -->
   <div id="forgotModal" class="fixed inset-0 flex items-center justify-center bg-black/50 hidden z-50">
     <div class="bg-zinc-900 p-6 rounded-xl max-w-sm w-full text-center">
       <h2 class="text-xl font-bold mb-4">Reset Password</h2>
@@ -53,6 +65,16 @@
         <button id="confirmReset" class="bg-green-500 px-4 py-2 rounded hover:bg-green-600">Yes</button>
         <button id="cancelReset" class="bg-red-500 px-4 py-2 rounded hover:bg-red-600">Cancel</button>
       </div>
+    </div>
+  </div>
+
+  <!-- QR Code Modal -->
+  <div id="qrModal" class="fixed inset-0 flex items-center justify-center bg-black/50 hidden z-50">
+    <div class="bg-zinc-900 p-6 rounded-xl max-w-sm w-full text-center relative">
+      <h2 class="text-xl font-bold mb-4">Scan to Login</h2>
+      <canvas id="qrCanvas" class="mx-auto mb-4"></canvas>
+      <p class="text-zinc-400 mb-4">Scan this code with your mobile OpsLink app to login.</p>
+      <button id="closeQR" class="absolute top-3 right-3 text-white text-xl font-bold hover:text-red-500">&times;</button>
     </div>
   </div>
 
@@ -95,7 +117,9 @@
     }, duration);
   }
 
+  // ======================
   // Login Form
+  // ======================
   document.getElementById('loginForm').addEventListener('submit', async e => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.target));
@@ -120,31 +144,20 @@
           duration: 2500
         });
 
-        setTimeout(() => {
-          window.location.href = 'index.html';
-        }, 2500);
-
+        setTimeout(() => window.location.href = 'index.html', 2500);
       } else {
         const err = await res.json();
-        showToast({
-          title: "Error!",
-          message: err.error || "Login failed",
-          type: "error",
-          duration: 3000
-        });
+        showToast({ title: "Error!", message: err.error || "Login failed", type: "error" });
       }
     } catch (err) {
       console.error(err);
-      showToast({
-        title: "Error!",
-        message: "Login failed. Please try again later.",
-        type: "error",
-        duration: 3000
-      });
+      showToast({ title: "Error!", message: "Login failed. Please try again later.", type: "error" });
     }
   });
 
+  // ======================
   // Forgot Password Modal Logic
+  // ======================
   const forgotBtn = document.getElementById('forgotPasswordBtn');
   const modal = document.getElementById('forgotModal');
   const confirmBtn = document.getElementById('confirmReset');
@@ -159,16 +172,13 @@
     modal.classList.remove('hidden');
   });
 
-  cancelBtn.addEventListener('click', () => {
-    modal.classList.add('hidden');
-  });
+  cancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
 
   confirmBtn.addEventListener('click', async () => {
     const email = emailInput.value.trim();
     if (!email) return;
 
     try {
-      // Call API to send reset email
       const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -181,16 +191,53 @@
       showToast({ title: "Success!", message: "Reset email sent! Check your inbox.", type: "success" });
       modal.classList.add('hidden');
 
-      // Redirect to verify.html
-      setTimeout(() => {
-        window.location.href = 'passwordverify.html';
-      }, 1000);
-
+      setTimeout(() => window.location.href = 'passwordverify.html', 1000);
     } catch (err) {
       showToast({ title: "Error!", message: err.message || "Failed to send reset email", type: "error" });
       modal.classList.add('hidden');
     }
   });
+
+  // ======================
+  // QR Login Logic
+  // ======================
+  const qrBtn = document.getElementById('qrLoginBtn');
+  const qrModal = document.getElementById('qrModal');
+  const closeQR = document.getElementById('closeQR');
+  const qrCanvas = document.getElementById('qrCanvas');
+
+  qrBtn.addEventListener('click', async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/auth/qr-generate`);
+      const data = await res.json();
+      const token = data.token;
+
+      // Show modal
+      qrModal.classList.remove('hidden');
+
+      // Generate QR code
+      const qr = new QRious({ element: qrCanvas, value: token, size: 200 });
+
+      // Socket.IO for real-time login
+      if (window.io) {
+        const socket = io(API_URL);
+        socket.emit('subscribe-token', token);
+
+        socket.on('login-success', (userData) => {
+          showToast({ title: "Success!", message: `Logged in as ${userData.discordUsername}`, type: "success" });
+          qrModal.classList.add('hidden');
+          localStorage.setItem('user', JSON.stringify(userData));
+
+          setTimeout(() => window.location.href = 'index.html', 1500);
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      showToast({ title: "Error!", message: "Failed to generate QR code", type: "error" });
+    }
+  });
+
+  closeQR.addEventListener('click', () => qrModal.classList.add('hidden'));
 </script>
 </body>
 </html>
