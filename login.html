@@ -1,185 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login - OpsLink</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-  <style>
-    /* Spinning logo animation */
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    .spin { animation: spin 2s linear infinite; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Login - OpsLink</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+<style>
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .spin { animation: spin 2s linear infinite; }
+</style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
-  <!-- Navbar -->
-  <nav class="flex items-center justify-between px-10 py-6">
-    <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
-    <div class="flex items-center gap-8 text-sm">
-      <a href="index.html" class="hover:opacity-80">Home</a>
-      <a href="browse.html" class="hover:opacity-80">Browse</a>
-      <a href="submit.html" class="hover:opacity-80">Submit</a>
-      <a href="signup.html" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Sign Up</a>
-    </div>
-  </nav>
+<!-- Navbar -->
+<nav class="flex items-center justify-between px-10 py-6">
+  <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
+  <div class="flex items-center gap-8 text-sm">
+    <a href="index.html" class="hover:opacity-80">Home</a>
+    <a href="browse.html" class="hover:opacity-80">Browse</a>
+    <a href="submit.html" class="hover:opacity-80">Submit</a>
+    <a href="signup.html" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Sign Up</a>
+  </div>
+</nav>
 
-  <!-- Login Section -->
-  <section class="px-10 py-10 max-w-md mx-auto">
-    <h1 class="text-4xl font-bold mb-6">Login to Your Account</h1>
+<!-- Login Section -->
+<section class="px-10 py-10 max-w-md mx-auto">
+  <h1 class="text-4xl font-bold mb-6">Login to Your Account</h1>
 
-    <div class="bg-zinc-900/80 border border-zinc-800 p-6 rounded">
-      <form id="loginForm" class="flex flex-col gap-4">
-        <input name="email" type="email" placeholder="Email" class="p-2 rounded bg-zinc-800" required />
-        <input name="password" type="password" placeholder="Password" class="p-2 rounded bg-zinc-800" required />
+  <div class="bg-zinc-900/80 border border-zinc-800 p-6 rounded">
+    <form id="loginForm" class="flex flex-col gap-4">
+      <input name="email" type="email" placeholder="Email" class="p-2 rounded bg-zinc-800" required />
+      <input name="password" type="password" placeholder="Password" class="p-2 rounded bg-zinc-800" required />
 
-        <!-- Forgot Password Button -->
-        <div class="flex justify-center mb-2">
-          <button type="button" id="forgotPasswordBtn" class="text-sm text-indigo-400 hover:text-indigo-500 underline">
-            Forgot Password?
-          </button>
-        </div>
-
-        <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">Login</button>
-      </form>
-
-      <!-- QR Login Button -->
-      <button type="button" id="qrLoginBtn" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
-        Login with QR Code
-      </button>
-
-      <p class="mt-4 text-sm text-zinc-400">
-        Don't have an account? <a href="signup.html" class="text-white underline hover:text-zinc-300">Register here</a>
-      </p>
-    </div>
-  </section>
-
-  <!-- Forgot Password Modal -->
-  <div id="forgotModal" class="fixed inset-0 flex items-center justify-center bg-black/50 hidden z-50">
-    <div class="bg-zinc-900 p-6 rounded-xl max-w-sm w-full text-center">
-      <h2 class="text-xl font-bold mb-4">Reset Password</h2>
-      <p class="text-zinc-400 mb-6">Are you sure you want to reset your password? A reset link will be sent to your email.</p>
-      <div class="flex justify-center gap-4">
-        <button id="confirmReset" class="bg-green-500 px-4 py-2 rounded hover:bg-green-600">Yes</button>
-        <button id="cancelReset" class="bg-red-500 px-4 py-2 rounded hover:bg-red-600">Cancel</button>
+      <!-- Forgot Password Button -->
+      <div class="flex justify-center mb-2">
+        <button type="button" id="forgotPasswordBtn" class="text-sm text-indigo-400 hover:text-indigo-500 underline">
+          Forgot Password?
+        </button>
       </div>
+
+      <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">Login</button>
+    </form>
+
+    <!-- QR Login Button -->
+    <button type="button" id="qrLoginBtn" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
+      Login with QR Code
+    </button>
+
+    <p class="mt-4 text-sm text-zinc-400">
+      Don't have an account? <a href="signup.html" class="text-white underline hover:text-zinc-300">Register here</a>
+    </p>
+  </div>
+</section>
+
+<!-- Forgot Password Modal -->
+<div id="forgotModal" class="fixed inset-0 flex items-center justify-center bg-black/50 hidden z-50">
+  <div class="bg-zinc-900 p-6 rounded-xl max-w-sm w-full text-center">
+    <h2 class="text-xl font-bold mb-4">Reset Password</h2>
+    <p class="text-zinc-400 mb-6">Are you sure you want to reset your password? A reset link will be sent to your email.</p>
+    <div class="flex justify-center gap-4">
+      <button id="confirmReset" class="bg-green-500 px-4 py-2 rounded hover:bg-green-600">Yes</button>
+      <button id="cancelReset" class="bg-red-500 px-4 py-2 rounded hover:bg-red-600">Cancel</button>
     </div>
   </div>
+</div>
 
-  <!-- QR Code Modal -->
-  <div id="qrModal" class="fixed inset-0 flex items-center justify-center bg-black/50 hidden z-50">
-    <div class="bg-zinc-900 p-6 rounded-xl max-w-sm w-full text-center relative">
-      <h2 class="text-xl font-bold mb-4">Scan to Login</h2>
-      <canvas id="qrCanvas" class="mx-auto mb-4"></canvas>
-      <!-- Spinning Logo while waiting -->
-      <img id="spinLogo" src="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png" class="mx-auto mb-4 w-24 spin hidden">
-      <p id="qrMessage" class="text-zinc-400 mb-4">Scan this code with your mobile OpsLink app to login.</p>
-      <button id="closeQR" class="absolute top-3 right-3 text-white text-xl font-bold hover:text-red-500">&times;</button>
-    </div>
+<!-- QR Code Modal -->
+<div id="qrModal" class="fixed inset-0 flex items-center justify-center bg-black/50 hidden z-50">
+  <div class="bg-zinc-900 p-6 rounded-xl max-w-sm w-full text-center relative">
+    <h2 class="text-xl font-bold mb-4">Scan to Login</h2>
+    <canvas id="qrCanvas" class="mx-auto mb-4"></canvas>
+    <img id="spinLogo" src="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png" class="mx-auto mb-4 w-24 spin hidden">
+    <p id="qrMessage" class="text-zinc-400 mb-4">Scan this code with your mobile OpsLink app to login.</p>
+    <button id="closeQR" class="absolute top-3 right-3 text-white text-xl font-bold hover:text-red-500">&times;</button>
   </div>
+</div>
 
-  <!-- Toast Notification -->
-  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-4 rounded shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 z-50">
-    <strong id="toastTitle" class="block font-bold text-lg">Success!</strong>
-    <span id="toastMessage" class="block mt-1">You have been logged in successfully! Redirecting Now!</span>
-  </div>
+<!-- Toast Notification -->
+<div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-4 rounded shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+  <strong id="toastTitle" class="block font-bold text-lg">Success!</strong>
+  <span id="toastMessage" class="block mt-1">You have been logged in successfully! Redirecting Now!</span>
+</div>
 
-  <!-- Footer -->
-  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
-    <span>© 2026 OpsLink Servers</span>
-    <span>Not affiliated with Discord</span>
-  </footer>
+<!-- Footer -->
+<footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
+  <span>© 2026 OpsLink Servers</span>
+  <span>Not affiliated with Discord</span>
+</footer>
 
 <script>
-  const API_URL = 'https://opslinkservers-backend.onrender.com';
-  const toast = document.getElementById('toast');
-  const toastTitle = document.getElementById('toastTitle');
-  const toastMessage = document.getElementById('toastMessage');
+const API_URL = 'https://opslinkservers-backend.onrender.com';
+const toast = document.getElementById('toast');
+const toastTitle = document.getElementById('toastTitle');
+const toastMessage = document.getElementById('toastMessage');
 
-  function showToast({ title = "Success!", message = "", type = "success", duration = 3000 }) {
-    toastTitle.textContent = title;
-    toastMessage.textContent = message;
-    toast.classList.remove("bg-green-500", "bg-red-500");
-    toast.classList.add(type === "success" ? "bg-green-500" : "bg-red-500");
-    toast.style.opacity = 1;
-    toast.style.pointerEvents = "all";
-    setTimeout(() => {
-      toast.style.opacity = 0;
-      toast.style.pointerEvents = "none";
-    }, duration);
+function showToast({ title = "Success!", message = "", type = "success", duration = 3000 }) {
+  toastTitle.textContent = title;
+  toastMessage.textContent = message;
+  toast.classList.remove("bg-green-500", "bg-red-500");
+  toast.classList.add(type === "success" ? "bg-green-500" : "bg-red-500");
+  toast.style.opacity = 1;
+  toast.style.pointerEvents = "all";
+  setTimeout(() => {
+    toast.style.opacity = 0;
+    toast.style.pointerEvents = "none";
+  }, duration);
+}
+
+// ======================
+// Login Form
+// ======================
+document.getElementById('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target));
+  try {
+    const res = await fetch(`${API_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) {
+      const { token, user } = await res.json();
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      e.target.reset();
+      showToast({ title: "Success!", message: "Logged in! Redirecting...", type: "success" });
+      setTimeout(() => window.location.href = 'index.html', 1500);
+    } else {
+      const err = await res.json();
+      showToast({ title: "Error!", message: err.error || "Login failed", type: "error" });
+    }
+  } catch (err) {
+    showToast({ title: "Error!", message: "Login failed. Try again later.", type: "error" });
   }
+});
 
-  // ======================
-  // Login Form
-  // ======================
-  document.getElementById('loginForm').addEventListener('submit', async e => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.target));
-    try {
-      const res = await fetch(`${API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (res.ok) {
-        const { token, user } = await res.json();
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-        e.target.reset();
-        showToast({ title: "Success!", message: "Logged in! Redirecting...", type: "success" });
-        setTimeout(() => window.location.href = 'index.html', 1500);
-      } else {
-        const err = await res.json();
-        showToast({ title: "Error!", message: err.error || "Login failed", type: "error" });
-      }
-    } catch (err) {
-      showToast({ title: "Error!", message: "Login failed. Try again later.", type: "error" });
-    }
-  });
+// ======================
+// Forgot Password
+// ======================
+const forgotBtn = document.getElementById('forgotPasswordBtn');
+const modal = document.getElementById('forgotModal');
+const confirmBtn = document.getElementById('confirmReset');
+const cancelBtn = document.getElementById('cancelReset');
+const emailInput = document.querySelector('input[name="email"]');
 
-  // ======================
-  // Forgot Password
-  // ======================
-  const forgotBtn = document.getElementById('forgotPasswordBtn');
-  const modal = document.getElementById('forgotModal');
-  const confirmBtn = document.getElementById('confirmReset');
-  const cancelBtn = document.getElementById('cancelReset');
-  const emailInput = document.querySelector('input[name="email"]');
+forgotBtn.addEventListener('click', () => {
+  if (!emailInput.value) {
+    showToast({ title: "Error!", message: "Please enter your email first.", type: "error" });
+    return;
+  }
+  modal.classList.remove('hidden');
+});
 
-  forgotBtn.addEventListener('click', () => {
-    if (!emailInput.value) {
-      showToast({ title: "Error!", message: "Please enter your email first.", type: "error" });
-      return;
-    }
-    modal.classList.remove('hidden');
-  });
+cancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
 
-  cancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
-
-  confirmBtn.addEventListener('click', async () => {
-    const email = emailInput.value.trim();
-    if (!email) return;
-    try {
-      const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to send reset email");
-      showToast({ title: "Success!", message: "Reset email sent!", type: "success" });
-      modal.classList.add('hidden');
-      setTimeout(() => window.location.href = 'passwordverify.html', 1000);
-    } catch (err) {
-      showToast({ title: "Error!", message: err.message || "Failed to send reset email", type: "error" });
-      modal.classList.add('hidden');
-    }
-  });
+confirmBtn.addEventListener('click', async () => {
+  const email = emailInput.value.trim();
+  if (!email) return;
+  try {
+    const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to send reset email");
+    showToast({ title: "Success!", message: "Reset email sent!", type: "success" });
+    modal.classList.add('hidden');
+    setTimeout(() => window.location.href = 'passwordverify.html', 1000);
+  } catch (err) {
+    showToast({ title: "Error!", message: err.message || "Failed to send reset email", type: "error" });
+    modal.classList.add('hidden');
+  }
+});
 
 // ======================
 // QR Login
@@ -187,11 +182,10 @@
 const qrBtn = document.getElementById('qrLoginBtn');
 const qrModal = document.getElementById('qrModal');
 const qrCanvas = document.getElementById('qrCanvas');
-const spinLogo = document.getElementById('spinLogo'); // spinning logo element
+const spinLogo = document.getElementById('spinLogo');
 const qrMessage = document.getElementById('qrMessage');
 const closeQR = document.getElementById('closeQR');
-
-let qrSocket; // keep track of socket for cleanup
+let qrSocket;
 
 qrBtn.addEventListener('click', async () => {
   try {
@@ -199,48 +193,35 @@ qrBtn.addEventListener('click', async () => {
     if (!res.ok) throw new Error("Failed to generate QR");
     const { token } = await res.json();
 
-    // Show modal and QR
     qrModal.classList.remove('hidden');
     qrCanvas.style.display = 'block';
     spinLogo.classList.add('hidden');
     qrMessage.textContent = 'Scan this code with your mobile OpsLink app to login.';
-
     new QRious({ element: qrCanvas, value: token, size: 200 });
 
-    // Connect socket and subscribe to QR token
     qrSocket = io(API_URL);
 
-    qrSocket.on('connect', () => {
+    qrSocket.on('connect', async () => {
       console.log('Socket connected for QR login');
-      qrSocket.emit('subscribe-token', token);
+      await fetch(`${API_URL}/api/auth/qr-subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, socketId: qrSocket.id })
+      });
     });
 
-    // Listen for login approval
-    qrSocket.on(`login-success-${token}`, ({ token: jwt, user }) => {
-      // Save JWT and user info
+    qrSocket.on('login-success', ({ token: jwt, user }) => {
       localStorage.setItem('token', jwt);
       localStorage.setItem('user', JSON.stringify(user));
-
-      showToast({
-        title: "Success!",
-        message: `Logged in as ${user.discordUsername}`,
-        type: "success"
-      });
-
-      // Show spinning logo and hide QR
+      showToast({ title: "Success!", message: `Logged in as ${user.discordUsername}`, type: "success" });
       qrCanvas.style.display = 'none';
       spinLogo.classList.remove('hidden');
       qrMessage.textContent = 'Login approved! Redirecting...';
-
-      // Redirect after short delay
       setTimeout(() => window.location.href = 'index.html', 1500);
-
-      // Cleanup socket
       if (qrSocket) qrSocket.disconnect();
     });
 
-    // Handle socket errors
-    qrSocket.on('connect_error', (err) => {
+    qrSocket.on('connect_error', err => {
       console.error('Socket connection error:', err);
       showToast({ title: "Error!", message: "Socket connection failed", type: "error" });
     });
@@ -251,7 +232,6 @@ qrBtn.addEventListener('click', async () => {
   }
 });
 
-// Close modal and cleanup
 closeQR.addEventListener('click', () => {
   qrModal.classList.add('hidden');
   if (qrSocket) {
@@ -259,7 +239,6 @@ closeQR.addEventListener('click', () => {
     qrSocket = null;
   }
 });
-
 </script>
 </body>
 </html>
