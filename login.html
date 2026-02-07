@@ -7,6 +7,14 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <style>
+    /* Spinning logo animation */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spin { animation: spin 2s linear infinite; }
+  </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
@@ -31,22 +39,17 @@
         <input name="password" type="password" placeholder="Password" class="p-2 rounded bg-zinc-800" required />
 
         <!-- Forgot Password Button -->
-<!-- Forgot Password Button -->
         <div class="flex justify-center mb-2">
-         <button type="button" id="forgotPasswordBtn" class="text-sm text-indigo-400 hover:text-indigo-500               underline">
-         Forgot Password?
-         </button>
-         </div>
+          <button type="button" id="forgotPasswordBtn" class="text-sm text-indigo-400 hover:text-indigo-500 underline">
+            Forgot Password?
+          </button>
+        </div>
 
         <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-zinc-200">Login</button>
       </form>
 
       <!-- QR Login Button -->
-      <button
-        type="button"
-        id="qrLoginBtn"
-        class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
-      >
+      <button type="button" id="qrLoginBtn" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
         Login with QR Code
       </button>
 
@@ -73,7 +76,9 @@
     <div class="bg-zinc-900 p-6 rounded-xl max-w-sm w-full text-center relative">
       <h2 class="text-xl font-bold mb-4">Scan to Login</h2>
       <canvas id="qrCanvas" class="mx-auto mb-4"></canvas>
-      <p class="text-zinc-400 mb-4">Scan this code with your mobile OpsLink app to login.</p>
+      <!-- Spinning Logo while waiting -->
+      <img id="spinLogo" src="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png" class="mx-auto mb-4 w-24 spin hidden">
+      <p id="qrMessage" class="text-zinc-400 mb-4">Scan this code with your mobile OpsLink app to login.</p>
       <button id="closeQR" class="absolute top-3 right-3 text-white text-xl font-bold hover:text-red-500">&times;</button>
     </div>
   </div>
@@ -99,18 +104,10 @@
   function showToast({ title = "Success!", message = "", type = "success", duration = 3000 }) {
     toastTitle.textContent = title;
     toastMessage.textContent = message;
-
-    if (type === "success") {
-      toast.classList.remove("bg-red-500");
-      toast.classList.add("bg-green-500");
-    } else if (type === "error") {
-      toast.classList.remove("bg-green-500");
-      toast.classList.add("bg-red-500");
-    }
-
+    toast.classList.remove("bg-green-500", "bg-red-500");
+    toast.classList.add(type === "success" ? "bg-green-500" : "bg-red-500");
     toast.style.opacity = 1;
     toast.style.pointerEvents = "all";
-
     setTimeout(() => {
       toast.style.opacity = 0;
       toast.style.pointerEvents = "none";
@@ -123,40 +120,30 @@
   document.getElementById('loginForm').addEventListener('submit', async e => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.target));
-
     try {
       const res = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-
       if (res.ok) {
         const { token, user } = await res.json();
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
         e.target.reset();
-
-        showToast({
-          title: "Success!",
-          message: "You have been logged in successfully! Redirecting Now!",
-          type: "success",
-          duration: 2500
-        });
-
-        setTimeout(() => window.location.href = 'index.html', 2500);
+        showToast({ title: "Success!", message: "Logged in! Redirecting...", type: "success" });
+        setTimeout(() => window.location.href = 'index.html', 1500);
       } else {
         const err = await res.json();
         showToast({ title: "Error!", message: err.error || "Login failed", type: "error" });
       }
     } catch (err) {
-      console.error(err);
-      showToast({ title: "Error!", message: "Login failed. Please try again later.", type: "error" });
+      showToast({ title: "Error!", message: "Login failed. Try again later.", type: "error" });
     }
   });
 
   // ======================
-  // Forgot Password Modal Logic
+  // Forgot Password
   // ======================
   const forgotBtn = document.getElementById('forgotPasswordBtn');
   const modal = document.getElementById('forgotModal');
@@ -177,20 +164,16 @@
   confirmBtn.addEventListener('click', async () => {
     const email = emailInput.value.trim();
     if (!email) return;
-
     try {
       const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to send reset email");
-
-      showToast({ title: "Success!", message: "Reset email sent! Check your inbox.", type: "success" });
+      showToast({ title: "Success!", message: "Reset email sent!", type: "success" });
       modal.classList.add('hidden');
-
       setTimeout(() => window.location.href = 'passwordverify.html', 1000);
     } catch (err) {
       showToast({ title: "Error!", message: err.message || "Failed to send reset email", type: "error" });
@@ -199,38 +182,43 @@
   });
 
   // ======================
-  // QR Login Logic
+  // QR Login
   // ======================
   const qrBtn = document.getElementById('qrLoginBtn');
   const qrModal = document.getElementById('qrModal');
   const closeQR = document.getElementById('closeQR');
   const qrCanvas = document.getElementById('qrCanvas');
+  const spinLogo = document.getElementById('spinLogo');
+  const qrMessage = document.getElementById('qrMessage');
 
   qrBtn.addEventListener('click', async () => {
     try {
       const res = await fetch(`${API_URL}/api/auth/qr-generate`);
-      const data = await res.json();
-      const token = data.token;
+      const { token } = await res.json();
 
-      // Show modal
       qrModal.classList.remove('hidden');
+      qrCanvas.style.display = 'block';
+      spinLogo.classList.add('hidden');
+      qrMessage.textContent = 'Scan this code with your mobile OpsLink app to login.';
 
-      // Generate QR code
-      const qr = new QRious({ element: qrCanvas, value: token, size: 200 });
+      new QRious({ element: qrCanvas, value: token, size: 200 });
 
-      // Socket.IO for real-time login
-      if (window.io) {
-        const socket = io(API_URL);
-        socket.emit('subscribe-token', token);
+      const socket = io(API_URL);
+      socket.emit('subscribe-token', token);
 
-        socket.on('login-success', (userData) => {
-          showToast({ title: "Success!", message: `Logged in as ${userData.discordUsername}`, type: "success" });
-          qrModal.classList.add('hidden');
-          localStorage.setItem('user', JSON.stringify(userData));
+      socket.on('login-success', ({ token: jwt, user }) => {
+        localStorage.setItem('token', jwt);
+        localStorage.setItem('user', JSON.stringify(user));
+        showToast({ title: "Success!", message: `Logged in as ${user.discordUsername}`, type: "success" });
 
-          setTimeout(() => window.location.href = 'index.html', 1500);
-        });
-      }
+        // Hide QR canvas, show spinning logo
+        qrCanvas.style.display = 'none';
+        spinLogo.classList.remove('hidden');
+        qrMessage.textContent = 'Login approved! Redirecting...';
+
+        setTimeout(() => window.location.href = 'index.html', 1500);
+      });
+
     } catch (err) {
       console.error(err);
       showToast({ title: "Error!", message: "Failed to generate QR code", type: "error" });
