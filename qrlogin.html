@@ -3,102 +3,98 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QR Login</title>
-<style>
-  body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-family: sans-serif;
-    height: 100vh;
-    margin: 0;
-    background: #f0f2f5;
-  }
-  h1 {
-    margin-bottom: 20px;
-    color: #333;
-  }
-  video {
-    width: 90%;
-    max-width: 400px;
-    border-radius: 12px;
-    border: 2px solid #555;
-  }
-  #status {
-    margin-top: 20px;
-    font-weight: bold;
-  }
-</style>
-</head>
-<body>
-
-<h1>Scan QR Code</h1>
-<video id="video" autoplay></video>
-<div id="status">Waiting for QR code...</div>
-
+<title>QR Login - OpsLink</title>
 <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
-<script>
-const jwt = localStorage.getItem('token'); // JWT from login
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white p-4">
 
-if (!jwt) {
-  alert('You must be logged in to scan QR codes.');
-  window.location.href = '/login.html';
-}
+  <!-- Header / Logo -->
+  <div class="text-center mb-6">
+    <img src="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png?ex=69889d64&is=69874be4&hm=d91b7dc2a57a579671ead07b48c9dcf31f17984940" alt="OpsLink Logo" class="mx-auto w-32 mb-4">
+    <h1 class="text-3xl font-bold">Scan QR Code</h1>
+    <p class="text-zinc-400 mt-2">Use your mobile OpsLink account to login</p>
+  </div>
 
-const video = document.getElementById('video');
-const statusEl = document.getElementById('status');
+  <!-- Video Container -->
+  <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800 shadow-lg">
+    <video id="video" autoplay class="w-full rounded-lg border-2 border-zinc-700"></video>
+    <div id="status" class="mt-4 text-center font-semibold text-zinc-400">Waiting for QR code...</div>
+  </div>
 
-navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-  .then(stream => {
-    video.srcObject = stream;
-    video.play();
-    requestAnimationFrame(scan);
-  })
-  .catch(err => {
-    statusEl.textContent = 'Camera access denied.';
-    console.error(err);
-  });
+  <script>
+  const API_URL = 'https://opslinkservers-backend.onrender.com';
+  const jwt = localStorage.getItem('token'); // JWT from login
+  const video = document.getElementById('video');
+  const statusEl = document.getElementById('status');
 
-function scan() {
-  if (video.readyState !== video.HAVE_ENOUGH_DATA) {
-    requestAnimationFrame(scan);
-    return;
+  if (!jwt) {
+    alert('You must be logged in to scan QR codes.');
+    window.location.href = '/login.html';
   }
 
-  const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-  if (code) {
-    statusEl.textContent = 'QR code detected! Sending...';
-    fetch('/qr-scan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: code.data, jwt })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        statusEl.textContent = '✅ Login approved!';
-      } else {
-        statusEl.textContent = '❌ Invalid or expired QR code.';
-      }
+  // Request camera access
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+    .then(stream => {
+      video.srcObject = stream;
+      video.play();
+      requestAnimationFrame(scan);
     })
     .catch(err => {
+      statusEl.textContent = '❌ Camera access denied.';
       console.error(err);
-      statusEl.textContent = '❌ Error sending QR code.';
     });
-  } else {
-    requestAnimationFrame(scan);
+
+  function scan() {
+    if (video.readyState !== video.HAVE_ENOUGH_DATA) {
+      requestAnimationFrame(scan);
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+    if (code) {
+      statusEl.textContent = '⌛ QR code detected! Sending...';
+      fetch(`${API_URL}/api/auth/qr-scan`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwt}`
+        },
+        body: JSON.stringify({ token: code.data })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          statusEl.textContent = '✅ Login approved!';
+          statusEl.classList.remove('text-zinc-400');
+          statusEl.classList.add('text-green-500');
+
+          setTimeout(() => window.location.href = 'index.html', 1500);
+        } else {
+          statusEl.textContent = '❌ Invalid or expired QR code.';
+          statusEl.classList.remove('text-zinc-400');
+          statusEl.classList.add('text-red-500');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        statusEl.textContent = '❌ Error sending QR code.';
+        statusEl.classList.remove('text-zinc-400');
+        statusEl.classList.add('text-red-500');
+      });
+    } else {
+      requestAnimationFrame(scan);
+    }
   }
-}
-</script>
+  </script>
 
 </body>
 </html>
