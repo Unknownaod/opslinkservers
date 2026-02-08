@@ -196,7 +196,7 @@ qrBtn.addEventListener('click', async () => {
     qrModal.classList.remove('hidden');
     qrCanvas.style.display = 'block';
     spinLogo.classList.add('hidden');
-    qrMessage.textContent = 'Scan this code with your mobile OpsLink app to login. Visit https://servers.opslinksystems.xyz/qrlogin.html for the scanner!';
+    qrMessage.textContent = 'Scan this code with your mobile OpsLink app to login. Visit https://servers.opslinksystems.xyz/qrlogin.html for the scanner! You must be logged in on your mobile device to use the scanner!';
     new QRious({ element: qrCanvas, value: token, size: 200 });
 
     qrSocket = io(API_URL);
