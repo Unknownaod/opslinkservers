@@ -115,6 +115,45 @@ const API_URL = 'https://opslinkservers-backend.onrender.com';
 let tags = [];
 let currentUser = null;
 
+/* ---------------- TOAST SYSTEM ---------------- */
+function showToast(message, type = 'info') {
+  const colors = {
+    success: 'bg-green-600',
+    error: 'bg-red-600',
+    info: 'bg-zinc-800',
+    warning: 'bg-yellow-500 text-black'
+  };
+
+  let container = document.getElementById('toastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.className = 'fixed top-6 right-6 z-[10000] space-y-3';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `
+    ${colors[type] || colors.info}
+    text-white px-5 py-3 rounded-lg shadow-lg
+    flex items-center gap-3
+    animate-slide-in
+  `;
+  toast.innerHTML = `
+    <span class="flex-1 text-sm">${message}</span>
+    <button class="text-lg leading-none opacity-70 hover:opacity-100">&times;</button>
+  `;
+
+  toast.querySelector('button').onclick = () => toast.remove();
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('opacity-0');
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+/* ---------------- AUTH / NAV ---------------- */
 const token = localStorage.getItem('token');
 const userStr = localStorage.getItem('user');
 const loginBtn = document.getElementById('loginBtn');
@@ -128,7 +167,8 @@ if (token && userStr) {
   loginBtn.onclick = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.reload();
+    showToast('Logged out successfully', 'info');
+    setTimeout(() => window.location.reload(), 800);
   };
 
   const welcomeSpan = document.createElement('span');
@@ -142,17 +182,26 @@ if (token && userStr) {
   }
 }
 
-// ---------------- TAGS ----------------
+/* ---------------- TAGS ---------------- */
 const tagInput = document.getElementById('tagInput');
 const addTagBtn = document.getElementById('addTagBtn');
 const tagsList = document.getElementById('tagsList');
 
 addTagBtn.onclick = () => {
   const value = tagInput.value.trim();
-  if (value && !tags.includes(value) && tags.length < 5) {
-    tags.push(value);
-    renderTags();
+
+  if (!value) return;
+  if (tags.includes(value)) {
+    showToast('Tag already added', 'warning');
+    return;
   }
+  if (tags.length >= 5) {
+    showToast('Maximum of 5 tags allowed', 'warning');
+    return;
+  }
+
+  tags.push(value);
+  renderTags();
   tagInput.value = '';
 };
 
@@ -176,7 +225,7 @@ function renderTags() {
   });
 }
 
-// ---------------- LOGO PREVIEW ----------------
+/* ---------------- LOGO PREVIEW ---------------- */
 const logoInput = document.getElementById('logoInput');
 const logoPreview = document.getElementById('logoPreview');
 const logoPreviewContainer = document.getElementById('logoPreviewContainer');
@@ -192,13 +241,13 @@ logoInput.addEventListener('input', () => {
   }
 });
 
-// ---------------- SUBMIT ----------------
+/* ---------------- SUBMIT ---------------- */
 document.getElementById('submitForm').addEventListener('submit', async e => {
   e.preventDefault();
 
   if (!currentUser || !token) {
-    alert('You must be logged in.');
-    return (window.location.href = 'login.html');
+    showToast('You must be logged in to submit a server', 'error');
+    return setTimeout(() => (window.location.href = 'login.html'), 1200);
   }
 
   const payload = {
@@ -212,18 +261,27 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
     website: e.target.website.value.trim(),
     logo: logoInput.value.trim(),
     nsfw: e.target.nsfw.checked,
-    tags: tags,
-    discordServerId: e.target.discordServerId.value.trim() // required for bot
+    tags,
+    discordServerId: e.target.discordServerId.value.trim()
   };
 
-  if (!payload.logo) return alert('Server logo is required.');
-  if (!payload.discordServerId) return alert('You must add the OpsLink bot and provide your server ID.');
+  if (!payload.logo) {
+    showToast('Server logo is required', 'warning');
+    return;
+  }
+
+  if (!payload.discordServerId) {
+    showToast('Add the OpsLink bot and provide your server ID', 'warning');
+    return;
+  }
 
   try {
+    showToast('Submitting server...', 'info');
+
     const res = await fetch(`${API_URL}/api/servers`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(payload)
@@ -231,9 +289,12 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
 
     const data = await res.json();
 
-    if (!res.ok) return alert(data.error || 'Submission failed');
+    if (!res.ok) {
+      showToast(data.error || 'Submission failed', 'error');
+      return;
+    }
 
-    alert('Server submitted! Awaiting approval.');
+    showToast('Server submitted! Awaiting approval.', 'success');
     e.target.reset();
     tags = [];
     renderTags();
@@ -241,7 +302,7 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
 
   } catch (err) {
     console.error(err);
-    alert('Submission failed.');
+    showToast('Network error. Please try again.', 'error');
   }
 });
 </script>
@@ -294,6 +355,23 @@ document.addEventListener('click', e => {
   setTimeout(() => location.href = h, 1000);
 });
 </script>
+///--TOAST STYLE--\\\
+<style>
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-slide-in {
+  animation: slide-in 0.25s ease-out;
+}
+</style>
+  
   
 </body>
 </html>
