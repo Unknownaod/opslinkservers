@@ -203,7 +203,7 @@ function initChat() {
     socket.on('connect',()=>console.log('Socket connected'));
     socket.on('newMessage',({chatId,message})=>{
       updateChatList(chatId,message);
-      if(chatId===activeChat)addMessageToBody(message);
+      if(chatId===activeChat) addMessageToBody(message);
     });
   }
   loadChats();
@@ -222,12 +222,13 @@ function renderChatList() {
   if(!chatData.length){ chatList.innerHTML='<p class="p-4 text-sm text-zinc-400">No chats open currently.</p>'; return; }
   chatData.forEach(chat=>{
     const other = chat.participants.find(p=>p._id!==user._id);
+    if(!other) return; // safety
     const div=document.createElement('div');
     div.id = chat._id;
     div.className='p-4 border-b border-zinc-800 hover:bg-zinc-800 cursor-pointer';
-    div.innerHTML=`<div class="font-medium">${other.username} ${other.role==='admin'?'[OPSLINK STAFF]':''}</div>
+    div.innerHTML=`<div class="font-medium">${other.discordUsername || other.username} ${other.role==='admin'?'[OPSLINK STAFF]':''}</div>
                    <div class="text-xs text-zinc-400 truncate">${chat.lastMessage||''}</div>`;
-    div.onclick=()=>openChat(chat._id,other.username);
+    div.onclick=()=>openChat(chat._id,other.discordUsername || other.username);
     chatList.appendChild(div);
   });
 }
@@ -243,13 +244,17 @@ function updateChatList(chatId,message){
 
 /* ---------- OPEN CHAT ---------- */
 async function openChat(chatId,name){
+  if(!chatId) return; // safety check
   activeChat=chatId; chatHeader.textContent=name; chatBody.innerHTML='';
   socket.emit('joinChat',chatId);
-  const res=await fetch(`${API}/api/messages/${chatId}`,{headers:{Authorization:`Bearer ${token}`}});
-  const chat=await res.json();
-  if(!chat.messages.length) chatBody.innerHTML='<p class="text-zinc-400 text-center mt-10">No messages in this chat yet.</p>';
-  chat.messages.forEach(addMessageToBody);
-  chatBody.scrollTop=chatBody.scrollHeight;
+  try {
+    const res=await fetch(`${API}/api/messages/${chatId}`,{headers:{Authorization:`Bearer ${token}`}});
+    if(!res.ok) { console.error('Failed to load chat'); return; }
+    const chat=await res.json();
+    if(!chat.messages.length) chatBody.innerHTML='<p class="text-zinc-400 text-center mt-10">No messages in this chat yet.</p>';
+    chat.messages.forEach(addMessageToBody);
+    chatBody.scrollTop=chatBody.scrollHeight;
+  } catch(e){ console.error(e); }
 }
 
 /* ---------- ADD MESSAGE ---------- */
@@ -257,7 +262,7 @@ function addMessageToBody(m){
   const div=document.createElement('div');
   div.className=`max-w-md px-3 py-2 rounded ${m.sender._id===user._id?'bg-indigo-600 self-end':'bg-zinc-800 self-start'}`;
   if(m.sender.role==='admin'){
-    div.innerHTML=`<span class="font-medium">${m.sender.username}</span> <span class="text-indigo-400 text-xs">[OPSLINK STAFF]</span><br>${m.content}`;
+    div.innerHTML=`<span class="font-medium">${m.sender.discordUsername || m.sender.username}</span> <span class="text-indigo-400 text-xs">[OPSLINK STAFF]</span><br>${m.content}`;
   } else {
     div.textContent = m.content;
   }
@@ -268,9 +273,9 @@ function addMessageToBody(m){
 /* ---------- SEND MESSAGE ---------- */
 document.getElementById('sendBtn').onclick=()=>{
   const input=document.getElementById('chatInput');
-  if(!activeChat||!input.value.trim())return;
+  if(!activeChat||!input.value.trim()) return;
   const content = input.value.trim();
-  socket.emit('sendMessage',{chatId:activeChat,content});
+  socket.emit('sendMessage',{chatId:activeChat,content, token});
   input.value='';
 };
 
@@ -288,15 +293,22 @@ document.getElementById('userSearch').oninput=async e=>{
     d.className='text-sm p-2 hover:bg-zinc-800 cursor-pointer';
     d.innerHTML=`${u.username} ${u.role==='admin'?'[OPSLINK STAFF]':''}`;
     d.onclick=async ()=>{
-      const r=await fetch(`${API}/api/messages/start`,{
-        method:'POST',
-        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
-        body:JSON.stringify({username:u.username})
-      });
-      const data=await r.json(); 
-      results.innerHTML=''; 
-      loadChats(); 
-      openChat(data.chatId,u.username);
+      try {
+        const r=await fetch(`${API}/api/messages/start`,{
+          method:'POST',
+          headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+          body:JSON.stringify({discordUsername:u.username}) // ✅ matches backend
+        });
+        if(!r.ok){
+          const err=await r.json().catch(()=>({error:r.statusText}));
+          return alert(`Failed to start chat: ${err.error || r.status}`);
+        }
+        const data=await r.json();
+        if(!data.chatId) return alert('Chat not started. Try again.');
+        results.innerHTML='';
+        await loadChats();
+        openChat(data.chatId,u.username);
+      } catch(err){ console.error(err); alert('Error starting chat'); }
     };
     results.appendChild(d);
   });
@@ -311,6 +323,7 @@ if(checkLogin()){
   },8000);
 } else tabSystem.click();
 </script>
+
 
 </body>
 </html>
