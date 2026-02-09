@@ -191,7 +191,7 @@ function renderServers() {
 
   const filtered = servers
     .filter(s => nsfw || !s.nsfw)
-    .filter(s => activeTag === 'all' || s.tags.includes(activeTag))
+    .filter(s => activeTag === 'all' || (Array.isArray(s.tags) && s.tags.includes(activeTag)))
     .filter(s =>
       s.name.toLowerCase().includes(search) ||
       s.description.toLowerCase().includes(search)
@@ -203,14 +203,20 @@ function renderServers() {
   }
 
   filtered.forEach(s => {
+    const tags = Array.isArray(s.tags) ? s.tags : [];
+
     let invite = s.invite || '';
-    if (!invite.startsWith('http')) invite = 'https://discord.gg/' + invite.replace(/^discord\.gg\/?/i, '');
+    if (!invite.startsWith('http')) {
+      invite = 'https://discord.gg/' + invite.replace(/^discord\.gg\/?/i, '');
+    }
+
     const owner = s.submitterDiscord
       ? `${s.submitterDiscord.username}${s.submitterDiscord.tag ? '#' + s.submitterDiscord.tag : ''}`
       : 'Unknown';
 
     const card = document.createElement('div');
     card.className = 'group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:scale-[1.03] transition cursor-pointer';
+
     card.innerHTML = `
       <div class="relative h-44 bg-black">
         <img src="${s.logo}" class="w-full h-full object-contain p-2"/>
@@ -219,14 +225,32 @@ function renderServers() {
         <h3 class="text-lg font-semibold">${s.name}</h3>
         <p class="text-xs text-zinc-400">Server Owner: <span class="text-zinc-200">${owner}</span></p>
         <p class="text-sm text-zinc-300 line-clamp-2">${s.description}</p>
-        <div class="flex flex-wrap gap-1.5">${(s.tags || []).map(tag => `<span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-zinc-800 border border-zinc-700">#${tag}</span>`).join('')}</div>
+
+        <div class="flex flex-wrap gap-1.5">
+          ${tags.map(tag => `
+            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-zinc-800 border border-zinc-700">
+              #${tag}
+            </span>
+          `).join('')}
+        </div>
+
         <div class="flex justify-between items-center pt-1">
-          <span class="text-xs text-zinc-500 members-count" data-id="${s.discordServerId}">${s.members != null ? s.members : 'N/A'} members</span>
-          <a href="${invite}" target="_blank" class="px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-sm font-semibold hover:brightness-110">🚀 Join</a>
+          <span class="text-xs text-zinc-500 members-count" data-id="${s.discordServerId}">
+            ${s.members != null ? s.members : 'N/A'} members
+          </span>
+
+          <a href="${invite}" target="_blank"
+            class="px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-sm font-semibold hover:brightness-110">
+            🚀 Join
+          </a>
         </div>
       </div>
     `;
-    card.onclick = e => { if(e.target.tagName !== 'A') openServerModal(s._id); };
+
+    card.onclick = e => {
+      if (e.target.tagName !== 'A') openServerModal(s._id);
+    };
+
     grid.appendChild(card);
   });
 }
@@ -234,20 +258,34 @@ function renderServers() {
 // --- OPEN SERVER MODAL ---
 async function openServerModal(id) {
   currentServerId = id;
+
   const res = await fetch(`${API_URL}/api/servers/${id}`);
   const server = await res.json();
+
+  const tags = Array.isArray(server.tags) ? server.tags : [];
 
   document.getElementById('modalLogo').src = server.logo;
   document.getElementById('modalName').textContent = server.name;
   document.getElementById('modalDescription').textContent = server.description;
-  document.getElementById('modalTags').textContent = 'Tags: ' + server.tags.join(', ');
+
+  document.getElementById('modalTags').innerHTML =
+    tags.length
+      ? tags.map(t => `<span class="px-2 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-xs">#${t}</span>`).join(' ')
+      : '<span class="text-zinc-500 text-sm">No tags</span>';
+
   const owner = server.submitterDiscord;
-  document.getElementById('modalOwner').textContent = owner ? `Server Owner: ${owner.username}${owner.tag ? '#' + owner.tag : ''} (${owner.userID})` : 'Server Owner: Unknown';
-  document.getElementById('modalInvite').href = server.invite.startsWith('http') ? server.invite : 'https://discord.gg/' + server.invite.replace(/^discord\.gg\/?/i, '');
-  
+  document.getElementById('modalOwner').textContent =
+    owner ? `Server Owner: ${owner.username}${owner.tag ? '#' + owner.tag : ''} (${owner.userID})` : 'Server Owner: Unknown';
+
+  document.getElementById('modalInvite').href =
+    server.invite.startsWith('http')
+      ? server.invite
+      : 'https://discord.gg/' + server.invite.replace(/^discord\.gg\/?/i, '');
+
   const comments = document.getElementById('modalComments');
   comments.innerHTML = '';
-  server.comments.forEach(c => {
+
+  (server.comments || []).forEach(c => {
     const div = document.createElement('div');
     div.className = 'bg-zinc-800 p-3 rounded-xl text-sm';
     div.textContent = `${c.user}: ${c.text}`;
@@ -256,9 +294,9 @@ async function openServerModal(id) {
 
   document.getElementById('serverModal').classList.remove('hidden');
 
-  // --- REQUEST EDIT BUTTON ---
   const existingBtn = document.getElementById('requestEditBtn');
   if (existingBtn) existingBtn.remove();
+
   if (currentUser && owner && currentUser.discordUserID === owner.userID) {
     const btn = document.createElement('button');
     btn.id = 'requestEditBtn';
@@ -270,112 +308,16 @@ async function openServerModal(id) {
 }
 
 // --- CLOSE SERVER MODAL ---
-document.getElementById('closeModal').onclick = () => document.getElementById('serverModal').classList.add('hidden');
+document.getElementById('closeModal').onclick =
+  () => document.getElementById('serverModal').classList.add('hidden');
 
-// --- OPEN EDIT REQUEST MODAL ---
-function openEditRequestModal(server) {
-  const modal = document.getElementById('editRequestModal');
-  const form = document.getElementById('editRequestForm');
-  form.name.value = server.name;
-  form.description.value = server.description;
-  form.logo.value = server.logo;
-  form.website.value = server.website || '';
-  form.language.value = server.language || '';
-  form.members.value = server.members || '';
-  form.type.value = server.type || '';
-  form.nsfw.checked = server.nsfw || false;
-
-  editTags = [...server.tags];
-  renderEditTags();
-  modal.classList.remove('hidden');
-}
-
-// --- CLOSE EDIT MODAL ---
-document.getElementById('closeEditModal').onclick = () => document.getElementById('editRequestModal').classList.add('hidden');
-
-// --- EDIT TAGS HANDLING ---
-const editTagInput = document.getElementById('editTagInput');
-const addEditTagBtn = document.getElementById('addEditTagBtn');
-const editTagsList = document.getElementById('editTagsList');
-
-addEditTagBtn.onclick = () => {
-  const value = editTagInput.value.trim().toLowerCase();
-  if(value && !editTags.includes(value) && editTags.length < 5) {
-    editTags.push(value); renderEditTags();
-  }
-  editTagInput.value = '';
-};
-function renderEditTags() {
-  editTagsList.innerHTML = '';
-  editTags.forEach(tag => {
-    const span = document.createElement('span');
-    span.className = 'bg-zinc-700 px-3 py-1 rounded flex items-center gap-1';
-    span.textContent = tag;
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.textContent = '×';
-    removeBtn.onclick = () => { editTags = editTags.filter(t => t!==tag); renderEditTags(); };
-    span.appendChild(removeBtn);
-    editTagsList.appendChild(span);
-  });
-}
-
-// --- SUBMIT EDIT REQUEST ---
-document.getElementById('editRequestForm').onsubmit = async e => {
-  e.preventDefault();
-  if(!token) return alert('Login required.');
-  const form = e.target;
-  const payload = {
-    name: form.name.value.trim(),
-    description: form.description.value.trim(),
-    logo: form.logo.value.trim(),
-    website: form.website.value.trim(),
-    language: form.language.value.trim(),
-    members: form.members.value,
-    type: form.type.value,
-    nsfw: form.nsfw.checked,
-    tags: editTags
+// --- TAG SEARCH FILTER (Optional UI Hook) ---
+document.querySelectorAll('[data-tag]').forEach(btn => {
+  btn.onclick = () => {
+    activeTag = btn.dataset.tag;
+    renderServers();
   };
-  try {
-    const res = await fetch(`${API_URL}/api/servers/${currentServerId}/request-edit`, {
-      method:'POST',
-      headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if(!res.ok) return alert(data.error || 'Failed to submit edit request');
-    alert('Edit request submitted! Staff will review it.');
-    document.getElementById('editRequestModal').classList.add('hidden');
-  } catch(err) { console.error(err); alert('Failed to submit edit request'); }
-};
-
-// --- COMMENT FORM ---
-document.getElementById('commentForm').onsubmit = async e => {
-  e.preventDefault();
-  if(!token) return alert('Login required to comment.');
-  const text = e.target.comment.value.trim();
-  if(!text) return;
-  await fetch(`${API_URL}/api/servers/${currentServerId}/comments`, {
-    method:'POST',
-    headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` },
-    body: JSON.stringify({ text })
-  });
-  e.target.reset();
-  openServerModal(currentServerId);
-};
-
-// --- REPORT SERVER ---
-document.getElementById('reportServerBtn').onclick = async () => {
-  if(!token) return alert('Login required to report servers.');
-  const reason = prompt('Why are you reporting this server?');
-  if(!reason) return;
-  await fetch(`${API_URL}/api/servers/${currentServerId}/report`, {
-    method:'POST',
-    headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` },
-    body: JSON.stringify({ reason })
-  });
-  alert('Server reported successfully.');
-};
+});
 
 // --- SEARCH & NSFW ---
 document.getElementById('searchInput').oninput = renderServers;
@@ -383,6 +325,7 @@ document.getElementById('nsfwToggle').onchange = renderServers;
 
 loadServers();
 </script>
+
 
 <div id="t" style="
   position:fixed;
