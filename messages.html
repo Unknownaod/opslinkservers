@@ -225,16 +225,15 @@ function renderChatList() {
     const div=document.createElement('div');
     div.id = chat._id;
     div.className='p-4 border-b border-zinc-800 hover:bg-zinc-800 cursor-pointer';
-    div.innerHTML=`<div class="font-medium">${other.username} ${other.role==='admin'?'[OPSLINK STAFF]':''}</div>
+    div.innerHTML=`<div class="font-medium">${other.discordUsername} ${other.role==='admin'?'[OPSLINK STAFF]':''}</div>
                    <div class="text-xs text-zinc-400 truncate">${chat.lastMessage||''}</div>`;
-    div.onclick=()=>openChat(chat._id,other.username);
+    div.onclick=()=>openChat(chat._id,other.discordUsername);
     chatList.appendChild(div);
   });
 }
 
 /* ---------- UPDATE CHAT LIST ON NEW MESSAGE ---------- */
 function updateChatList(chatId,message){
-  // update lastMessage and move to top
   const chat = chatData.find(c=>c._id===chatId);
   if(!chat) return;
   chat.lastMessage = message.content;
@@ -257,7 +256,9 @@ async function openChat(chatId,name){
 function addMessageToBody(m){
   const div=document.createElement('div');
   div.className=`max-w-md px-3 py-2 rounded ${m.sender._id===user._id?'bg-indigo-600 self-end':'bg-zinc-800 self-start'}`;
-  div.innerHTML=m.sender.role==='admin'?`<span class="font-medium">${m.sender.username}</span> <span class="text-indigo-400 text-xs">[OPSLINK STAFF]</span><br>${m.content}`:m.content;
+  div.innerHTML = m.sender.role==='admin'
+    ? `<span class="font-medium">${m.sender.discordUsername}</span> <span class="text-indigo-400 text-xs">[OPSLINK STAFF]</span><br>${m.content}`
+    : m.content;
   chatBody.appendChild(div);
   chatBody.scrollTop=chatBody.scrollHeight;
 }
@@ -273,28 +274,40 @@ document.getElementById('sendBtn').onclick=()=>{
 
 /* ---------- SEARCH USERS ---------- */
 document.getElementById('userSearch').oninput=async e=>{
-  const q=e.target.value.trim(); const results=document.getElementById('searchResults'); results.innerHTML='';
+  const q=e.target.value.trim(); 
+  const results=document.getElementById('searchResults'); 
+  results.innerHTML='';
   if(!q) return;
   const res=await fetch(`${API}/api/users/search?q=${q}`,{headers:{Authorization:`Bearer ${token}`}});
   const users=await res.json();
   if(!users.length){ results.innerHTML='<p class="text-sm text-zinc-400 p-2">No user found</p>'; return; }
   users.forEach(u=>{
-    const d=document.createElement('div'); d.className='text-sm p-2 hover:bg-zinc-800 cursor-pointer';
-    d.innerHTML=`${u.username} ${u.role==='admin'?'[OPSLINK STAFF]':''}`;
+    const d=document.createElement('div'); 
+    d.className='text-sm p-2 hover:bg-zinc-800 cursor-pointer';
+    d.innerHTML=`${u.discordUsername} ${u.role==='admin'?'[OPSLINK STAFF]':''}`;
     d.onclick=async ()=>{
       const r=await fetch(`${API}/api/messages/start`,{
         method:'POST',
         headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
-        body:JSON.stringify({username:u.username})
+        body:JSON.stringify({discordUsername:u.discordUsername})
       });
-      const data=await r.json(); results.innerHTML=''; loadChats(); openChat(data.chatId,u.username);
+      const data=await r.json(); 
+      results.innerHTML=''; 
+      loadChats(); 
+      openChat(data.chatId,u.discordUsername);
     };
     results.appendChild(d);
   });
 };
 
 /* ---------- INIT ---------- */
-if(checkLogin()){ tabSystem.click(); setInterval(()=>{if(!systemMessages.classList.contains('hidden'))fetchSystemMessages(); if(!myServersMessages.classList.contains('hidden'))fetchMyServers();},8000);}else tabSystem.click();
+if(checkLogin()){ 
+  tabSystem.click(); 
+  setInterval(()=>{
+    if(!systemMessages.classList.contains('hidden'))fetchSystemMessages(); 
+    if(!myServersMessages.classList.contains('hidden'))fetchMyServers();
+  },8000);
+} else tabSystem.click();
 </script>
 
 </body>
