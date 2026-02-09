@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Messages - OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
@@ -12,7 +13,7 @@
 <!-- NAVBAR -->
 <nav class="flex items-center justify-between px-10 py-6">
   <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
-  <div class="flex items-center gap-8 text-sm">
+  <div class="flex items-center gap-8 text-sm" id="navLinks">
     <a href="index.html" class="hover:opacity-80">Home</a>
     <a href="browse.html" class="hover:opacity-80">Browse</a>
     <a href="submit.html" class="hover:opacity-80">Submit</a>
@@ -28,25 +29,19 @@
 
   <!-- TABS -->
   <div class="flex border-b border-zinc-700 mb-8">
-    <button id="tabSystem" class="px-5 py-3 font-medium border-b-2 border-indigo-600">
-      System
-    </button>
-    <button id="tabMyServers" class="px-5 py-3 font-medium text-zinc-400 hover:text-white">
-      My Servers
-    </button>
-    <button id="tabChats" class="px-5 py-3 font-medium text-zinc-400 hover:text-white">
-      Chat Messages
-    </button>
+    <button id="tabSystem" class="px-5 py-3 font-medium border-b-2 border-indigo-600">System</button>
+    <button id="tabMyServers" class="px-5 py-3 font-medium text-zinc-400 hover:text-white">My Servers</button>
+    <button id="tabChats" class="px-5 py-3 font-medium text-zinc-400 hover:text-white">Chat Messages</button>
   </div>
 
   <!-- SYSTEM -->
   <div id="systemMessages" class="flex flex-col gap-4">
-    <p class="text-zinc-400">System messages will appear here.</p>
+    <p class="text-zinc-400">Loading system messages...</p>
   </div>
 
   <!-- MY SERVERS -->
-  <div id="myServersMessages" class="hidden">
-    <p class="text-zinc-400">Your server-related messages will appear here.</p>
+  <div id="myServersMessages" class="hidden flex flex-col gap-4">
+    <p class="text-zinc-400">Loading your servers...</p>
   </div>
 
   <!-- CHAT MESSAGES -->
@@ -55,9 +50,7 @@
     <!-- Header -->
     <div class="px-6 py-4 border-b border-zinc-700">
       <h2 class="text-xl font-semibold">Chat Messages</h2>
-      <p class="text-sm text-zinc-400">
-        Direct conversations with other OpsLink users.
-      </p>
+      <p class="text-sm text-zinc-400">Direct conversations with other OpsLink users.</p>
     </div>
 
     <!-- Layout -->
@@ -78,9 +71,7 @@
 
         <!-- Chats -->
         <div id="chatList" class="flex-1 overflow-y-auto">
-          <p class="p-4 text-sm text-zinc-400">
-            No chats open currently.
-          </p>
+          <p class="p-4 text-sm text-zinc-400">No chats open currently.</p>
         </div>
 
       </div>
@@ -92,13 +83,8 @@
           No chat selected
         </div>
 
-        <div
-          id="chatBody"
-          class="flex-1 p-6 overflow-y-auto flex flex-col gap-2 text-sm"
-        >
-          <p class="text-zinc-400 text-center mt-10">
-            Select a chat or search for a user to start a new conversation.
-          </p>
+        <div id="chatBody" class="flex-1 p-6 overflow-y-auto flex flex-col gap-2 text-sm">
+          <p class="text-zinc-400 text-center mt-10">Select a chat or search for a user to start a new conversation.</p>
         </div>
 
         <div class="p-4 border-t border-zinc-700 flex gap-2">
@@ -107,12 +93,7 @@
             class="flex-1 bg-zinc-800 rounded px-3 py-2 outline-none"
             placeholder="Type a message..."
           />
-          <button
-            id="sendBtn"
-            class="px-5 py-2 rounded bg-indigo-600 hover:bg-indigo-700"
-          >
-            Send
-          </button>
+          <button id="sendBtn" class="px-5 py-2 rounded bg-indigo-600 hover:bg-indigo-700">Send</button>
         </div>
 
       </div>
@@ -146,155 +127,174 @@ const token = localStorage.getItem('token');
 const user = JSON.parse(localStorage.getItem('user'));
 
 let activeChat = null;
+let socket;
+let lastStatuses = {};
+let chatData = []; // store current chats for list updates
 
 /* ---------- LOGIN ---------- */
-if (token && user) {
+function checkLogin() {
+  if (!token || !user) {
+    systemMessages.innerHTML = '<p class="text-zinc-400">You must be logged in to view system messages.</p>';
+    myServersMessages.innerHTML = '';
+    return false;
+  }
   loginBtn.textContent = 'Logout';
   loginBtn.href = '#';
-  loginBtn.onclick = () => {
-    localStorage.clear();
-    location.reload();
-  };
+  loginBtn.onclick = () => { localStorage.clear(); location.reload(); };
+  return true;
 }
 
 /* ---------- TAB HANDLING ---------- */
 function activate(tab) {
   [tabSystem, tabMyServers, tabChats].forEach(t => {
-    t.classList.remove('border-indigo-600');
-    t.classList.add('text-zinc-400');
+    t.classList.remove('border-indigo-600'); t.classList.add('text-zinc-400');
   });
-  tab.classList.add('border-indigo-600');
-  tab.classList.remove('text-zinc-400');
-
-  systemMessages.classList.add('hidden');
-  myServersMessages.classList.add('hidden');
-  chatMessages.classList.add('hidden');
+  tab.classList.add('border-indigo-600'); tab.classList.remove('text-zinc-400');
+  systemMessages.classList.add('hidden'); myServersMessages.classList.add('hidden'); chatMessages.classList.add('hidden');
 }
 
-tabSystem.onclick = () => {
-  activate(tabSystem);
-  systemMessages.classList.remove('hidden');
-};
+tabSystem.onclick = () => { activate(tabSystem); systemMessages.classList.remove('hidden'); fetchSystemMessages(); };
+tabMyServers.onclick = () => { activate(tabMyServers); myServersMessages.classList.remove('hidden'); fetchMyServers(); };
+tabChats.onclick = () => { activate(tabChats); chatMessages.classList.remove('hidden'); initChat(); };
 
-tabMyServers.onclick = () => {
-  activate(tabMyServers);
-  myServersMessages.classList.remove('hidden');
-};
+/* ---------- SYSTEM MESSAGES ---------- */
+async function fetchSystemMessages() {
+  try {
+    const res = await fetch(`${API}/api/servers`);
+    const servers = await res.json();
+    systemMessages.innerHTML = '';
+    const myServers = servers.filter(s => s.submitter?.toString() === user._id);
+    if (!myServers.length) systemMessages.innerHTML = '<p class="text-zinc-400">No system messages.</p>';
+    myServers.forEach(s => {
+      const div = document.createElement('div');
+      div.className = `p-4 rounded border ${s.status==='approved'?'border-green-500 bg-green-900/30':s.status==='denied'?'border-red-500 bg-red-900/30':'border-zinc-700 bg-zinc-900/50'}`;
+      let msg = s.status==='pending'?'Pending review.':s.status==='approved'?'Your server is approved and live.':`Denied: ${s.rejectionReason||'No reason provided.'}`;
+      if(lastStatuses[s._id] && lastStatuses[s._id]!==s.status){ alert(`Server "${s.name}" status changed: ${s.status.toUpperCase()}`);}
+      lastStatuses[s._id]=s.status;
+      div.innerHTML = `<h3 class="font-semibold text-lg">${s.name}</h3><p class="text-sm text-zinc-300">${msg}</p>`;
+      systemMessages.appendChild(div);
+    });
+  } catch(e){ systemMessages.innerHTML='<p class="text-red-500">Error loading system messages.</p>'; console.error(e); }
+}
 
-tabChats.onclick = () => {
-  activate(tabChats);
-  chatMessages.classList.remove('hidden');
+/* ---------- MY SERVERS ---------- */
+async function fetchMyServers() {
+  try {
+    if(!token){ myServersMessages.innerHTML='<p class="text-zinc-400">Please log in to see your servers.</p>'; return; }
+    const res = await fetch(`${API}/api/servers/mine`, { headers:{ Authorization:`Bearer ${token}`}});
+    const servers = await res.json();
+    myServersMessages.innerHTML='';
+    if(!servers.length){ myServersMessages.innerHTML='<p class="text-zinc-400">You have no servers submitted yet.</p>'; return; }
+    servers.forEach(s=>{
+      const div=document.createElement('div');
+      div.className=`p-4 rounded border ${s.status==='approved'?'border-green-500 bg-green-900/30':s.status==='denied'?'border-red-500 bg-red-900/30':'border-zinc-700 bg-zinc-900/50'}`;
+      div.innerHTML=`<h3 class="font-semibold text-lg">${s.name}</h3>
+                     <p class="text-sm text-zinc-300 mb-2">Status: ${s.status}</p>
+                     ${s.status==='approved'?`<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>`:''}`;
+      myServersMessages.appendChild(div);
+    });
+  } catch(e){ myServersMessages.innerHTML='<p class="text-red-500">Error loading your servers.</p>'; console.error(e); }
+}
+
+/* ---------- INIT CHAT + SOCKET ---------- */
+function initChat() {
+  if (!socket){
+    socket = io(API, { auth:{token} });
+    socket.on('connect',()=>console.log('Socket connected'));
+    socket.on('newMessage',({chatId,message})=>{
+      updateChatList(chatId,message);
+      if(chatId===activeChat)addMessageToBody(message);
+    });
+  }
   loadChats();
-};
+}
 
 /* ---------- LOAD CHATS ---------- */
 async function loadChats() {
-  chatList.innerHTML = '<p class="p-4 text-sm text-zinc-400">Loading chats...</p>';
+  const res = await fetch(`${API}/api/messages`,{ headers:{Authorization:`Bearer ${token}`}});
+  chatData = await res.json();
+  renderChatList();
+}
 
-  const res = await fetch(`${API}/api/messages`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const chats = await res.json();
-
-  if (!chats.length) {
-    chatList.innerHTML =
-      '<p class="p-4 text-sm text-zinc-400">No chats open currently.</p>';
-    return;
-  }
-
-  chatList.innerHTML = '';
-  chats.forEach(chat => {
-    const other = chat.participants.find(p => p._id !== user._id);
-    const div = document.createElement('div');
-    div.className = 'p-4 border-b border-zinc-800 hover:bg-zinc-800 cursor-pointer';
-    div.innerHTML = `
-      <div class="font-medium">${other.username}</div>
-      <div class="text-xs text-zinc-400 truncate">${chat.lastMessage || ''}</div>
-    `;
-    div.onclick = () => openChat(chat._id, other.username);
+/* ---------- RENDER CHAT LIST ---------- */
+function renderChatList() {
+  chatList.innerHTML='';
+  if(!chatData.length){ chatList.innerHTML='<p class="p-4 text-sm text-zinc-400">No chats open currently.</p>'; return; }
+  chatData.forEach(chat=>{
+    const other = chat.participants.find(p=>p._id!==user._id);
+    const div=document.createElement('div');
+    div.id = chat._id;
+    div.className='p-4 border-b border-zinc-800 hover:bg-zinc-800 cursor-pointer';
+    div.innerHTML=`<div class="font-medium">${other.username} ${other.role==='admin'?'[OPSLINK STAFF]':''}</div>
+                   <div class="text-xs text-zinc-400 truncate">${chat.lastMessage||''}</div>`;
+    div.onclick=()=>openChat(chat._id,other.username);
     chatList.appendChild(div);
   });
 }
 
+/* ---------- UPDATE CHAT LIST ON NEW MESSAGE ---------- */
+function updateChatList(chatId,message){
+  // update lastMessage and move to top
+  const chat = chatData.find(c=>c._id===chatId);
+  if(!chat) return;
+  chat.lastMessage = message.content;
+  chatData = [chat, ...chatData.filter(c=>c._id!==chatId)];
+  renderChatList();
+}
+
 /* ---------- OPEN CHAT ---------- */
-async function openChat(chatId, name) {
-  activeChat = chatId;
-  chatHeader.textContent = name;
-  chatBody.innerHTML = '';
+async function openChat(chatId,name){
+  activeChat=chatId; chatHeader.textContent=name; chatBody.innerHTML='';
+  socket.emit('joinChat',chatId);
+  const res=await fetch(`${API}/api/messages/${chatId}`,{headers:{Authorization:`Bearer ${token}`}});
+  const chat=await res.json();
+  if(!chat.messages.length) chatBody.innerHTML='<p class="text-zinc-400 text-center mt-10">No messages in this chat yet.</p>';
+  chat.messages.forEach(addMessageToBody);
+  chatBody.scrollTop=chatBody.scrollHeight;
+}
 
-  const res = await fetch(`${API}/api/messages/${chatId}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const chat = await res.json();
-
-  chat.messages.forEach(m => {
-    const div = document.createElement('div');
-    div.className = `max-w-md px-3 py-2 rounded ${
-      m.sender._id === user._id
-        ? 'bg-indigo-600 self-end'
-        : 'bg-zinc-800 self-start'
-    }`;
-    div.textContent = m.content;
-    chatBody.appendChild(div);
-  });
-
-  chatBody.scrollTop = chatBody.scrollHeight;
+/* ---------- ADD MESSAGE ---------- */
+function addMessageToBody(m){
+  const div=document.createElement('div');
+  div.className=`max-w-md px-3 py-2 rounded ${m.sender._id===user._id?'bg-indigo-600 self-end':'bg-zinc-800 self-start'}`;
+  div.innerHTML=m.sender.role==='admin'?`<span class="font-medium">${m.sender.username}</span> <span class="text-indigo-400 text-xs">[OPSLINK STAFF]</span><br>${m.content}`:m.content;
+  chatBody.appendChild(div);
+  chatBody.scrollTop=chatBody.scrollHeight;
 }
 
 /* ---------- SEND MESSAGE ---------- */
-document.getElementById('sendBtn').onclick = async () => {
-  const input = document.getElementById('chatInput');
-  if (!activeChat || !input.value.trim()) return;
-
-  await fetch(`${API}/api/messages/${activeChat}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({ content: input.value })
-  });
-
-  input.value = '';
-  openChat(activeChat, chatHeader.textContent);
+document.getElementById('sendBtn').onclick=()=>{
+  const input=document.getElementById('chatInput');
+  if(!activeChat||!input.value.trim())return;
+  const content = input.value.trim();
+  socket.emit('sendMessage',{chatId:activeChat,content});
+  input.value='';
 };
 
 /* ---------- SEARCH USERS ---------- */
-document.getElementById('userSearch').oninput = async e => {
-  const q = e.target.value.trim();
-  const results = document.getElementById('searchResults');
-  results.innerHTML = '';
-  if (!q) return;
-
-  const res = await fetch(`${API}/api/users/search?q=${q}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const users = await res.json();
-
-  users.forEach(u => {
-    const d = document.createElement('div');
-    d.className = 'text-sm p-2 hover:bg-zinc-800 cursor-pointer';
-    d.textContent = u.username;
-    d.onclick = async () => {
-      const r = await fetch(`${API}/api/messages/start`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ username: u.username })
+document.getElementById('userSearch').oninput=async e=>{
+  const q=e.target.value.trim(); const results=document.getElementById('searchResults'); results.innerHTML='';
+  if(!q) return;
+  const res=await fetch(`${API}/api/users/search?q=${q}`,{headers:{Authorization:`Bearer ${token}`}});
+  const users=await res.json();
+  if(!users.length){ results.innerHTML='<p class="text-sm text-zinc-400 p-2">No user found</p>'; return; }
+  users.forEach(u=>{
+    const d=document.createElement('div'); d.className='text-sm p-2 hover:bg-zinc-800 cursor-pointer';
+    d.innerHTML=`${u.username} ${u.role==='admin'?'[OPSLINK STAFF]':''}`;
+    d.onclick=async ()=>{
+      const r=await fetch(`${API}/api/messages/start`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({username:u.username})
       });
-      const data = await r.json();
-      results.innerHTML = '';
-      loadChats();
-      openChat(data.chatId, u.username);
+      const data=await r.json(); results.innerHTML=''; loadChats(); openChat(data.chatId,u.username);
     };
     results.appendChild(d);
   });
 };
 
-/* INIT */
-tabSystem.click();
+/* ---------- INIT ---------- */
+if(checkLogin()){ tabSystem.click(); setInterval(()=>{if(!systemMessages.classList.contains('hidden'))fetchSystemMessages(); if(!myServersMessages.classList.contains('hidden'))fetchMyServers();},8000);}else tabSystem.click();
 </script>
 
 </body>
