@@ -1,1 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Server Details - OpsLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
+
+<!-- NAVBAR -->
+<nav class="flex items-center justify-between px-10 py-6 border-b border-zinc-800">
+  <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
+  <div class="flex items-center gap-8 text-sm" id="navLinks">
+    <a href="index.html" class="hover:opacity-80">Home</a>
+    <a href="browse.html" class="hover:opacity-80">Browse</a>
+    <a href="submit.html" class="hover:opacity-80">Submit</a>
+    <a href="messages.html" class="hover:opacity-80">Messages</a>
+    <a href="support.html" class="hover:opacity-80">Support</a>
+    <a href="login.html" id="loginBtn"
+      class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10 transition">
+      Login
+    </a>
+    <a href="#" id="adminBtn"
+      class="hidden rounded-full bg-gradient-to-r from-red-600 to-red-500 px-4 py-2 hover:brightness-110 transition">
+      Admin Dashboard
+    </a>
+  </div>
+</nav>
+
+<!-- CONTENT -->
+<section class="px-10 py-12 max-w-6xl mx-auto">
+
+  <!-- HEADER -->
+  <div class="flex flex-col md:flex-row gap-8 items-start mb-10">
+    <div class="w-32 h-32 rounded-2xl border border-zinc-700 bg-zinc-950 flex items-center justify-center overflow-hidden">
+      <img id="serverLogo" class="max-w-full max-h-full object-contain"/>
+    </div>
+
+    <div class="flex-1">
+      <h1 id="serverName" class="text-4xl font-bold mb-2"></h1>
+      <p id="serverOwner" class="text-sm text-zinc-400 mb-2"></p>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div id="averageStars" class="text-yellow-400 text-lg"></div>
+        <span id="averageText" class="text-sm text-zinc-400"></span>
+      </div>
+
+      <div id="serverTags" class="flex flex-wrap gap-2 mb-4"></div>
+
+      <div class="flex flex-wrap gap-4 items-center">
+        <span id="serverMembers" class="text-sm text-zinc-400"></span>
+
+        <a id="joinBtn" target="_blank"
+          class="inline-flex items-center justify-center px-8 py-3 rounded-xl font-semibold
+                 bg-gradient-to-r from-indigo-500 to-purple-600 hover:brightness-110 hover:scale-105 transition shadow-lg">
+          🚀 Join Server
+        </a>
+
+        <button id="editBtn"
+          class="hidden bg-indigo-600 px-5 py-2 rounded-xl hover:bg-indigo-700 transition">
+          Request Edit
+        </button>
+
+        <button id="reportBtn"
+          class="bg-red-600 px-5 py-2 rounded-xl hover:bg-red-700 transition">
+          Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESCRIPTION -->
+  <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-10">
+    <h2 class="text-xl font-semibold mb-3">About this server</h2>
+    <p id="serverDescription" class="text-zinc-300 leading-relaxed"></p>
+  </div>
+
+  <!-- REVIEWS -->
+  <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+    <h2 class="text-xl font-semibold mb-4">Reviews</h2>
+
+    <div id="reviewsList" class="flex flex-col gap-4 mb-8"></div>
+
+    <!-- ADD REVIEW -->
+    <form id="reviewForm" class="flex flex-col gap-4">
+      <div>
+        <label class="text-sm text-zinc-400 mb-1 block">Your Rating</label>
+        <div id="ratingStars" class="flex gap-2 text-2xl cursor-pointer select-none">
+          <span data-value="1">☆</span>
+          <span data-value="2">☆</span>
+          <span data-value="3">☆</span>
+          <span data-value="4">☆</span>
+          <span data-value="5">☆</span>
+        </div>
+      </div>
+
+      <textarea name="review"
+        placeholder="Write your review..."
+        class="p-3 rounded-xl bg-zinc-800 border border-zinc-700 focus:border-white/20 outline-none"
+        required></textarea>
+
+      <button type="submit"
+        class="self-start bg-white text-black px-6 py-2 rounded-xl hover:bg-zinc-200 transition">
+        Submit Review
+      </button>
+    </form>
+  </div>
+
+</section>
+
+<footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
+  <span>© 2026 OpsLink Servers</span>
+  <span>Not affiliated with Discord</span>
+</footer>
+
+<script>
+const API_URL = 'https://opslinkservers-backend.onrender.com';
+const params = new URLSearchParams(location.search);
+const serverId = params.get('guildid');
+
+const token = localStorage.getItem('token');
+const userStr = localStorage.getItem('user');
+const currentUser = userStr ? JSON.parse(userStr) : null;
+
+let selectedRating = 0;
+
+/* AUTH NAV */
+const loginBtn = document.getElementById('loginBtn');
+const adminBtn = document.getElementById('adminBtn');
+const navLinks = document.getElementById('navLinks');
+
+if (currentUser) {
+  loginBtn.textContent = 'Logout';
+  loginBtn.href = '#';
+  loginBtn.onclick = () => { localStorage.clear(); location.reload(); };
+
+  const welcome = document.createElement('span');
+  welcome.textContent = `Welcome, ${currentUser.discordUsername}`;
+  welcome.className = 'text-zinc-300 text-sm';
+  navLinks.insertBefore(welcome, loginBtn);
+
+  if (currentUser.role === 'admin') {
+    adminBtn.classList.remove('hidden');
+    adminBtn.href = 'dashboard.html';
+  }
+}
+
+/* STAR SELECT */
+document.querySelectorAll('#ratingStars span').forEach(star => {
+  star.onclick = () => {
+    selectedRating = Number(star.dataset.value);
+    document.querySelectorAll('#ratingStars span').forEach(s => {
+      s.textContent = Number(s.dataset.value) <= selectedRating ? '★' : '☆';
+    });
+  };
+});
+
+/* LOAD SERVER */
+async function loadServer() {
+  const res = await fetch(`${API_URL}/api/servers/${serverId}`);
+  const s = await res.json();
+
+  document.getElementById('serverLogo').src = s.logo;
+  document.getElementById('serverName').textContent = s.name;
+  document.getElementById('serverDescription').textContent = s.description;
+  document.getElementById('serverMembers').textContent =
+    `${s.members ?? 'N/A'} members`;
+
+  const owner = s.submitterDiscord;
+  document.getElementById('serverOwner').textContent =
+    owner
+      ? `Server Owner: ${owner.username}${owner.tag ? '#' + owner.tag : ''}`
+      : 'Server Owner: Unknown';
+
+  const invite = s.invite.startsWith('http')
+    ? s.invite
+    : 'https://discord.gg/' + s.invite.replace(/^discord\.gg\/?/i, '');
+  document.getElementById('joinBtn').href = invite;
+
+  document.getElementById('serverTags').innerHTML =
+    (s.tags || []).map(t =>
+      `<span class="px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 border border-zinc-700">#${t}</span>`
+    ).join('');
+
+  /* REVIEWS */
+  const reviews = s.reviews || [];
+  const reviewsList = document.getElementById('reviewsList');
+  reviewsList.innerHTML = '';
+
+  if (!reviews.length) {
+    reviewsList.innerHTML =
+      '<p class="text-sm text-zinc-400">No reviews yet.</p>';
+    document.getElementById('averageStars').textContent = '';
+    document.getElementById('averageText').textContent = '';
+  } else {
+    let total = 0;
+    reviews.forEach(r => {
+      total += r.rating;
+      reviewsList.innerHTML += `
+        <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
+          <div class="flex justify-between mb-1">
+            <span class="font-semibold text-sm">${r.user}</span>
+            <span class="text-yellow-400 text-sm">
+              ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
+            </span>
+          </div>
+          <p class="text-sm text-zinc-300">${r.text}</p>
+        </div>`;
+    });
+
+    const avg = (total / reviews.length).toFixed(1);
+    document.getElementById('averageStars').textContent =
+      '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
+    document.getElementById('averageText').textContent =
+      `${avg} / 5 (${reviews.length} reviews)`;
+  }
+
+  if (currentUser && owner && currentUser.discordUserID === owner.userID) {
+    document.getElementById('editBtn').classList.remove('hidden');
+  }
+}
+
+/* SUBMIT REVIEW */
+document.getElementById('reviewForm').onsubmit = async e => {
+  e.preventDefault();
+  if (!token) return alert('Login required.');
+  if (!selectedRating) return alert('Select a rating.');
+
+  const text = e.target.review.value.trim();
+  if (!text) return;
+
+  await fetch(`${API_URL}/api/servers/${serverId}/reviews`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ rating: selectedRating, text })
+  });
+
+  selectedRating = 0;
+  document.querySelectorAll('#ratingStars span').forEach(s => s.textContent = '☆');
+  e.target.reset();
+  loadServer();
+};
+
+/* REPORT */
+document.getElementById('reportBtn').onclick = async () => {
+  if (!token) return alert('Login required.');
+  const reason = prompt('Why are you reporting this server?');
+  if (!reason) return;
+
+  await fetch(`${API_URL}/api/servers/${serverId}/report`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ reason })
+  });
+
+  alert('Server reported.');
+};
+
+loadServer();
+</script>
+
+</body>
+</html>
 
