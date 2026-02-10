@@ -226,9 +226,12 @@ function renderServers() {
         </div>
       </div>
     `;
-    card.onclick = e => { if(e.target.tagName !== 'A') openServerModal(s._id); };
-    grid.appendChild(card);
-  });
+card.onclick = e => {
+  if (e.target.tagName !== 'A') {
+    window.location.href = `server.html?guildid=${s._id}`;
+  }
+};
+
 }
 
 // --- OPEN SERVER MODAL ---
