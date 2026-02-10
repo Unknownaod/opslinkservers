@@ -217,11 +217,13 @@ async function loadServer() {
       `${avg} / 5 (${reviews.length} reviews)`;
   }
 
-  /* --- SHOW EDIT BUTTON IF OWNER --- */
-  if (currentUser && owner && currentUser.discordUserID === owner.userID) {
+/* --- SHOW EDIT BUTTON IF OWNER --- */
+if (currentUser && owner && owner.userID) {
+  if (currentUser.discordUserID === owner.userID) {
     document.getElementById('editBtn').classList.remove('hidden');
   }
 }
+
 
 /* --- SUBMIT REVIEW --- */
 document.getElementById('reviewForm').onsubmit = async e => {
