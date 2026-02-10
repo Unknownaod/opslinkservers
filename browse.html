@@ -232,6 +232,11 @@ card.onclick = e => {
   }
 };
 
+grid.appendChild(card); // <-- you were missing this
+
+}); 
+} 
+
 // --- OPEN SERVER MODAL ---
 async function openServerModal(id) {
   currentServerId = id;
