@@ -168,10 +168,10 @@ async function loadServer() {
   document.getElementById('serverMembers').textContent =
     `${s.members ?? 'N/A'} members`;
 
-  const owner = s.submitterDiscord;
+  const owner = s.submitterDiscord; // owner info in submitterDiscord
   document.getElementById('serverOwner').textContent =
-    owner
-      ? `Server Owner: ${owner.discordUsername}${owner.tag ? '#' + owner.tag : ''}`
+    owner && owner.username
+      ? `Server Owner: ${owner.username}${owner.tag ? '#' + owner.tag : ''}`
       : 'Server Owner: Unknown';
 
   const invite = s.invite.startsWith('http')
