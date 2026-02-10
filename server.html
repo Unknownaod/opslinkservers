@@ -171,8 +171,8 @@ async function loadServer() {
   const owner = s.submitterDiscord; // owner info in submitterDiscord
   document.getElementById('serverOwner').textContent =
     owner && owner.username
-      ? `Server Owner: ${owner.username}${owner.tag ? '#' + owner.tag : ''}`
-      : 'Server Owner: Unknown';
+      ? `Server Owner/Represenitive: ${owner.username}${owner.tag ? '#' + owner.tag : ''}`
+      : 'Server Owner/Represenitive: Unknown';
 
   const invite = s.invite.startsWith('http')
     ? s.invite
