@@ -65,6 +65,12 @@
       return urlParams.get(param);
     }
 
+    function updateURLWithUserID(id) {
+      const url = new URL(window.location);
+      url.searchParams.set('user', id);
+      window.history.replaceState({}, '', url);
+    }
+
     // Check login
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
@@ -77,8 +83,15 @@
     loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
 
     // Determine which profile to fetch
-    const userId = getQueryParam('user'); // ?user=USERID
-    const profileEndpoint = userId ? `${API_URL}/profile/${userId}` : `${API_URL}/profile`;
+    let userId = getQueryParam('user'); // ?user=USERID
+
+    // If no ?user= and logged in, use own ID and update URL
+    if (!userId && loggedInUser) {
+      userId = loggedInUser._id;
+      updateURLWithUserID(userId);
+    }
+
+    const profileEndpoint = `${API_URL}/profile${userId ? `/${userId}` : ''}`;
 
     // Store fetched user ID for shareable link
     let currentUserId = null;
