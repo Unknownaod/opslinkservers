@@ -197,34 +197,45 @@ if (!reviews.length) {
 } else {
   let total = 0;
 
-  reviews.forEach(r => {
-    total += r.rating;
+  // Fetch all user data for reviewers
+  const userPromises = reviews.map(r =>
+    fetch(`${API_URL}/api/users/${r.userID}`)
+      .then(res => res.json())
+      .catch(() => null)
+  );
 
-    // Check if reviewer is admin
-    const isAdmin = r.role === 'admin';
+  Promise.all(userPromises).then(users => {
+    reviews.forEach((r, i) => {
+      total += r.rating;
 
-    reviewsList.innerHTML += `
-      <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
-        <div class="flex justify-between mb-1">
-          <div class="flex items-center gap-2">
-            <span class="font-semibold text-sm">${r.discordUsername}</span>
-            ${isAdmin ? `<img src="assets/staff.png" alt="Staff" title="Staff" class="w-4 h-4"/>` : ''}
+      const user = users[i];
+      const isAdmin = user?.role === 'admin';
+      const username = user?.discordUsername || r.discordUsername;
+
+      reviewsList.innerHTML += `
+        <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
+          <div class="flex justify-between mb-1">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-sm">${username}</span>
+              ${isAdmin ? `<img src="assets/staff.png" alt="Staff" title="Staff" class="w-4 h-4"/>` : ''}
+            </div>
+            <span class="text-yellow-400 text-sm">
+              ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
+            </span>
           </div>
-          <span class="text-yellow-400 text-sm">
-            ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
-          </span>
+          <p class="text-sm text-zinc-300">${r.comment}</p>
         </div>
-        <p class="text-sm text-zinc-300">${r.comment}</p>
-      </div>
-    `;
-  });
+      `;
+    });
 
-  const avg = (total / reviews.length).toFixed(1);
-  document.getElementById('averageStars').textContent =
-    '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
-  document.getElementById('averageText').textContent =
-    `${avg} / 5 (${reviews.length} reviews)`;
+    const avg = (total / reviews.length).toFixed(1);
+    document.getElementById('averageStars').textContent =
+      '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
+    document.getElementById('averageText').textContent =
+      `${avg} / 5 (${reviews.length} reviews)`;
+  });
 }
+
 
 
 /* --- SHOW EDIT BUTTON IF OWNER --- */
