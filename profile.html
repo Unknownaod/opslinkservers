@@ -33,6 +33,7 @@
         <p id="profileEmail" class="text-zinc-400"></p>
         <p id="profileVerified" class="text-zinc-400"></p>
         <p id="profileID" class="text-zinc-400 break-all"></p> <!-- User ID -->
+        <button id="copyLinkBtn" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm">Copy Profile Link</button>
       </div>
 
       <!-- Servers Owned -->
@@ -56,6 +57,7 @@
     const profileContainer = document.getElementById('profileContainer');
     const serversContainer = document.getElementById('serversContainer');
     const loginBtn = document.getElementById('loginBtn');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
 
     // Helpers
     function getQueryParam(param) {
@@ -78,6 +80,9 @@
     const userId = getQueryParam('user'); // ?user=USERID
     const profileEndpoint = userId ? `${API_URL}/profile/${userId}` : `${API_URL}/profile`;
 
+    // Store fetched user ID for shareable link
+    let currentUserId = null;
+
     // Fetch profile
     fetch(profileEndpoint, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
       .then(res => res.json())
@@ -88,6 +93,7 @@
           return;
         }
 
+        currentUserId = data._id; // save for copy link
         document.getElementById('profileUsername').textContent = data.discordUsername;
         document.getElementById('profileTag').textContent = data.discordTag ? `#${data.discordTag}` : '';
         document.getElementById('profileRole').innerHTML = `Role: <span class="font-semibold ${data.role === 'admin' ? 'text-red-500' : 'text-blue-400'}">${data.role}</span>`;
@@ -132,6 +138,20 @@
         console.error(err);
         serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
       });
+
+    // Copy profile link button
+    copyLinkBtn.onclick = () => {
+      if (!currentUserId) return;
+
+      const shareLink = `${window.location.origin}/profile.html?user=${currentUserId}`;
+      navigator.clipboard.writeText(shareLink).then(() => {
+        copyLinkBtn.textContent = 'Link Copied!';
+        setTimeout(() => { copyLinkBtn.textContent = 'Copy Profile Link'; }, 2000);
+      }).catch(err => {
+        console.error(err);
+        copyLinkBtn.textContent = 'Failed to copy';
+      });
+    };
   </script>
 </body>
 </html>
