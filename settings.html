@@ -2,250 +2,239 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpsLink Settings</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
+<body class="bg-zinc-900 text-white min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-zinc-800 p-6 flex flex-col gap-6 hidden md:flex">
+    <h2 class="text-2xl font-bold mb-4">Settings</h2>
+    <nav class="flex flex-col gap-2 text-zinc-300">
+      <a href="#profile" class="hover:text-white px-2 py-1 rounded hover:bg-zinc-700">Profile</a>
+      <a href="#my-servers" class="hover:text-white px-2 py-1 rounded hover:bg-zinc-700">My Servers</a>
+      <a href="#server-management" class="hover:text-white px-2 py-1 rounded hover:bg-zinc-700">Server Management</a>
+      <a href="#role-settings" class="hover:text-white px-2 py-1 rounded hover:bg-zinc-700">Role Settings</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-8 space-y-12">
     <header>
-        <h1>OpsLink Settings</h1>
-        <nav>
-            <a href="#profile">Profile</a>
-            <a href="#my-servers">My Servers</a>
-            <a href="#server-management">Server Management</a>
-            <a href="#role-settings">Role Settings</a>
-        </nav>
+      <h1 class="text-4xl font-bold mb-2">OpsLink Settings</h1>
+      <p class="text-zinc-400">Manage your profile, servers, and roles from one dashboard.</p>
     </header>
 
-    <!-- Profile Section -->
-    <section id="profile">
-        <h2>Your Profile</h2>
-        <div id="profile-info">
-            <p>Email: <span id="user-email"></span></p>
-            <p>Discord Username: <span id="user-discord"></span></p>
-            <button id="change-email-btn">Change Email</button>
+    <!-- Profile Card -->
+    <section id="profile" class="bg-zinc-800 rounded-lg p-6 shadow-lg space-y-4">
+      <h2 class="text-2xl font-semibold">Your Profile</h2>
+      <div class="space-y-2">
+        <p>Email: <span id="user-email" class="font-medium"></span></p>
+        <p>Discord Username: <span id="user-discord" class="font-medium"></span></p>
+        <button class="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition" id="change-email-btn">
+          Change Email
+        </button>
+      </div>
+    </section>
+
+    <!-- My Servers Card -->
+    <section id="my-servers" class="bg-zinc-800 rounded-lg p-6 shadow-lg space-y-4">
+      <h2 class="text-2xl font-semibold">Your Submitted Servers</h2>
+      <div id="server-list" class="space-y-2">
+        <!-- Servers injected here -->
+      </div>
+      <button id="submit-server-btn" class="bg-green-600 px-4 py-2 rounded hover:bg-green-700 transition">
+        Submit a Server
+      </button>
+    </section>
+
+    <!-- Server Management Card -->
+    <section id="server-management" class="bg-zinc-800 rounded-lg p-6 shadow-lg space-y-4">
+      <h2 class="text-2xl font-semibold">Manage Server</h2>
+      <div class="flex flex-col md:flex-row gap-4 md:items-end">
+        <div class="flex-1">
+          <label for="server-id" class="block mb-1 text-zinc-300">Server ID:</label>
+          <input type="text" id="server-id" placeholder="Enter Server ID"
+            class="w-full px-3 py-2 rounded bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
         </div>
+        <button id="fetch-server-btn"
+          class="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition">Fetch Server</button>
+      </div>
+      <div id="server-management-actions" class="hidden mt-4 flex flex-wrap gap-2">
+        <button id="approve-server-btn"
+          class="bg-green-600 px-4 py-2 rounded hover:bg-green-700 transition">Approve Server</button>
+        <button id="deny-server-btn" class="bg-red-600 px-4 py-2 rounded hover:bg-red-700 transition">Deny Server</button>
+        <button id="edit-server-btn" class="bg-yellow-600 px-4 py-2 rounded hover:bg-yellow-700 transition">Request Edit</button>
+        <button id="delete-server-btn" class="bg-zinc-500 px-4 py-2 rounded hover:bg-zinc-600 transition">Delete Server</button>
+      </div>
     </section>
 
-    <!-- My Servers Section -->
-    <section id="my-servers">
-        <h2>Your Submitted Servers</h2>
-        <div id="server-list">
-            <!-- List of servers will appear here -->
+    <!-- Role Settings Card -->
+    <section id="role-settings" class="bg-zinc-800 rounded-lg p-6 shadow-lg space-y-4">
+      <h2 class="text-2xl font-semibold">Role Settings</h2>
+      <div class="flex flex-col md:flex-row gap-4 md:items-end">
+        <div class="flex-1">
+          <label for="role-username" class="block mb-1 text-zinc-300">Discord Username:</label>
+          <input type="text" id="role-username" placeholder="Enter Discord Username"
+            class="w-full px-3 py-2 rounded bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
         </div>
-        <button id="submit-server-btn">Submit a Server</button>
+        <button id="get-role-btn" class="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition">Get Role</button>
+      </div>
+      <div id="user-role" class="text-green-400 font-medium mt-2"></div>
     </section>
+  </main>
 
-    <!-- Server Management Section -->
-    <section id="server-management">
-        <h2>Manage Server</h2>
-        <label for="server-id">Server ID:</label>
-        <input type="text" id="server-id" placeholder="Enter Server ID to manage">
-        <button id="fetch-server-btn">Fetch Server</button>
+  <!-- Scripts -->
+  <script>
+    const apiBaseUrl = 'https://yourapi.com/api';
 
-        <div id="server-management-actions" style="display: none;">
-            <h3>Server Actions</h3>
-            <button id="approve-server-btn">Approve Server</button>
-            <button id="deny-server-btn">Deny Server</button>
-            <button id="edit-server-btn">Request Edit</button>
-            <button id="delete-server-btn">Delete Server</button>
-        </div>
-    </section>
+    async function getUserProfile() {
+      try {
+        const res = await fetch(`${apiBaseUrl}/profile`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+        const data = await res.json();
+        document.getElementById('user-email').textContent = data.email;
+        document.getElementById('user-discord').textContent = data.discordUsername;
+      } catch (err) {
+        console.error('Failed to fetch user profile:', err);
+      }
+    }
 
-    <!-- Role Settings Section -->
-    <section id="role-settings">
-        <h2>Role Settings</h2>
-        <label for="discord-username">Discord Username:</label>
-        <input type="text" id="role-username" placeholder="Enter Discord Username">
-        <button id="get-role-btn">Get Role</button>
-        <div id="user-role"></div>
-    </section>
+    async function getUserServers() {
+      try {
+        const res = await fetch(`${apiBaseUrl}/servers/mine`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+        const servers = await res.json();
+        const serverList = document.getElementById('server-list');
+        serverList.innerHTML = '';
+        servers.forEach(server => {
+          const div = document.createElement('div');
+          div.className = 'bg-zinc-700 rounded px-3 py-2';
+          div.innerHTML = `<strong>${server.name}</strong> - Invite: <a class="text-indigo-400 hover:underline" href="${server.invite}" target="_blank">${server.invite}</a>`;
+          serverList.appendChild(div);
+        });
+      } catch (err) {
+        console.error('Failed to fetch servers:', err);
+      }
+    }
 
-    <script>
-        const apiBaseUrl = 'https://yourapi.com/api'; // Replace with your actual API base URL
+    async function submitServer() {
+      const serverData = {
+        name: 'New Server',
+        invite: 'https://discord.gg/example',
+        description: 'A great server',
+        language: 'English',
+        members: 100,
+        type: 'community',
+        rules: 'Be respectful',
+        website: 'https://example.com',
+        logo: 'https://example.com/logo.png',
+        nsfw: false,
+        tags: ['gaming', 'discord'],
+        discordServerId: '1234567890'
+      };
+      try {
+        const res = await fetch(`${apiBaseUrl}/servers`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          },
+          body: JSON.stringify(serverData)
+        });
+        const data = await res.json();
+        if (res.ok) alert('Server submitted successfully!');
+        else alert(data.error || 'Failed to submit server.');
+      } catch (err) {
+        console.error('Failed to submit server:', err);
+      }
+    }
 
-        // Fetch user profile data
-        async function getUserProfile() {
-            try {
-                const response = await fetch(`${apiBaseUrl}/profile`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Assuming the token is stored in local storage
-                    }
-                });
-                const data = await response.json();
-                document.getElementById('user-email').textContent = data.email;
-                document.getElementById('user-discord').textContent = data.discordUsername;
-            } catch (err) {
-                console.error('Failed to fetch user profile:', err);
-            }
-        }
+    async function fetchServer() {
+      const serverId = document.getElementById('server-id').value;
+      if (!serverId) return alert('Enter a valid Server ID.');
+      try {
+        const res = await fetch(`${apiBaseUrl}/servers/${serverId}`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+        const server = await res.json();
+        if (res.ok) document.getElementById('server-management-actions').classList.remove('hidden');
+        else alert(server.error || 'Server not found.');
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
-        // Fetch servers submitted by user
-        async function getUserServers() {
-            try {
-                const response = await fetch(`${apiBaseUrl}/servers/mine`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    }
-                });
-                const servers = await response.json();
-                const serverListElement = document.getElementById('server-list');
-                serverListElement.innerHTML = '';
-                servers.forEach(server => {
-                    const serverDiv = document.createElement('div');
-                    serverDiv.innerHTML = `<strong>${server.name}</strong><br>Invite: ${server.invite}`;
-                    serverListElement.appendChild(serverDiv);
-                });
-            } catch (err) {
-                console.error('Failed to fetch your servers:', err);
-            }
-        }
+    async function approveServer() {
+      const serverId = document.getElementById('server-id').value;
+      if (!serverId) return alert('Enter Server ID.');
+      try {
+        const res = await fetch(`${apiBaseUrl}/servers/${serverId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          },
+          body: JSON.stringify({ status: 'approved' })
+        });
+        const data = await res.json();
+        if (res.ok) alert('Server approved!');
+        else alert(data.error || 'Failed to approve.');
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
-        // Submit a new server
-        async function submitServer() {
-            const serverData = {
-                name: 'New Server', // You can replace this with form data
-                invite: 'https://discord.gg/example',
-                description: 'A great server',
-                language: 'English',
-                members: 100,
-                type: 'community',
-                rules: 'Be respectful',
-                website: 'https://example.com',
-                logo: 'https://example.com/logo.png',
-                nsfw: false,
-                tags: ['gaming', 'discord'],
-                discordServerId: '1234567890'
-            };
-            
-            try {
-                const response = await fetch(`${apiBaseUrl}/servers`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    },
-                    body: JSON.stringify(serverData)
-                });
+    async function denyServer() {
+      const serverId = document.getElementById('server-id').value;
+      const reason = prompt('Enter rejection reason');
+      if (!serverId || !reason) return alert('Provide valid server ID and reason.');
+      try {
+        const res = await fetch(`${apiBaseUrl}/servers/${serverId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          },
+          body: JSON.stringify({ status: 'denied', rejectionReason: reason })
+        });
+        const data = await res.json();
+        if (res.ok) alert('Server denied!');
+        else alert(data.error || 'Failed to deny.');
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
-                const data = await response.json();
-                if (response.ok) {
-                    alert('Server submitted successfully!');
-                } else {
-                    alert(data.error || 'Server submission failed.');
-                }
-            } catch (err) {
-                console.error('Failed to submit server:', err);
-            }
-        }
+    async function getUserRole() {
+      const username = document.getElementById('role-username').value;
+      if (!username) return alert('Enter Discord username.');
+      try {
+        const res = await fetch(`${apiBaseUrl}/role/${username}`);
+        const data = await res.json();
+        if (res.ok) document.getElementById('user-role').textContent = `Role: ${data.role}`;
+        else alert(data.error || 'Failed to fetch role.');
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
-        // Fetch server by ID for management
-        async function fetchServer() {
-            const serverId = document.getElementById('server-id').value;
-            if (!serverId) return alert('Please enter a valid server ID.');
+    // Event Listeners
+    document.getElementById('submit-server-btn').addEventListener('click', submitServer);
+    document.getElementById('fetch-server-btn').addEventListener('click', fetchServer);
+    document.getElementById('approve-server-btn').addEventListener('click', approveServer);
+    document.getElementById('deny-server-btn').addEventListener('click', denyServer);
+    document.getElementById('get-role-btn').addEventListener('click', getUserRole);
 
-            try {
-                const response = await fetch(`${apiBaseUrl}/servers/${serverId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    }
-                });
-                const server = await response.json();
-                if (response.ok) {
-                    document.getElementById('server-management-actions').style.display = 'block';
-                    // You can now show server details and provide actions for approving/denying etc.
-                } else {
-                    alert(server.error || 'Server not found.');
-                }
-            } catch (err) {
-                console.error('Failed to fetch server:', err);
-            }
-        }
+    // Initial load
+    getUserProfile();
+    getUserServers();
+  </script>
 
-        // Approve server
-        async function approveServer() {
-            const serverId = document.getElementById('server-id').value;
-            if (!serverId) return alert('Please enter a valid server ID.');
-
-            try {
-                const response = await fetch(`${apiBaseUrl}/servers/${serverId}/status`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    },
-                    body: JSON.stringify({ status: 'approved' })
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    alert('Server approved!');
-                } else {
-                    alert(data.error || 'Failed to approve server.');
-                }
-            } catch (err) {
-                console.error('Failed to approve server:', err);
-            }
-        }
-
-        // Deny server
-        async function denyServer() {
-            const serverId = document.getElementById('server-id').value;
-            const rejectionReason = prompt('Enter rejection reason');
-            if (!serverId || !rejectionReason) return alert('Please provide a valid server ID and reason.');
-
-            try {
-                const response = await fetch(`${apiBaseUrl}/servers/${serverId}/status`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    },
-                    body: JSON.stringify({ status: 'denied', rejectionReason })
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    alert('Server denied!');
-                } else {
-                    alert(data.error || 'Failed to deny server.');
-                }
-            } catch (err) {
-                console.error('Failed to deny server:', err);
-            }
-        }
-
-        // Get user role by Discord username
-        async function getUserRole() {
-            const discordUsername = document.getElementById('role-username').value;
-            if (!discordUsername) return alert('Please enter a valid Discord username.');
-
-            try {
-                const response = await fetch(`${apiBaseUrl}/role/${discordUsername}`);
-                const data = await response.json();
-                if (response.ok) {
-                    document.getElementById('user-role').textContent = `Role: ${data.role}`;
-                } else {
-                    alert(data.error || 'Failed to fetch role.');
-                }
-            } catch (err) {
-                console.error('Failed to get user role:', err);
-            }
-        }
-
-        // Event listeners
-        document.getElementById('submit-server-btn').addEventListener('click', submitServer);
-        document.getElementById('fetch-server-btn').addEventListener('click', fetchServer);
-        document.getElementById('approve-server-btn').addEventListener('click', approveServer);
-        document.getElementById('deny-server-btn').addEventListener('click', denyServer);
-        document.getElementById('get-role-btn').addEventListener('click', getUserRole);
-
-        // Initial data loading
-        getUserProfile();
-        getUserServers();
-    </script>
 </body>
-
 </html>
