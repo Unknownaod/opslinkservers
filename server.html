@@ -197,26 +197,38 @@ if (!reviews.length) {
 } else {
   let total = 0;
 
-  // Fetch all user data for reviewers
-  const userPromises = reviews.map(r =>
-    fetch(`${API_URL}/api/users/${r.userID}`)
-      .then(res => res.json())
-      .catch(() => null)
-  );
+  // Use Promise.all to fetch all user info for reviews
+  const fetchReviewsWithRoles = async () => {
+    const enhancedReviews = await Promise.all(
+      reviews.map(async r => {
+        total += r.rating;
 
-  Promise.all(userPromises).then(users => {
-    reviews.forEach((r, i) => {
-      total += r.rating;
+        try {
+          // Fetch user info from Users collection
+          const res = await fetch(`${API_URL}/api/users/${r.userID}`);
+          if (!res.ok) throw new Error('Failed to fetch user');
+          const user = await res.json();
 
-      const user = users[i];
-      const isAdmin = user?.role === 'admin';
-      const username = user?.discordUsername || r.discordUsername;
+          return {
+            ...r,
+            discordUsername: user.discordUsername || r.discordUsername,
+            role: user.role || 'user'
+          };
+        } catch (err) {
+          console.error('Error fetching reviewer:', err);
+          return r; // fallback to original review
+        }
+      })
+    );
 
+    // Render reviews
+    enhancedReviews.forEach(r => {
+      const isAdmin = r.role === 'admin';
       reviewsList.innerHTML += `
         <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
           <div class="flex justify-between mb-1">
             <div class="flex items-center gap-2">
-              <span class="font-semibold text-sm">${username}</span>
+              <span class="font-semibold text-sm">${r.discordUsername}</span>
               ${isAdmin ? `<img src="assets/staff.png" alt="Staff" title="Staff" class="w-4 h-4"/>` : ''}
             </div>
             <span class="text-yellow-400 text-sm">
@@ -228,12 +240,15 @@ if (!reviews.length) {
       `;
     });
 
-    const avg = (total / reviews.length).toFixed(1);
+    // Render average stars
+    const avg = (total / enhancedReviews.length).toFixed(1);
     document.getElementById('averageStars').textContent =
       '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
     document.getElementById('averageText').textContent =
-      `${avg} / 5 (${reviews.length} reviews)`;
-  });
+      `${avg} / 5 (${enhancedReviews.length} reviews)`;
+  };
+
+  fetchReviewsWithRoles();
 }
 
 
