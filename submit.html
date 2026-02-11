@@ -182,7 +182,7 @@ dropdownContainer.className = 'relative ml-2';
 
 // Create trigger button
 const welcomeBtn = document.createElement('button');
-welcomeBtn.textContent = `Welcome, ${user.discordUsername}`;
+welcomeBtn.textContent = `Welcome, ${currentUser.discordUsername}`; // <-- fixed
 welcomeBtn.className = 'text-sm text-zinc-300 mr-2 px-2 py-1 hover:bg-white/10 rounded transition';
 dropdownContainer.appendChild(welcomeBtn);
 
@@ -190,13 +190,14 @@ dropdownContainer.appendChild(welcomeBtn);
 const dropdownMenu = document.createElement('div');
 dropdownMenu.className = 'absolute right-0 mt-2 w-36 bg-zinc-900 border border-zinc-700 rounded shadow-lg text-sm text-white opacity-0 pointer-events-none transition-opacity';
 dropdownMenu.innerHTML = `
-  <a href="profile.html" class="block px-4 py-2 hover:bg-zinc-700">View Profile</a>
+  <a href="profile.html?user=${currentUser._id}" class="block px-4 py-2 hover:bg-zinc-700">View Profile</a>
   <a href="settings.html" class="block px-4 py-2 hover:bg-zinc-700">Settings</a>
 `;
 dropdownContainer.appendChild(dropdownMenu);
 
 // Toggle dropdown on click
-welcomeBtn.addEventListener('click', () => {
+welcomeBtn.addEventListener('click', (e) => {
+  e.stopPropagation(); // prevent the document click from immediately closing it
   const isOpen = dropdownMenu.classList.contains('opacity-100');
   if (isOpen) {
     dropdownMenu.classList.remove('opacity-100');
@@ -207,7 +208,7 @@ welcomeBtn.addEventListener('click', () => {
   }
 });
 
-// Optional: hide dropdown when clicking outside
+// Hide dropdown when clicking outside
 document.addEventListener('click', (e) => {
   if (!dropdownContainer.contains(e.target)) {
     dropdownMenu.classList.remove('opacity-100');
@@ -217,6 +218,7 @@ document.addEventListener('click', (e) => {
 
 // Insert dropdown into nav
 navLinks.insertBefore(dropdownContainer, loginBtn);
+
 
 
   if (currentUser.role === 'admin') {
