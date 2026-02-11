@@ -1,27 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Basics -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OpsLink Premium</title>
-
-  <!-- SEO -->
-  <meta name="description" content="Upgrade to OpsLink Premium to boost your Discord server visibility, trust, and growth.">
-  <meta name="robots" content="index, follow">
-
-  <!-- Theme -->
-  <meta name="theme-color" content="#0a0a0a">
-  <meta name="color-scheme" content="dark">
-
-  <!-- Icons -->
-  <link rel="icon" type="image/png" href="https://cdn.discordapp.com/attachments/1463693698893221932/1466789150073291035/9Mia9QJ.png">
-
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-
-<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
+<body class="bg-gradient-to-br from-black via-zinc-900 to-black text-white min-h-screen font-sans">
 
   <!-- Navbar -->
   <nav class="flex flex-col items-center px-10 py-6">
@@ -37,75 +22,85 @@
   </nav>
 
   <!-- Hero -->
-  <section class="px-10 pt-20 pb-28 text-center">
+  <section class="text-center px-10 pt-16 pb-16">
     <h1 class="text-5xl font-bold max-w-3xl mx-auto">
-      Take your server to the <span class="text-indigo-400">top</span>
+      Compare Free and Premium
     </h1>
-    <p class="mt-6 max-w-xl mx-auto text-zinc-300">
-      OpsLink Premium gives your Discord server more visibility,
-      more trust, and faster growth — without spam.
+    <p class="mt-4 max-w-2xl mx-auto text-zinc-300">
+      See the perks side by side and pick the best plan for your Discord server.
     </p>
   </section>
 
-  <!-- Pricing Toggle -->
-  <section class="px-10 pb-16 text-center">
-    <div class="inline-flex rounded-full bg-zinc-800/80 p-1 text-sm text-white">
-      <button id="monthlyBtn" class="px-4 py-2 rounded-full bg-indigo-600">Monthly</button>
-      <button id="yearlyBtn" class="px-4 py-2 rounded-full hover:bg-indigo-700 transition">Yearly</button>
+  <!-- Tier Comparison -->
+  <section class="px-10 pb-32 max-w-6xl mx-auto">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse border border-zinc-700">
+        <thead>
+          <tr class="bg-zinc-900/80 border-b border-zinc-700">
+            <th class="px-6 py-4 text-zinc-400 font-medium">Features</th>
+            <th class="px-6 py-4 text-zinc-400 font-medium">Free</th>
+            <th class="px-6 py-4 text-indigo-200 font-medium relative">
+              Premium
+              <span class="absolute -top-3 right-3 bg-indigo-600 text-xs px-2 py-1 rounded-full">Most Popular</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="text-zinc-300">
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Price</td>
+            <td class="px-6 py-4 font-bold">$0/mo</td>
+            <td class="px-6 py-4 font-bold text-2xl text-indigo-400" id="premiumPrice">$9/mo</td>
+          </tr>
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Basic Server Listing</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Community Reviews</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Manual Approval</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Boosted Placement</td>
+            <td class="px-6 py-4 text-zinc-500 font-bold">❌</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Premium Badge</td>
+            <td class="px-6 py-4 text-zinc-500 font-bold">❌</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Review Highlighting</td>
+            <td class="px-6 py-4 text-zinc-500 font-bold">❌</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Priority Moderation</td>
+            <td class="px-6 py-4 text-zinc-500 font-bold">❌</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-4">Live Server Analytics Dashboard</td>
+            <td class="px-6 py-4 text-zinc-500 font-bold">❌</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-  </section>
 
-  <!-- Pricing -->
-  <section class="px-10 pb-32">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-
-      <!-- Free -->
-      <div class="bg-zinc-900/80 border border-zinc-800 p-8 text-center">
-        <h3 class="text-xl font-semibold mb-2">Free</h3>
-        <p class="text-zinc-400 mb-6">For casual listings</p>
-        <div class="text-4xl font-bold mb-6" id="freePrice">$0</div>
-        <ul class="text-sm text-zinc-300 space-y-2 mb-8">
-          <li>✔ Basic server listing</li>
-          <li>✔ Community reviews</li>
-          <li>✔ Manual approval</li>
-          <li class="opacity-40">✖ Boosted placement</li>
-          <li class="opacity-40">✖ Premium badge</li>
-        </ul>
-        <span class="text-zinc-500 text-sm">Current plan</span>
-      </div>
-
-      <!-- Premium -->
-      <div class="relative bg-gradient-to-br from-indigo-600/20 to-indigo-900/20 border border-indigo-500 p-8 text-center scale-105">
-        <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-xs px-3 py-1 rounded-full">
-          Most Popular
-        </span>
-        <h3 class="text-xl font-semibold mb-2">Premium</h3>
-        <p class="text-zinc-300 mb-6">For growing communities</p>
-        <div class="text-4xl font-bold mb-6" id="premiumPrice">$9<span class="text-lg">/mo</span></div>
-        <ul class="text-sm text-zinc-200 space-y-2 mb-8">
-          <li>✔ Everything in Free</li>
-          <li>✔ Boosted server placement</li>
-          <li>✔ Premium badge</li>
-          <li>✔ Review highlighting</li>
-          <li>✔ Priority moderation</li>
-          <li>✔ Live Server Analytics Dashboard</li>
-        </ul>
-        <button class="rounded-full bg-indigo-600 px-6 py-3 hover:bg-indigo-700 transition duration-300 transform hover:scale-105">
-          Upgrade to Premium
-        </button>
-      </div>
-
+    <!-- Upgrade Button -->
+    <div class="flex justify-center mt-8">
+      <button class="rounded-full bg-indigo-600 px-8 py-4 hover:bg-indigo-700 transition duration-300 transform hover:scale-105 text-lg font-semibold">
+        Upgrade to Premium
+      </button>
     </div>
-  </section>
-
-  <!-- Trust -->
-  <section class="px-10 pb-32 text-center">
-    <h2 class="text-3xl font-semibold mb-6">Why Premium works</h2>
-    <p class="max-w-3xl mx-auto text-zinc-300">
-      Premium listings are still manually reviewed.
-      No pay-to-win, no spam — just better placement
-      and higher trust signals for quality communities.
-    </p>
   </section>
 
   <!-- Footer -->
@@ -114,7 +109,7 @@
     <span>Not affiliated with Discord</span>
   </footer>
 
-  <!-- Auth Logic -->
+  <!-- Optional: Auth / Premium Toggle Logic -->
   <script>
     const loginBtn = document.getElementById('loginBtn');
     const adminBtn = document.getElementById('adminBtn');
@@ -162,36 +157,6 @@
         adminBtn.href = 'dashboard.html';
       }
     }
-
-    // Pricing Toggle
-    const monthlyBtn = document.getElementById('monthlyBtn');
-    const yearlyBtn = document.getElementById('yearlyBtn');
-    const premiumPrice = document.getElementById('premiumPrice');
-
-    let monthly = true;
-
-    function updatePricing() {
-      if (monthly) {
-        premiumPrice.innerHTML = "$9<span class='text-lg'>/mo</span>";
-      } else {
-        premiumPrice.innerHTML = "$90<span class='text-lg'>/yr</span>";
-      }
-    }
-
-    monthlyBtn.addEventListener('click', () => {
-      monthly = true;
-      monthlyBtn.classList.add('bg-indigo-600');
-      yearlyBtn.classList.remove('bg-indigo-600');
-      updatePricing();
-    });
-
-    yearlyBtn.addEventListener('click', () => {
-      monthly = false;
-      yearlyBtn.classList.add('bg-indigo-600');
-      monthlyBtn.classList.remove('bg-indigo-600');
-      updatePricing();
-    });
-
   </script>
 
 </body>
