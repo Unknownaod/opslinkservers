@@ -197,22 +197,20 @@ if (!reviews.length) {
 } else {
   let total = 0;
 
-  // Fetch roles from your servers/role route
   const fetchReviewsWithRoles = async () => {
     const enhancedReviews = await Promise.all(
       reviews.map(async r => {
         total += r.rating;
 
+        // Use discordUsername instead of discordUserID
+        if (!r.discordUsername) return { ...r, role: 'user' };
+
         try {
-          // Fetch role from servers route
-          const res = await fetch(`${API_URL}/api/servers/role/${r.discordUserID}`);
+          const res = await fetch(`${API_URL}/api/servers/role/${encodeURIComponent(r.discordUsername)}`);
           const data = await res.json();
           const role = data.role || 'user';
 
-          return {
-            ...r,
-            role
-          };
+          return { ...r, role };
         } catch (err) {
           console.error('Error fetching reviewer role:', err);
           return { ...r, role: 'user' }; // fallback
@@ -249,6 +247,7 @@ if (!reviews.length) {
 
   fetchReviewsWithRoles();
 }
+
 
 
 
