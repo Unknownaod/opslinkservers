@@ -6,221 +6,111 @@
   <title>OpsLink Premium</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-
-<body class="bg-[#313338] text-white min-h-screen font-sans relative overflow-x-hidden">
-
-  <!-- Background Glow -->
-  <div class="absolute top-[-200px] left-[-200px] w-[500px] h-[500px] bg-[#5865F2] opacity-20 blur-[140px] rounded-full"></div>
-  <div class="absolute bottom-[-200px] right-[-200px] w-[500px] h-[500px] bg-purple-600 opacity-20 blur-[140px] rounded-full"></div>
+<body class="bg-gradient-to-br from-black via-zinc-900 to-black text-white min-h-screen font-sans">
 
   <!-- Navbar -->
-  <nav class="flex justify-between items-center px-10 py-6 relative z-10 bg-[#2B2D31] border-b border-[#1E1F22]">
-    <div class="text-2xl font-semibold tracking-wide text-[#5865F2]">
-      OpsLink Servers
-    </div>
-
+  <nav class="flex flex-col items-center px-10 py-6">
+    <div class="text-2xl font-semibold tracking-wide mb-4">OpsLink Servers</div>
     <div class="flex items-center gap-8 text-sm" id="navLinks">
-      <a href="index.html" class="hover:text-[#5865F2] transition">Home</a>
-      <a href="browse.html" class="hover:text-[#5865F2] transition">Browse</a>
-      <a href="submit.html" class="hover:text-[#5865F2] transition">Submit</a>
-      <a href="premium.html" class="text-[#5865F2] font-semibold">Premium</a>
-
-      <a href="login.html" id="loginBtn"
-         class="rounded-full border border-white/20 px-5 py-2 hover:bg-white/10 transition">
-        Login
-      </a>
-
-      <a href="#" id="adminBtn"
-         class="hidden rounded-full bg-red-600 text-white px-5 py-2 hover:bg-red-700 transition">
-        Admin
-      </a>
+      <a href="index.html" class="hover:opacity-80">Home</a>
+      <a href="browse.html" class="hover:opacity-80">Browse</a>
+      <a href="submit.html" class="hover:opacity-80">Submit</a>
+      <a href="premium.html" class="font-semibold">Premium</a>
+      <a href="login.html" id="loginBtn" class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10">Login</a>
+      <a href="#" id="adminBtn" class="hidden rounded-full bg-red-600 text-white px-6 py-3 hover:bg-red-700">Admin Dashboard</a>
     </div>
   </nav>
 
   <!-- Hero -->
-  <section class="text-center px-6 pt-20 pb-12 relative z-10">
-    <h1 class="text-5xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight">
-      Level Up Your
-      <span class="text-[#5865F2]">Discord Server</span>
+  <section class="text-center px-10 pt-16 pb-16">
+    <h1 class="text-5xl font-bold max-w-3xl mx-auto">
+      Compare Free and Premium
     </h1>
-
-    <p class="mt-6 text-zinc-300 max-w-2xl mx-auto text-lg">
-      Boost visibility, track growth, and dominate your category with Premium.
+    <p class="mt-4 max-w-2xl mx-auto text-zinc-300">
+      See the perks side by side and pick the best plan for your Discord server.
     </p>
   </section>
 
-  <!-- Billing Toggle -->
-  <div class="flex justify-center mb-12 relative z-10">
-    <div class="bg-[#2B2D31] border border-[#1E1F22] rounded-full p-1 flex">
-      <button id="monthlyBtn" class="px-6 py-2 rounded-full bg-[#5865F2] text-white text-sm transition">
-        Monthly
+  <!-- Tier Comparison -->
+  <section class="px-10 pb-32 max-w-6xl mx-auto">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse border border-zinc-700">
+        <thead>
+          <tr class="bg-zinc-900/80 border-b border-zinc-700">
+            <th class="px-6 py-4 text-zinc-400 font-medium">Features</th>
+            <th class="px-6 py-4 text-zinc-400 font-medium">Free</th>
+            <th class="px-6 py-4 text-indigo-200 font-medium relative">
+              Premium
+              <span class="absolute -top-3 right-3 bg-indigo-600 text-xs px-2 py-1 rounded-full">Most Popular</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="text-zinc-300">
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Price</td>
+            <td class="px-6 py-4 font-bold">$0/mo</td>
+            <td class="px-6 py-4 font-bold text-2xl text-indigo-400" id="premiumPrice">$9/mo</td>
+          </tr>
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Basic Server Listing</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Community Reviews</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Manual Approval</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Boosted Placement</td>
+            <td class="px-6 py-4 text-zinc-500 font-bold">❌</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Premium Badge</td>
+            <td class="px-6 py-4 text-zinc-500 font-bold">❌</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Review Highlighting</td>
+            <td class="px-6 py-4 text-zinc-500 font-bold">❌</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+          <tr class="border-b border-zinc-700">
+            <td class="px-6 py-4">Priority Moderation</td>
+            <td class="px-6 py-4 text-zinc-500 font-bold">❌</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-4">Live Server Analytics Dashboard</td>
+            <td class="px-6 py-4 text-zinc-500 font-bold">❌</td>
+            <td class="px-6 py-4 text-green-400 font-bold">✅</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Upgrade Button -->
+    <div class="flex justify-center mt-8">
+      <button class="rounded-full bg-indigo-600 px-8 py-4 hover:bg-indigo-700 transition duration-300 transform hover:scale-105 text-lg font-semibold">
+        Upgrade to Premium
       </button>
-      <button id="yearlyBtn" class="px-6 py-2 rounded-full text-zinc-400 text-sm transition">
-        Yearly (Save 17%)
-      </button>
     </div>
-  </div>
-
-  <!-- Pricing -->
-  <section class="px-6 pb-24 max-w-6xl mx-auto relative z-10">
-    <div class="grid md:grid-cols-2 gap-10">
-
-      <!-- Free Plan -->
-      <div class="bg-[#2B2D31] border border-[#1E1F22] rounded-2xl p-10">
-        <h2 class="text-2xl font-semibold mb-4">Free</h2>
-        <p class="text-4xl font-bold mb-6">$0<span class="text-lg text-zinc-400">/mo</span></p>
-
-        <ul class="space-y-4 text-zinc-300">
-          <li>✅ Basic Listing</li>
-          <li>✅ Community Reviews</li>
-          <li>✅ Manual Approval</li>
-          <li class="text-zinc-500">❌ Boosted Placement</li>
-          <li class="text-zinc-500">❌ Premium Badge</li>
-          <li class="text-zinc-500">❌ Advanced Analytics</li>
-        </ul>
-      </div>
-
-      <!-- Premium Plan -->
-      <div class="relative bg-[#2B2D31] border-2 border-[#5865F2] rounded-2xl p-10 shadow-xl shadow-[#5865F2]/20 scale-105">
-
-        <div class="absolute -top-4 right-6 bg-[#5865F2] px-4 py-1 text-xs rounded-full">
-          MOST POPULAR
-        </div>
-
-        <h2 class="text-2xl font-semibold mb-4">Premium</h2>
-
-        <p id="premiumPrice"
-           class="text-4xl font-bold mb-2 text-[#5865F2] transition-all duration-300">
-          $9<span class="text-lg text-zinc-400">/mo</span>
-        </p>
-
-        <p id="billingNote" class="text-sm text-zinc-400 mb-6">
-          Billed monthly
-        </p>
-
-        <ul class="space-y-4 text-zinc-200">
-          <li>🚀 Boosted Placement in Browse</li>
-          <li>💎 Premium Server Badge</li>
-          <li>📊 Advanced Growth Analytics</li>
-          <li>📈 Member Trend Tracking</li>
-          <li>🔔 Engagement Insights</li>
-          <li>🏆 Category Rank Monitoring</li>
-          <li>⚡ Priority Listing Review</li>
-        </ul>
-
-        <button onclick="startCheckout()"
-          class="mt-10 w-full rounded-full bg-[#5865F2] py-4 font-semibold text-lg hover:bg-indigo-600 transition transform hover:scale-105">
-          Upgrade Now
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Analytics Preview -->
-  <section class="px-6 pb-32 max-w-6xl mx-auto relative z-10">
-
-    <div class="text-center mb-12">
-      <h2 class="text-4xl font-bold mb-4">Premium Analytics Preview</h2>
-      <p class="text-zinc-400">Unlock real server performance tracking.</p>
-    </div>
-
-    <div class="relative bg-[#2B2D31] border border-[#1E1F22] rounded-3xl p-10 shadow-xl overflow-hidden">
-
-      <!-- Blur Lock Overlay -->
-      <div class="absolute inset-0 backdrop-blur-md bg-black/40 flex flex-col items-center justify-center text-center">
-        <p class="text-xl font-semibold mb-4">Premium Feature</p>
-        <button onclick="scrollToUpgrade()"
-          class="bg-[#5865F2] px-6 py-3 rounded-full font-semibold hover:bg-indigo-600 transition">
-          Unlock Analytics
-        </button>
-      </div>
-
-      <!-- Content Under Blur -->
-      <div class="grid md:grid-cols-4 gap-6 mb-10 opacity-60">
-
-        <div class="bg-[#1E1F22] p-6 rounded-xl">
-          <p class="text-zinc-400 text-sm">New Members (30d)</p>
-          <p class="text-3xl font-bold text-[#5865F2]">+482</p>
-          <p class="text-green-400 text-sm">▲ 22%</p>
-        </div>
-
-        <div class="bg-[#1E1F22] p-6 rounded-xl">
-          <p class="text-zinc-400 text-sm">Daily Active Users</p>
-          <p class="text-3xl font-bold">1,294</p>
-          <p class="text-green-400 text-sm">▲ 8%</p>
-        </div>
-
-        <div class="bg-[#1E1F22] p-6 rounded-xl">
-          <p class="text-zinc-400 text-sm">Message Volume</p>
-          <p class="text-3xl font-bold">32.8k</p>
-          <p class="text-green-400 text-sm">▲ 14%</p>
-        </div>
-
-        <div class="bg-[#1E1F22] p-6 rounded-xl">
-          <p class="text-zinc-400 text-sm">OpsLink Rank</p>
-          <p class="text-3xl font-bold text-[#5865F2]">#5</p>
-          <p class="text-green-400 text-sm">Up 3 spots</p>
-        </div>
-
-      </div>
-
-      <!-- Graph -->
-      <div class="opacity-60">
-        <p class="text-sm mb-3 text-zinc-400">Member Growth Trend</p>
-        <div class="w-full h-40 bg-[#1E1F22] rounded-xl overflow-hidden">
-          <svg viewBox="0 0 500 150" class="w-full h-full">
-            <polyline
-              fill="none"
-              stroke="#5865F2"
-              stroke-width="3"
-              points="0,120 80,110 160,115 240,90 320,70 400,60 500,40"
-            />
-          </svg>
-        </div>
-      </div>
-
-    </div>
-
   </section>
 
   <!-- Footer -->
-  <footer class="px-10 py-10 border-t border-[#1E1F22] text-sm text-zinc-400 flex justify-between relative z-10 bg-[#2B2D31]">
+  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
     <span>© 2026 OpsLink Servers</span>
     <span>Not affiliated with Discord</span>
   </footer>
 
-  <!-- Scripts -->
+  <!-- Optional: Auth / Premium Toggle Logic -->
   <script>
-    const monthlyBtn = document.getElementById("monthlyBtn");
-    const yearlyBtn = document.getElementById("yearlyBtn");
-    const premiumPrice = document.getElementById("premiumPrice");
-    const billingNote = document.getElementById("billingNote");
-
-    monthlyBtn.onclick = () => {
-      premiumPrice.innerHTML = '$9<span class="text-lg text-zinc-400">/mo</span>';
-      billingNote.textContent = "Billed monthly";
-      monthlyBtn.classList.add("bg-[#5865F2]","text-white");
-      yearlyBtn.classList.remove("bg-[#5865F2]","text-white");
-      yearlyBtn.classList.add("text-zinc-400");
-    };
-
-    yearlyBtn.onclick = () => {
-      premiumPrice.innerHTML = '$90<span class="text-lg text-zinc-400">/yr</span>';
-      billingNote.textContent = "Billed annually (Save 17%)";
-      yearlyBtn.classList.add("bg-[#5865F2]","text-white");
-      monthlyBtn.classList.remove("bg-[#5865F2]","text-white");
-      monthlyBtn.classList.add("text-zinc-400");
-    };
-
-    function startCheckout() {
-      alert("Stripe checkout integration goes here.");
-    }
-
-    function scrollToUpgrade() {
-      window.scrollTo({ top: 400, behavior: "smooth" });
-    }
-
-    /* Auth Logic (kept from your original) */
     const loginBtn = document.getElementById('loginBtn');
     const adminBtn = document.getElementById('adminBtn');
     const navLinks = document.getElementById('navLinks');
@@ -238,6 +128,29 @@
         localStorage.removeItem('user');
         location.reload();
       });
+
+      const dropdownContainer = document.createElement('div');
+      dropdownContainer.className = 'relative ml-2';
+
+      const welcomeBtn = document.createElement('button');
+      welcomeBtn.textContent = `Welcome, ${user.discordUsername}`;
+      welcomeBtn.className = 'text-sm text-zinc-300 px-2 py-1 hover:bg-white/10 rounded';
+      dropdownContainer.appendChild(welcomeBtn);
+
+      const dropdownMenu = document.createElement('div');
+      dropdownMenu.className = 'absolute right-0 mt-2 w-36 bg-zinc-900 border border-zinc-700 rounded shadow-lg text-sm opacity-0 pointer-events-none transition';
+      dropdownMenu.innerHTML = `
+        <a href="profile.html" class="block px-4 py-2 hover:bg-zinc-700">Profile</a>
+        <a href="settings.html" class="block px-4 py-2 hover:bg-zinc-700">Settings</a>
+      `;
+      dropdownContainer.appendChild(dropdownMenu);
+
+      welcomeBtn.onclick = () => {
+        dropdownMenu.classList.toggle('opacity-0');
+        dropdownMenu.classList.toggle('pointer-events-none');
+      };
+
+      navLinks.insertBefore(dropdownContainer, loginBtn);
 
       if (user.role === 'admin') {
         adminBtn.classList.remove('hidden');
