@@ -1,294 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>User Settings - OpsLink</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    /* --- BASE --- */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #000, #111, #000);
-      color: #fff;
-      min-height: 100vh;
-    }
-    input, button { font-family: inherit; }
-
-    /* --- FLEX LAYOUT --- */
-    .flex { display: flex; }
-    .flex-col { flex-direction: column; }
-    .flex-1 { flex: 1; }
-    .gap-4 { gap: 1rem; }
-    .gap-3 { gap: 0.75rem; }
-
-    /* --- SIDEBAR --- */
-    aside {
-      width: 280px;
-      background: rgba(0,0,0,0.5);
-      border-right: 1px solid rgba(255,255,255,0.1);
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    aside h2 {
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      color: #aaa;
-      margin-bottom: 0.5rem;
-      letter-spacing: 1px;
-    }
-    .tab-btn {
-      background: transparent;
-      border: none;
-      text-align: left;
-      padding: 0.5rem 0.75rem;
-      color: #ccc;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-bottom: 0.25rem;
-      transition: 0.2s;
-    }
-    .tab-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
-    aside button.logout-btn {
-      color: #f87171;
-      margin-top: auto;
-      padding: 0.5rem 0.75rem;
-      border-radius: 6px;
-      text-align: left;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    aside button.logout-btn:hover { background: rgba(248,113,113,0.2); }
-
-    /* --- MAIN CONTENT --- */
-    main {
-      flex: 1;
-      padding: 2.5rem;
-      overflow-y: auto;
-    }
-    .tab-content { display: none; max-width: 900px; }
-    .tab-content.active { display: block; }
-
-    h1 { font-size: 2rem; font-weight: 700; margin-bottom: 1.5rem; }
-    h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.75rem; }
-
-    /* --- CARDS --- */
-    .card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    /* --- INPUTS --- */
-    .input {
-      width: 100%;
-      padding: 0.5rem 0.75rem;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(0,0,0,0.4);
-      color: #fff;
-      outline: none;
-      transition: 0.2s;
-    }
-    .input:focus { border-color: #6366f1; background: rgba(0,0,0,0.6); }
-
-    /* --- BUTTONS --- */
-    button {
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      transition: 0.2s;
-      font-weight: 600;
-    }
-    .btn-primary { background: #6366f1; color: #fff; }
-    .btn-primary:hover { background: #4f46e5; }
-    .btn-warning { background: #facc15; color: #000; }
-    .btn-warning:hover { background: #eab308; }
-    .btn-danger { background: #f87171; color: #fff; }
-    .btn-danger:hover { background: #ef4444; }
-    .btn-success { background: #22c55e; color: #fff; }
-    .btn-success:hover { background: #16a34a; }
-
-    /* --- USER AVATAR --- */
-    .avatar {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      background: #6366f1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: 700;
-      font-size: 1.5rem;
-      margin-right: 1rem;
-    }
-
-    /* --- TABLES / LISTS --- */
-    .list-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(0,0,0,0.4);
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-    .list-item p { font-size: 0.875rem; color: #ccc; }
-    .list-item button { background: transparent; color: #f87171; font-weight: 600; }
-
-    /* --- DANGER ZONE --- */
-    .danger-zone {
-      background: rgba(127,29,29,0.2);
-      border: 1px solid rgba(248,113,113,0.3);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-top: 2rem;
-    }
-
-    .text-green { color: #4ade80; }
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
+    <header>
+        <h1>OpsLink Settings</h1>
+        <nav>
+            <a href="#profile">Profile</a>
+            <a href="#my-servers">My Servers</a>
+            <a href="#server-management">Server Management</a>
+            <a href="#role-settings">Role Settings</a>
+        </nav>
+    </header>
 
-<div class="flex min-h-screen">
-
-  <!-- SIDEBAR -->
-  <aside>
-    <h2>User Settings</h2>
-    <button onclick="openTab('account')" class="tab-btn">My Account</button>
-    <button onclick="openTab('security')" class="tab-btn">Security</button>
-    <button onclick="openTab('sessions')" class="tab-btn">Devices</button>
-    <button onclick="openTab('billing')" class="tab-btn">Billing</button>
-    <button onclick="openTab('privacy')" class="tab-btn">Privacy</button>
-
-    <button onclick="logout()" class="logout-btn">Log Out</button>
-  </aside>
-
-  <!-- MAIN CONTENT -->
-  <main>
-
-    <!-- ACCOUNT TAB -->
-    <section id="account" class="tab-content active">
-      <h1>My Account</h1>
-      <div class="card">
-
-        <!-- USER INFO -->
-        <div class="flex items-center gap-4 mb-6">
-          <div class="avatar" id="avatarLetter">U</div>
-          <div>
-            <h2 id="discordUsername">Username</h2>
-            <p id="discordTag" class="text-zinc-400">@tag</p>
-          </div>
+    <!-- Profile Section -->
+    <section id="profile">
+        <h2>Your Profile</h2>
+        <div id="profile-info">
+            <p>Email: <span id="user-email"></span></p>
+            <p>Discord Username: <span id="user-discord"></span></p>
+            <button id="change-email-btn">Change Email</button>
         </div>
-
-        <!-- EMAIL & DISCORD -->
-        <div class="flex gap-4 mb-6">
-          <div style="flex:1">
-            <label>Email</label>
-            <input id="email" class="input" disabled/>
-          </div>
-          <div style="flex:1">
-            <label>Discord ID</label>
-            <input id="discordID" class="input" disabled/>
-          </div>
-        </div>
-
-        <!-- CHANGE EMAIL -->
-        <div class="mb-6">
-          <h3>Change Email</h3>
-          <div class="flex gap-3 mb-2">
-            <input id="newEmail" placeholder="New Email" class="input"/>
-            <input id="emailPassword" type="password" placeholder="Current Password" class="input"/>
-          </div>
-          <button onclick="changeEmail()" class="btn-primary">Update Email</button>
-        </div>
-
-        <!-- PASSWORD RESET -->
-        <div>
-          <h3>Reset Password</h3>
-          <p class="text-zinc-400 mb-2">
-            Click below to start a secure password reset. An email will be sent to you.
-          </p>
-          <button onclick="startPasswordReset()" class="btn-warning">Start Reset</button>
-          <p id="resetMessage" class="text-green mt-2"></p>
-        </div>
-
-      </div>
     </section>
 
-    <!-- SECURITY, DEVICES, BILLING, PRIVACY sections go here ... (same as previous but styled with .card, .list-item, buttons, etc.) -->
+    <!-- My Servers Section -->
+    <section id="my-servers">
+        <h2>Your Submitted Servers</h2>
+        <div id="server-list">
+            <!-- List of servers will appear here -->
+        </div>
+        <button id="submit-server-btn">Submit a Server</button>
+    </section>
 
-  </main>
+    <!-- Server Management Section -->
+    <section id="server-management">
+        <h2>Manage Server</h2>
+        <label for="server-id">Server ID:</label>
+        <input type="text" id="server-id" placeholder="Enter Server ID to manage">
+        <button id="fetch-server-btn">Fetch Server</button>
 
-</div>
+        <div id="server-management-actions" style="display: none;">
+            <h3>Server Actions</h3>
+            <button id="approve-server-btn">Approve Server</button>
+            <button id="deny-server-btn">Deny Server</button>
+            <button id="edit-server-btn">Request Edit</button>
+            <button id="delete-server-btn">Delete Server</button>
+        </div>
+    </section>
 
-<script>
-const API = "https://opslinkservers-backend.onrender.com";
-const token = localStorage.getItem("token");
+    <!-- Role Settings Section -->
+    <section id="role-settings">
+        <h2>Role Settings</h2>
+        <label for="discord-username">Discord Username:</label>
+        <input type="text" id="role-username" placeholder="Enter Discord Username">
+        <button id="get-role-btn">Get Role</button>
+        <div id="user-role"></div>
+    </section>
 
-if(!token) location.href = "login.html";
+    <script>
+        const apiBaseUrl = 'https://yourapi.com/api'; // Replace with your actual API base URL
 
-function openTab(id){
-  document.querySelectorAll(".tab-content").forEach(e=>e.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-}
+        // Fetch user profile data
+        async function getUserProfile() {
+            try {
+                const response = await fetch(`${apiBaseUrl}/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Assuming the token is stored in local storage
+                    }
+                });
+                const data = await response.json();
+                document.getElementById('user-email').textContent = data.email;
+                document.getElementById('user-discord').textContent = data.discordUsername;
+            } catch (err) {
+                console.error('Failed to fetch user profile:', err);
+            }
+        }
 
-/* ================= API HELPER ================= */
-async function api(endpoint, data={}, method="POST"){
-  const res = await fetch(API + endpoint, {
-    method,
-    headers:{
-      "Content-Type":"application/json",
-      "Authorization":"Bearer " + token
-    },
-    body: method==="GET"?null:JSON.stringify(data)
-  });
-  return res.json();
-}
+        // Fetch servers submitted by user
+        async function getUserServers() {
+            try {
+                const response = await fetch(`${apiBaseUrl}/servers/mine`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                const servers = await response.json();
+                const serverListElement = document.getElementById('server-list');
+                serverListElement.innerHTML = '';
+                servers.forEach(server => {
+                    const serverDiv = document.createElement('div');
+                    serverDiv.innerHTML = `<strong>${server.name}</strong><br>Invite: ${server.invite}`;
+                    serverListElement.appendChild(serverDiv);
+                });
+            } catch (err) {
+                console.error('Failed to fetch your servers:', err);
+            }
+        }
 
-/* ================= LOAD USER ================= */
-async function loadUser(){
-  const res = await api("/auth/me", {}, "GET");
-  document.getElementById("discordUsername").textContent = res.discordUsername;
-  document.getElementById("discordTag").textContent = res.discordTag || "";
-  document.getElementById("email").value = res.email;
-  document.getElementById("discordID").value = res.discordUserID;
-  document.getElementById("avatarLetter").textContent = res.discordUsername[0].toUpperCase();
-}
-loadUser();
+        // Submit a new server
+        async function submitServer() {
+            const serverData = {
+                name: 'New Server', // You can replace this with form data
+                invite: 'https://discord.gg/example',
+                description: 'A great server',
+                language: 'English',
+                members: 100,
+                type: 'community',
+                rules: 'Be respectful',
+                website: 'https://example.com',
+                logo: 'https://example.com/logo.png',
+                nsfw: false,
+                tags: ['gaming', 'discord'],
+                discordServerId: '1234567890'
+            };
+            
+            try {
+                const response = await fetch(`${apiBaseUrl}/servers`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify(serverData)
+                });
 
-/* ================= ACCOUNT ACTIONS ================= */
-async function changeEmail(){
-  const res = await api("/auth/change-email", {
-    email:document.getElementById("newEmail").value,
-    password:document.getElementById("emailPassword").value
-  });
-  alert(res.message || res.error);
-}
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Server submitted successfully!');
+                } else {
+                    alert(data.error || 'Server submission failed.');
+                }
+            } catch (err) {
+                console.error('Failed to submit server:', err);
+            }
+        }
 
-async function startPasswordReset(){
-  const res = await api("/auth/forgot-password", { email: document.getElementById("email").value });
-  document.getElementById("resetMessage").textContent = res.message || "Reset email sent!";
-}
+        // Fetch server by ID for management
+        async function fetchServer() {
+            const serverId = document.getElementById('server-id').value;
+            if (!serverId) return alert('Please enter a valid server ID.');
 
-/* ================= LOGOUT ================= */
-function logout(){
-  localStorage.clear();
-  location.href="login.html";
-}
+            try {
+                const response = await fetch(`${apiBaseUrl}/servers/${serverId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                const server = await response.json();
+                if (response.ok) {
+                    document.getElementById('server-management-actions').style.display = 'block';
+                    // You can now show server details and provide actions for approving/denying etc.
+                } else {
+                    alert(server.error || 'Server not found.');
+                }
+            } catch (err) {
+                console.error('Failed to fetch server:', err);
+            }
+        }
 
-</script>
+        // Approve server
+        async function approveServer() {
+            const serverId = document.getElementById('server-id').value;
+            if (!serverId) return alert('Please enter a valid server ID.');
 
+            try {
+                const response = await fetch(`${apiBaseUrl}/servers/${serverId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({ status: 'approved' })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Server approved!');
+                } else {
+                    alert(data.error || 'Failed to approve server.');
+                }
+            } catch (err) {
+                console.error('Failed to approve server:', err);
+            }
+        }
+
+        // Deny server
+        async function denyServer() {
+            const serverId = document.getElementById('server-id').value;
+            const rejectionReason = prompt('Enter rejection reason');
+            if (!serverId || !rejectionReason) return alert('Please provide a valid server ID and reason.');
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/servers/${serverId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({ status: 'denied', rejectionReason })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Server denied!');
+                } else {
+                    alert(data.error || 'Failed to deny server.');
+                }
+            } catch (err) {
+                console.error('Failed to deny server:', err);
+            }
+        }
+
+        // Get user role by Discord username
+        async function getUserRole() {
+            const discordUsername = document.getElementById('role-username').value;
+            if (!discordUsername) return alert('Please enter a valid Discord username.');
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/role/${discordUsername}`);
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById('user-role').textContent = `Role: ${data.role}`;
+                } else {
+                    alert(data.error || 'Failed to fetch role.');
+                }
+            } catch (err) {
+                console.error('Failed to get user role:', err);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('submit-server-btn').addEventListener('click', submitServer);
+        document.getElementById('fetch-server-btn').addEventListener('click', fetchServer);
+        document.getElementById('approve-server-btn').addEventListener('click', approveServer);
+        document.getElementById('deny-server-btn').addEventListener('click', denyServer);
+        document.getElementById('get-role-btn').addEventListener('click', getUserRole);
+
+        // Initial data loading
+        getUserProfile();
+        getUserServers();
+    </script>
 </body>
+
 </html>
