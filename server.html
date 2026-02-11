@@ -184,38 +184,48 @@ async function loadServer() {
       `<span class="px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 border border-zinc-700">#${t}</span>`
     ).join('');
 
-  /* --- REVIEWS --- */
-  const reviews = s.reviews || [];
-  const reviewsList = document.getElementById('reviewsList');
-  reviewsList.innerHTML = '';
+/* --- REVIEWS --- */
+const reviews = s.reviews || [];
+const reviewsList = document.getElementById('reviewsList');
+reviewsList.innerHTML = '';
 
-  if (!reviews.length) {
-    reviewsList.innerHTML =
-      '<p class="text-sm text-zinc-400">No reviews yet.</p>';
-    document.getElementById('averageStars').textContent = '';
-    document.getElementById('averageText').textContent = '';
-  } else {
-    let total = 0;
-    reviews.forEach(r => {
-      total += r.rating;
-      reviewsList.innerHTML += `
-        <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
-          <div class="flex justify-between mb-1">
+if (!reviews.length) {
+  reviewsList.innerHTML =
+    '<p class="text-sm text-zinc-400">No reviews yet.</p>';
+  document.getElementById('averageStars').textContent = '';
+  document.getElementById('averageText').textContent = '';
+} else {
+  let total = 0;
+
+  reviews.forEach(r => {
+    total += r.rating;
+
+    // Check if reviewer is admin
+    const isAdmin = r.role === 'admin';
+
+    reviewsList.innerHTML += `
+      <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
+        <div class="flex justify-between mb-1">
+          <div class="flex items-center gap-2">
             <span class="font-semibold text-sm">${r.discordUsername}</span>
-            <span class="text-yellow-400 text-sm">
-              ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
-            </span>
+            ${isAdmin ? `<img src="assets/staff.png" alt="Staff" title="Staff" class="w-4 h-4"/>` : ''}
           </div>
-          <p class="text-sm text-zinc-300">${r.comment}</p>
-        </div>`;
-    });
+          <span class="text-yellow-400 text-sm">
+            ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
+          </span>
+        </div>
+        <p class="text-sm text-zinc-300">${r.comment}</p>
+      </div>
+    `;
+  });
 
-    const avg = (total / reviews.length).toFixed(1);
-    document.getElementById('averageStars').textContent =
-      '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
-    document.getElementById('averageText').textContent =
-      `${avg} / 5 (${reviews.length} reviews)`;
-  }
+  const avg = (total / reviews.length).toFixed(1);
+  document.getElementById('averageStars').textContent =
+    '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
+  document.getElementById('averageText').textContent =
+    `${avg} / 5 (${reviews.length} reviews)`;
+}
+
 
 /* --- SHOW EDIT BUTTON IF OWNER --- */
 if (currentUser && owner && owner.userID) {
