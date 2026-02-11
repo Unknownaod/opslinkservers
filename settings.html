@@ -6,9 +6,16 @@
   <title>Settings - OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Smooth hover transition for inputs and buttons */
     input, button {
       transition: all 0.2s ease;
+    }
+    .section-header {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #e5e7eb;
+      margin-top: 2rem;
+      border-bottom: 2px solid #6366f1;
+      padding-bottom: 0.5rem;
     }
   </style>
 </head>
@@ -16,7 +23,10 @@
 
   <!-- NAVBAR -->
   <nav class="flex items-center justify-between px-10 py-6 border-b border-gray-800">
-    <div class="text-2xl font-bold tracking-wide">OpsLink Servers</div>
+    <div class="text-3xl font-bold tracking-wide flex items-center gap-2">
+      <img src="https://cdn.discordapp.com/attachments/1463619235904229378/1466802083834368184/FuwELkz.png" alt="OpsLink Logo" class="w-8 h-8"/>
+      OpsLink Servers
+    </div>
     <div class="flex items-center gap-6 text-sm" id="navLinks">
       <a href="index.html" class="hover:text-indigo-400">Home</a>
       <a href="browse.html" class="hover:text-indigo-400">Browse</a>
@@ -26,59 +36,91 @@
   </nav>
 
   <!-- SETTINGS MAIN -->
-  <section class="px-10 py-10 max-w-6xl mx-auto flex flex-col md:flex-row gap-10">
+  <section class="px-10 py-10 max-w-6xl mx-auto flex flex-col gap-10">
+    <!-- Tabs -->
+    <div class="flex justify-start gap-8 border-b border-gray-700 pb-4">
+      <button id="profileTab" class="px-4 py-2 text-lg font-semibold hover:bg-indigo-600 rounded-md">Profile</button>
+      <button id="dataPrivacyTab" class="px-4 py-2 text-lg font-semibold hover:bg-indigo-600 rounded-md">Data & Privacy</button>
+      <button id="serversTab" class="px-4 py-2 text-lg font-semibold hover:bg-indigo-600 rounded-md">Servers Owned</button>
+      <button id="securityTab" class="px-4 py-2 text-lg font-semibold hover:bg-indigo-600 rounded-md">Security</button>
+    </div>
 
-    <!-- Left Column: Profile & Account -->
-    <div class="flex-1 flex flex-col gap-6 bg-gray-800/50 p-6 rounded-lg shadow-lg border border-gray-700">
-      <h2 class="text-3xl font-semibold mb-4">Account Settings</h2>
-      
-      <!-- Profile Picture -->
-      <div class="flex flex-col items-center gap-4">
-        <img id="profilePic" src="assets/default.jpg" alt="Profile Picture" class="w-32 h-32 rounded-full border border-gray-600 object-cover" />
-        <button id="changePicBtn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-white text-sm">Change Profile Picture</button>
-      </div>
+    <!-- Profile Section -->
+    <div id="profileSection" class="profile-section">
+      <h2 class="section-header">Profile</h2>
+      <!-- Profile Info -->
+      <div class="flex flex-col gap-6 bg-gray-800/50 p-6 rounded-lg shadow-lg border border-gray-700">
+        <div class="flex flex-col items-center gap-4">
+          <img id="profilePic" src="assets/default.jpg" alt="Profile Picture" class="w-32 h-32 rounded-full border-4 border-indigo-600 object-cover shadow-md" />
+          <button id="changePicBtn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-white text-sm">Change Profile Picture</button>
+        </div>
 
-      <!-- Account Info -->
-      <div class="flex flex-col gap-4">
-        <label class="text-gray-400 text-sm">Username</label>
-        <input type="text" id="usernameInput" class="p-3 rounded bg-gray-900 border border-gray-600 text-white" placeholder="Loading..." />
+        <div class="flex flex-col gap-4">
+          <label class="text-gray-400 text-sm">Username</label>
+          <input type="text" id="usernameInput" class="p-3 rounded bg-gray-900 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-600" placeholder="Loading..." />
 
-        <label class="text-gray-400 text-sm">Email</label>
-        <input type="email" id="emailInput" class="p-3 rounded bg-gray-900 border border-gray-600 text-white" placeholder="Loading..." />
+          <label class="text-gray-400 text-sm">Email</label>
+          <input type="email" id="emailInput" class="p-3 rounded bg-gray-900 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-600" placeholder="Loading..." />
 
-        <label class="text-gray-400 text-sm">New Password</label>
-        <input type="password" id="passwordInput" class="p-3 rounded bg-gray-900 border border-gray-600 text-white" placeholder="••••••••" />
-
-        <button id="saveAccountBtn" class="mt-2 px-4 py-3 bg-green-600 hover:bg-green-700 rounded text-white font-medium">Save Changes</button>
+          <button id="saveAccountBtn" class="mt-4 px-4 py-3 bg-green-600 hover:bg-green-700 rounded text-white font-medium transition-all duration-200">Save Changes</button>
+        </div>
       </div>
     </div>
 
-    <!-- Right Column: Preferences & Danger Zone -->
-    <div class="flex-1 flex flex-col gap-6">
-      
-      <!-- Preferences -->
-      <div class="bg-gray-800/50 p-6 rounded-lg shadow-lg border border-gray-700 flex flex-col gap-4">
-        <h2 class="text-3xl font-semibold mb-4">Preferences</h2>
-
-        <div class="flex items-center justify-between">
-          <span class="text-gray-400">Dark Mode</span>
-          <input type="checkbox" id="darkModeToggle" class="w-5 h-5 accent-indigo-600" checked />
+    <!-- Data & Privacy Section -->
+    <div id="dataPrivacySection" class="hidden">
+      <h2 class="section-header">Data & Privacy</h2>
+      <div class="bg-gray-800/50 p-6 rounded-lg shadow-lg border border-gray-700 flex flex-col gap-6">
+        <!-- Change Email -->
+        <div>
+          <h3 class="text-lg font-semibold text-indigo-400">Change Email</h3>
+          <input type="email" id="newEmailInput" class="mt-2 p-3 rounded bg-gray-900 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-600" placeholder="New Email" />
+          <button id="changeEmailBtn" class="mt-4 px-4 py-3 bg-yellow-600 hover:bg-yellow-700 rounded text-white font-medium transition-all duration-200">Change Email</button>
         </div>
 
-        <div class="flex items-center justify-between">
-          <span class="text-gray-400">Email Notifications</span>
-          <input type="checkbox" id="notificationsToggle" class="w-5 h-5 accent-indigo-600" checked />
+        <!-- Change Password -->
+        <div>
+          <h3 class="text-lg font-semibold text-indigo-400">Change Password</h3>
+          <input type="password" id="currentPasswordInput" class="mt-2 p-3 rounded bg-gray-900 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-600" placeholder="Current Password" />
+          <input type="password" id="newPasswordInput" class="mt-2 p-3 rounded bg-gray-900 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-600" placeholder="New Password" />
+          <button id="changePasswordBtn" class="mt-4 px-4 py-3 bg-blue-600 hover:bg-blue-700 rounded text-white font-medium transition-all duration-200">Change Password</button>
+        </div>
+
+        <!-- Delete Account -->
+        <div>
+          <h3 class="text-lg font-semibold text-red-400">Delete Account</h3>
+          <p class="text-gray-400">Once deleted, your account and all data will be permanently removed.</p>
+          <button id="deleteAccountBtn" class="px-4 py-3 bg-red-600 hover:bg-red-700 rounded text-white font-medium transition-all duration-200">Delete Account</button>
         </div>
       </div>
+    </div>
 
-      <!-- Danger Zone -->
-      <div class="bg-red-900/30 p-6 rounded-lg shadow-lg border border-red-600 flex flex-col gap-4">
-        <h2 class="text-3xl font-semibold text-red-400">Danger Zone</h2>
-        <p class="text-gray-400">Be careful! These actions are irreversible.</p>
-        <button id="logoutBtn" class="px-4 py-3 bg-red-600 hover:bg-red-700 rounded text-white font-medium">Logout</button>
-        <button id="deleteAccountBtn" class="px-4 py-3 bg-red-800 hover:bg-red-900 rounded text-white font-medium">Delete Account</button>
+    <!-- Servers Owned Section -->
+    <div id="serversSection" class="hidden">
+      <h2 class="section-header">Servers Owned</h2>
+      <div class="bg-gray-800/50 p-6 rounded-lg shadow-lg border border-gray-700">
+        <h3 class="text-xl font-semibold">Your Servers</h3>
+        <ul id="serversList" class="mt-4 text-gray-400">
+          <!-- Example server list -->
+          <li>Server 1 - <a href="#" class="text-indigo-400">Manage</a></li>
+          <li>Server 2 - <a href="#" class="text-indigo-400">Manage</a></li>
+          <li>Server 3 - <a href="#" class="text-indigo-400">Manage</a></li>
+        </ul>
       </div>
+    </div>
 
+    <!-- Security Section -->
+    <div id="securitySection" class="hidden">
+      <h2 class="section-header">Security</h2>
+      <div class="bg-gray-800/50 p-6 rounded-lg shadow-lg border border-gray-700">
+        <h3 class="text-lg font-semibold text-indigo-400">Password Reset</h3>
+        <button id="resetPasswordBtn" class="mt-4 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 rounded text-white font-medium transition-all duration-200">Reset Password</button>
+
+        <!-- 2FA option can be added later -->
+        <h3 class="text-lg font-semibold text-indigo-400 mt-6">Two-Factor Authentication</h3>
+        <p class="text-gray-400">You can enable two-factor authentication for added security.</p>
+        <button id="enable2FABtn" class="mt-4 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 rounded text-white font-medium transition-all duration-200">Enable 2FA</button>
+      </div>
     </div>
   </section>
 
@@ -95,33 +137,66 @@
     const userStr = localStorage.getItem('user');
     const loggedInUser = userStr ? JSON.parse(userStr) : null;
 
-    const loginBtn = document.getElementById('loginBtn');
+    const profileTab = document.getElementById('profileTab');
+    const dataPrivacyTab = document.getElementById('dataPrivacyTab');
+    const serversTab = document.getElementById('serversTab');
+    const securityTab = document.getElementById('securityTab');
+    
+    const profileSection = document.getElementById('profileSection');
+    const dataPrivacySection = document.getElementById('dataPrivacySection');
+    const serversSection = document.getElementById('serversSection');
+    const securitySection = document.getElementById('securitySection');
+
     const usernameInput = document.getElementById('usernameInput');
     const emailInput = document.getElementById('emailInput');
-    const passwordInput = document.getElementById('passwordInput');
     const saveAccountBtn = document.getElementById('saveAccountBtn');
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    const notificationsToggle = document.getElementById('notificationsToggle');
-    const logoutBtn = document.getElementById('logoutBtn');
+    const newEmailInput = document.getElementById('newEmailInput');
+    const currentPasswordInput = document.getElementById('currentPasswordInput');
+    const newPasswordInput = document.getElementById('newPasswordInput');
+    const changeEmailBtn = document.getElementById('changeEmailBtn');
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
     const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+    const resetPasswordBtn = document.getElementById('resetPasswordBtn');
 
-    // Navbar login/logout
-    loginBtn.textContent = token ? 'Logout' : 'Login';
-    loginBtn.href = token ? '#' : 'login.html';
-    loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
+    // Toggle sections
+    profileTab.onclick = () => {
+      profileSection.classList.remove('hidden');
+      dataPrivacySection.classList.add('hidden');
+      serversSection.classList.add('hidden');
+      securitySection.classList.add('hidden');
+    };
 
-    // Load user info
+    dataPrivacyTab.onclick = () => {
+      profileSection.classList.add('hidden');
+      dataPrivacySection.classList.remove('hidden');
+      serversSection.classList.add('hidden');
+      securitySection.classList.add('hidden');
+    };
+
+    serversTab.onclick = () => {
+      profileSection.classList.add('hidden');
+      dataPrivacySection.classList.add('hidden');
+      serversSection.classList.remove('hidden');
+      securitySection.classList.add('hidden');
+    };
+
+    securityTab.onclick = () => {
+      profileSection.classList.add('hidden');
+      dataPrivacySection.classList.add('hidden');
+      serversSection.classList.add('hidden');
+      securitySection.classList.remove('hidden');
+    };
+
+    // Profile Section
     if (loggedInUser) {
       usernameInput.value = loggedInUser.discordUsername || '';
       emailInput.value = loggedInUser.email || '';
     }
 
-    // Save account changes
     saveAccountBtn.onclick = async () => {
       const payload = {
         username: usernameInput.value,
         email: emailInput.value,
-        password: passwordInput.value
       };
 
       try {
@@ -136,51 +211,118 @@
 
         const data = await res.json();
         if (res.ok) {
-          alert('Settings updated successfully!');
-          passwordInput.value = '';
+          alert('Profile updated successfully!');
           localStorage.setItem('user', JSON.stringify(data));
         } else {
-          alert(data.error || 'Failed to update settings');
+          alert(data.error || 'Failed to update profile');
         }
       } catch (err) {
-        console.error(err);
-        alert('Server error occurred');
+        alert('Error updating profile');
       }
     };
 
-    // Logout
-    logoutBtn.onclick = () => {
-      localStorage.clear();
-      location.reload();
-    };
+    // Change Email Section
+    changeEmailBtn.onclick = async () => {
+      const payload = {
+        oldEmail: emailInput.value,
+        newEmail: newEmailInput.value
+      };
 
-    // Delete account
-    deleteAccountBtn.onclick = async () => {
-      if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) return;
       try {
-        const res = await fetch(`${API_URL}/profile/${loggedInUser._id}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
+        const res = await fetch(`${API_URL}/profile/change-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
         });
+
+        const data = await res.json();
         if (res.ok) {
-          alert('Account deleted successfully!');
-          localStorage.clear();
-          location.href = 'index.html';
+          alert('Email change request submitted. Please check your inbox.');
         } else {
-          const data = await res.json();
-          alert(data.error || 'Failed to delete account');
+          alert(data.error || 'Failed to change email');
         }
       } catch (err) {
-        console.error(err);
-        alert('Server error occurred');
+        alert('Error changing email');
       }
     };
 
-    // Theme toggle
-    darkModeToggle.onchange = () => {
-      document.body.classList.toggle('bg-gray-50');
-      document.body.classList.toggle('bg-gray-900');
+    // Change Password Section
+    changePasswordBtn.onclick = async () => {
+      const payload = {
+        currentPassword: currentPasswordInput.value,
+        newPassword: newPasswordInput.value
+      };
+
+      try {
+        const res = await fetch(`${API_URL}/profile/change-password`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert('Password changed successfully!');
+        } else {
+          alert(data.error || 'Failed to change password');
+        }
+      } catch (err) {
+        alert('Error changing password');
+      }
+    };
+
+    // Reset Password
+    resetPasswordBtn.onclick = async () => {
+      const email = prompt("Enter your email to reset password:");
+      if (email) {
+        try {
+          const res = await fetch(`${API_URL}/auth/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+          });
+
+          const data = await res.json();
+          if (res.ok) {
+            alert(data.message);
+          } else {
+            alert(data.error || 'Failed to reset password');
+          }
+        } catch (err) {
+          alert('Error resetting password');
+        }
+      }
+    };
+
+    // Delete Account
+    deleteAccountBtn.onclick = async () => {
+      const confirmDelete = confirm('Are you sure you want to delete your account? This action cannot be undone.');
+      if (confirmDelete) {
+        try {
+          const res = await fetch(`${API_URL}/profile/${loggedInUser._id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            alert('Account deleted successfully!');
+            localStorage.clear();
+            location.href = 'index.html';
+          } else {
+            const data = await res.json();
+            alert(data.error || 'Failed to delete account');
+          }
+        } catch (err) {
+          alert('Error deleting account');
+        }
+      }
     };
   </script>
+
 </body>
 </html>
