@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile - OpsLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
+
+  <!-- NAVBAR -->
+  <nav class="flex items-center justify-between px-10 py-6">
+    <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
+    <div class="flex items-center gap-8 text-sm" id="navLinks">
+      <a href="index.html" class="hover:opacity-80">Home</a>
+      <a href="browse.html" class="hover:opacity-80">Browse</a>
+      <a href="submit.html" class="hover:opacity-80">Submit</a>
+      <a href="login.html" id="loginBtn" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
+    </div>
+  </nav>
+
+  <!-- PROFILE SECTION -->
+  <section class="px-10 py-10 max-w-3xl mx-auto">
+    <h1 class="text-5xl font-bold mb-6">Profile</h1>
+
+    <div id="profileContainer" class="flex flex-col gap-4">
+      <p class="text-zinc-400">Loading profile...</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
+    <span>© 2026 OpsLink Servers</span>
+    <span>Not affiliated with Discord</span>
+  </footer>
+
+  <script>
+    const API_URL = 'https://opslinkservers-backend.onrender.com/api/profile';
+    const profileContainer = document.getElementById('profileContainer');
+    const loginBtn = document.getElementById('loginBtn');
+
+    // Check login
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    let user = null;
+
+    if (!token || !userStr) {
+      profileContainer.innerHTML = '<p class="text-zinc-400">You must be logged in to view your profile.</p>';
+      loginBtn.textContent = 'Login';
+      loginBtn.href = 'login.html';
+    } else {
+      user = JSON.parse(userStr);
+      loginBtn.textContent = 'Logout';
+      loginBtn.href = '#';
+      loginBtn.onclick = () => {
+        localStorage.clear();
+        location.reload();
+      };
+
+      // Fetch profile
+      fetch(API_URL, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          profileContainer.innerHTML = `
+            <div class="p-6 rounded border border-zinc-700 bg-zinc-900/50">
+              <h2 class="text-2xl font-semibold mb-2">${data.discordUsername}</h2>
+              ${data.discordTag ? `<p class="text-zinc-400 mb-1">Discord Tag: ${data.discordTag}</p>` : ''}
+              <p class="text-zinc-400 mb-1">Role: 
+                <span class="ml-2 font-semibold ${data.role === 'admin' ? 'text-red-500' : 'text-blue-400'}">
+                  ${data.role}
+                </span>
+              </p>
+              ${data.email ? `<p class="text-zinc-400">Email: ${data.email}</p>` : ''}
+              ${data.isVerified !== undefined ? `<p class="text-zinc-400">Verified: ${data.isVerified ? 'Yes' : 'No'}</p>` : ''}
+            </div>
+          `;
+        })
+        .catch(err => {
+          console.error(err);
+          profileContainer.innerHTML = '<p class="text-red-500">Failed to load profile.</p>';
+        });
+    }
+  </script>
+</body>
+</html>
