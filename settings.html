@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings - OpsLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Smooth hover transition for inputs and buttons */
+    input, button {
+      transition: all 0.2s ease;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-900 text-white font-sans">
+
+  <!-- NAVBAR -->
+  <nav class="flex items-center justify-between px-10 py-6 border-b border-gray-800">
+    <div class="text-2xl font-bold tracking-wide">OpsLink Servers</div>
+    <div class="flex items-center gap-6 text-sm" id="navLinks">
+      <a href="index.html" class="hover:text-indigo-400">Home</a>
+      <a href="browse.html" class="hover:text-indigo-400">Browse</a>
+      <a href="submit.html" class="hover:text-indigo-400">Submit</a>
+      <a href="login.html" id="loginBtn" class="px-4 py-2 border border-gray-600 rounded hover:bg-gray-800">Login</a>
+    </div>
+  </nav>
+
+  <!-- SETTINGS MAIN -->
+  <section class="px-10 py-10 max-w-6xl mx-auto flex flex-col md:flex-row gap-10">
+
+    <!-- Left Column: Profile & Account -->
+    <div class="flex-1 flex flex-col gap-6 bg-gray-800/50 p-6 rounded-lg shadow-lg border border-gray-700">
+      <h2 class="text-3xl font-semibold mb-4">Account Settings</h2>
+      
+      <!-- Profile Picture -->
+      <div class="flex flex-col items-center gap-4">
+        <img id="profilePic" src="assets/default.jpg" alt="Profile Picture" class="w-32 h-32 rounded-full border border-gray-600 object-cover" />
+        <button id="changePicBtn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-white text-sm">Change Profile Picture</button>
+      </div>
+
+      <!-- Account Info -->
+      <div class="flex flex-col gap-4">
+        <label class="text-gray-400 text-sm">Username</label>
+        <input type="text" id="usernameInput" class="p-3 rounded bg-gray-900 border border-gray-600 text-white" placeholder="Loading..." />
+
+        <label class="text-gray-400 text-sm">Email</label>
+        <input type="email" id="emailInput" class="p-3 rounded bg-gray-900 border border-gray-600 text-white" placeholder="Loading..." />
+
+        <label class="text-gray-400 text-sm">New Password</label>
+        <input type="password" id="passwordInput" class="p-3 rounded bg-gray-900 border border-gray-600 text-white" placeholder="••••••••" />
+
+        <button id="saveAccountBtn" class="mt-2 px-4 py-3 bg-green-600 hover:bg-green-700 rounded text-white font-medium">Save Changes</button>
+      </div>
+    </div>
+
+    <!-- Right Column: Preferences & Danger Zone -->
+    <div class="flex-1 flex flex-col gap-6">
+      
+      <!-- Preferences -->
+      <div class="bg-gray-800/50 p-6 rounded-lg shadow-lg border border-gray-700 flex flex-col gap-4">
+        <h2 class="text-3xl font-semibold mb-4">Preferences</h2>
+
+        <div class="flex items-center justify-between">
+          <span class="text-gray-400">Dark Mode</span>
+          <input type="checkbox" id="darkModeToggle" class="w-5 h-5 accent-indigo-600" checked />
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="text-gray-400">Email Notifications</span>
+          <input type="checkbox" id="notificationsToggle" class="w-5 h-5 accent-indigo-600" checked />
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="bg-red-900/30 p-6 rounded-lg shadow-lg border border-red-600 flex flex-col gap-4">
+        <h2 class="text-3xl font-semibold text-red-400">Danger Zone</h2>
+        <p class="text-gray-400">Be careful! These actions are irreversible.</p>
+        <button id="logoutBtn" class="px-4 py-3 bg-red-600 hover:bg-red-700 rounded text-white font-medium">Logout</button>
+        <button id="deleteAccountBtn" class="px-4 py-3 bg-red-800 hover:bg-red-900 rounded text-white font-medium">Delete Account</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="px-10 py-6 border-t border-gray-800 text-sm text-gray-400 flex justify-between">
+    <span>© 2026 OpsLink Servers</span>
+    <span>Not affiliated with Discord</span>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script>
+    const API_URL = 'https://opslinkservers-backend.onrender.com/api';
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    const loggedInUser = userStr ? JSON.parse(userStr) : null;
+
+    const loginBtn = document.getElementById('loginBtn');
+    const usernameInput = document.getElementById('usernameInput');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const saveAccountBtn = document.getElementById('saveAccountBtn');
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const notificationsToggle = document.getElementById('notificationsToggle');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+
+    // Navbar login/logout
+    loginBtn.textContent = token ? 'Logout' : 'Login';
+    loginBtn.href = token ? '#' : 'login.html';
+    loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
+
+    // Load user info
+    if (loggedInUser) {
+      usernameInput.value = loggedInUser.discordUsername || '';
+      emailInput.value = loggedInUser.email || '';
+    }
+
+    // Save account changes
+    saveAccountBtn.onclick = async () => {
+      const payload = {
+        username: usernameInput.value,
+        email: emailInput.value,
+        password: passwordInput.value
+      };
+
+      try {
+        const res = await fetch(`${API_URL}/profile/${loggedInUser._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert('Settings updated successfully!');
+          passwordInput.value = '';
+          localStorage.setItem('user', JSON.stringify(data));
+        } else {
+          alert(data.error || 'Failed to update settings');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Server error occurred');
+      }
+    };
+
+    // Logout
+    logoutBtn.onclick = () => {
+      localStorage.clear();
+      location.reload();
+    };
+
+    // Delete account
+    deleteAccountBtn.onclick = async () => {
+      if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) return;
+      try {
+        const res = await fetch(`${API_URL}/profile/${loggedInUser._id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          alert('Account deleted successfully!');
+          localStorage.clear();
+          location.href = 'index.html';
+        } else {
+          const data = await res.json();
+          alert(data.error || 'Failed to delete account');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Server error occurred');
+      }
+    };
+
+    // Theme toggle
+    darkModeToggle.onchange = () => {
+      document.body.classList.toggle('bg-gray-50');
+      document.body.classList.toggle('bg-gray-900');
+    };
+  </script>
+</body>
+</html>
