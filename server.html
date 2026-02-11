@@ -197,29 +197,60 @@ if (!reviews.length) {
 } else {
   let total = 0;
 
-  // Use Promise.all to fetch all user info for reviews
+  // Fetch roles from your servers/role route
   const fetchReviewsWithRoles = async () => {
     const enhancedReviews = await Promise.all(
       reviews.map(async r => {
         total += r.rating;
 
         try {
-          // Fetch user info from Users collection
-          const res = await fetch(`${API_URL}/api/users/${r.userID}`);
-          if (!res.ok) throw new Error('Failed to fetch user');
-          const user = await res.json();
+          // Fetch role from servers route
+          const res = await fetch(`${API_URL}/api/servers/role/${r.discordUserID}`);
+          const data = await res.json();
+          const role = data.role || 'user';
 
           return {
             ...r,
-            discordUsername: user.discordUsername || r.discordUsername,
-            role: user.role || 'user'
+            role
           };
         } catch (err) {
-          console.error('Error fetching reviewer:', err);
-          return r; // fallback to original review
+          console.error('Error fetching reviewer role:', err);
+          return { ...r, role: 'user' }; // fallback
         }
       })
     );
+
+    // Render reviews
+    reviewsList.innerHTML = '';
+    enhancedReviews.forEach(r => {
+      const isAdmin = r.role === 'admin';
+
+      reviewsList.innerHTML += `
+        <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
+          <div class="flex justify-between mb-1">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-sm">${r.discordUsername}</span>
+              ${isAdmin ? `<img src="assets/staff.png" alt="Staff" title="Staff" class="w-4 h-4"/>` : ''}
+            </div>
+            <span class="text-yellow-400 text-sm">
+              ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
+            </span>
+          </div>
+          <p class="text-sm text-zinc-300">${r.comment}</p>
+        </div>
+      `;
+    });
+
+    const avg = (total / reviews.length).toFixed(1);
+    document.getElementById('averageStars').textContent =
+      '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
+    document.getElementById('averageText').textContent =
+      `${avg} / 5 (${reviews.length} reviews)`;
+  };
+
+  fetchReviewsWithRoles();
+}
+
 
     // Render reviews
     enhancedReviews.forEach(r => {
