@@ -259,20 +259,19 @@ function renderServers() {
       : 'Unknown';
 
 const card = document.createElement('div');
-card.className = 'group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:scale-[1.02] transition cursor-pointer flex flex-col md:flex-row';
+card.className = 'group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:scale-[1.02] transition cursor-pointer flex flex-col';
 
 card.innerHTML = `
   <!-- SERVER IMAGE -->
-  <div class="w-full md:w-32 h-32 flex-shrink-0 overflow-hidden rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none relative">
+  <div class="w-full h-44 overflow-hidden bg-black relative">
     <img src="${s.logo}" class="w-full h-full object-cover"/>
-    <div class="absolute inset-0 bg-black/20"></div>
   </div>
 
-  <!-- SERVER INFO -->
-  <div class="flex-1 p-4 flex flex-col justify-between">
+  <!-- SERVER CONTENT -->
+  <div class="p-4 flex flex-col justify-between space-y-2">
     <div>
       <h3 class="text-lg font-semibold text-white">${s.name}</h3>
-      <p class="text-xs text-zinc-400 mb-2">Owner: <span class="text-zinc-200">${owner}</span></p>
+      <p class="text-xs text-zinc-400">Owner: <span class="text-zinc-200">${owner}</span></p>
       <p class="text-sm text-zinc-300 line-clamp-3">${s.description}</p>
     </div>
 
@@ -294,6 +293,7 @@ card.onclick = e => {
     window.location.href = `server.html?guildid=${s._id}`;
   }
 };
+
 
 grid.appendChild(card); // <-- you were missing this
 
