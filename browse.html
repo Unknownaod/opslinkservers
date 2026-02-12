@@ -259,34 +259,41 @@ function renderServers() {
       : 'Unknown';
 
 const card = document.createElement('div');
-card.className = 'group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:scale-[1.02] transition transform cursor-pointer flex flex-col shadow-lg hover:shadow-2xl';
+card.className = 'group bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden transition transform cursor-pointer flex flex-col shadow-lg hover:scale-[1.03] hover:shadow-2xl';
 
 card.innerHTML = `
-  <!-- SERVER IMAGE -->
-  <div class="w-full h-48 overflow-hidden bg-black relative">
-    <img src="${s.logo}" class="w-full h-full object-cover transition-transform transform group-hover:scale-105 group-hover:rotate-3" />
+  <!-- SERVER CONTENT -->
+  <div class="relative w-full h-48 bg-black">
+    <!-- SERVER LOGO -->
+    <img src="${s.logo}" alt="${s.name} Logo" class="w-full h-full object-cover rounded-t-3xl" />
   </div>
 
-  <!-- SERVER CONTENT -->
-  <div class="p-4 flex flex-col justify-between space-y-4">
-    <div class="space-y-2">
-      <h3 class="text-xl font-semibold text-white">${s.name}</h3>
+  <!-- MAIN CONTENT -->
+  <div class="p-6 space-y-4 flex flex-col">
+    <!-- SERVER NAME & OWNER INFO -->
+    <div class="flex justify-between items-center">
+      <h3 class="text-2xl font-bold text-white">${s.name}</h3>
       <p class="text-sm text-zinc-400">Owner: <span class="text-zinc-200">${owner}</span></p>
-      <p class="text-sm text-zinc-300 line-clamp-3">${s.description}</p>
     </div>
 
+    <!-- SERVER DESCRIPTION -->
+    <p class="text-base text-zinc-300 line-clamp-3">${s.description}</p>
+
     <!-- TAGS -->
-    <div class="flex flex-wrap gap-2 mt-3">
+    <div class="flex flex-wrap gap-2 mt-2">
       ${(s.tags || []).map(tag => `
-        <span class="px-3 py-1 text-[12px] font-semibold rounded-full bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 transition">
+        <span class="px-4 py-1 text-sm font-semibold rounded-full bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 transition">
           #${tag}
         </span>`).join('')}
     </div>
 
-    <!-- MEMBERS + JOIN BUTTON -->
+    <!-- SEPARATOR LINE -->
+    <div class="my-4 border-t border-zinc-700"></div>
+
+    <!-- MEMBERS INFO + JOIN BUTTON -->
     <div class="flex justify-between items-center mt-4">
       <span class="text-sm text-zinc-500 members-count" data-id="${s.discordServerId}">${s.members != null ? s.members : 'N/A'} members</span>
-      <a href="${invite}" target="_blank" class="px-5 py-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-sm font-semibold hover:brightness-110 transition duration-200 ease-in-out transform hover:scale-105">
+      <a href="${invite}" target="_blank" class="px-6 py-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-sm font-semibold hover:brightness-110 transition duration-200 ease-in-out transform hover:scale-105">
         🚀 Join
       </a>
     </div>
