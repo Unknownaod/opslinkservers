@@ -258,23 +258,37 @@ function renderServers() {
       ? `${s.submitterDiscord.username}${s.submitterDiscord.tag ? '#' + s.submitterDiscord.tag : ''}`
       : 'Unknown';
 
-    const card = document.createElement('div');
-    card.className = 'group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:scale-[1.03] transition cursor-pointer';
-    card.innerHTML = `
-   <div class="relative h-44 bg-black">
-  <img src="${s.logo}" class="w-full h-full object-cover"/>
-   </div>
-      <div class="p-5 space-y-2">
-        <h3 class="text-lg font-semibold">${s.name}</h3>
-        <p class="text-xs text-zinc-400">Server Owner/Represenitive: <span class="text-zinc-200">${owner}</span></p>
-        <p class="text-sm text-zinc-300 line-clamp-2">${s.description}</p>
-        <div class="flex flex-wrap gap-1.5">${(s.tags || []).map(tag => `<span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-zinc-800 border border-zinc-700">#${tag}</span>`).join('')}</div>
-        <div class="flex justify-between items-center pt-1">
-          <span class="text-xs text-zinc-500 members-count" data-id="${s.discordServerId}">${s.members != null ? s.members : 'N/A'} members</span>
-          <a href="${invite}" target="_blank" class="px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-sm font-semibold hover:brightness-110">🚀 Join</a>
-        </div>
-      </div>
-    `;
+const card = document.createElement('div');
+card.className = 'group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:scale-[1.02] transition cursor-pointer flex flex-col md:flex-row';
+
+card.innerHTML = `
+  <!-- SERVER IMAGE -->
+  <div class="w-full md:w-32 h-32 flex-shrink-0 overflow-hidden rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none relative">
+    <img src="${s.logo}" class="w-full h-full object-cover"/>
+    <div class="absolute inset-0 bg-black/20"></div>
+  </div>
+
+  <!-- SERVER INFO -->
+  <div class="flex-1 p-4 flex flex-col justify-between">
+    <div>
+      <h3 class="text-lg font-semibold text-white">${s.name}</h3>
+      <p class="text-xs text-zinc-400 mb-2">Owner: <span class="text-zinc-200">${owner}</span></p>
+      <p class="text-sm text-zinc-300 line-clamp-3">${s.description}</p>
+    </div>
+
+    <!-- TAGS -->
+    <div class="flex flex-wrap gap-1.5 mt-2">
+      ${(s.tags || []).map(tag => `<span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-zinc-800 border border-zinc-700">#${tag}</span>`).join('')}
+    </div>
+
+    <!-- MEMBERS + JOIN BUTTON -->
+    <div class="flex justify-between items-center mt-3">
+      <span class="text-xs text-zinc-500 members-count" data-id="${s.discordServerId}">${s.members != null ? s.members : 'N/A'} members</span>
+      <a href="${invite}" target="_blank" class="px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-sm font-semibold hover:brightness-110 transition">🚀 Join</a>
+    </div>
+  </div>
+`;
+
 card.onclick = e => {
   if (e.target.tagName !== 'A') {
     window.location.href = `server.html?guildid=${s._id}`;
