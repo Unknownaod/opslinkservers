@@ -202,8 +202,10 @@ if (!reviews.length) {
       reviews.map(async r => {
         total += r.rating;
 
+        const roles = new Set(['user']);
+
         if (!r.discordUsername || !r.discordUserID) {
-          return { ...r, roles: ['user'] };
+          return { ...r, roles: [...roles] };
         }
 
         try {
@@ -212,15 +214,23 @@ if (!reviews.length) {
           );
           const data = await res.json();
 
-          const roles = new Set(['user']);
-
           if (data?.role === 'admin') roles.add('admin');
-          if (owner && r.discordUserID === owner.userID) roles.add('owner');
+
+          // Always independently check ownership
+          if (owner?.userID && r.discordUserID === owner.userID) {
+            roles.add('owner');
+          }
 
           return { ...r, roles: [...roles] };
         } catch (err) {
           console.error('Error fetching reviewer role:', err);
-          return { ...r, roles: ['user'] };
+
+          // Still apply owner role if API fails
+          if (owner?.userID && r.discordUserID === owner.userID) {
+            roles.add('owner');
+          }
+
+          return { ...r, roles: [...roles] };
         }
       })
     );
