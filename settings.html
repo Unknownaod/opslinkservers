@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OpsLink · Settings</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/feather-icons"></script>
+
   <style>
     .glass {
       background: rgba(24, 24, 27, 0.85);
@@ -82,6 +84,7 @@
         <h3 class="text-xl font-semibold">My Servers</h3>
         <p class="text-sm text-zinc-400">Servers you own or submitted</p>
       </div>
+
       <div id="servers-list" class="grid md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
       <p id="servers-empty" class="hidden text-sm text-zinc-400">
         No servers found.
@@ -90,6 +93,7 @@
 
     <!-- Security -->
     <section id="security" class="glass rounded-2xl p-8 space-y-8">
+
       <div>
         <h3 class="text-xl font-semibold">Security</h3>
         <p class="text-sm text-zinc-400">Email & password management</p>
@@ -98,9 +102,13 @@
       <div class="flex flex-col md:flex-row justify-between gap-6">
         <div>
           <p class="font-medium">Change Email</p>
-          <p class="text-sm text-zinc-400">Update your email and re-verify it.</p>
+          <p class="text-sm text-zinc-400">
+            Update your email and re-verify it.
+          </p>
         </div>
-        <button id="change-email" class="bg-indigo-600 hover:bg-indigo-500 transition px-6 py-3 rounded-lg font-medium">
+
+        <button id="change-email"
+          class="bg-indigo-600 hover:bg-indigo-500 transition px-6 py-3 rounded-lg font-medium">
           Change Email
         </button>
       </div>
@@ -110,118 +118,140 @@
       <div class="flex flex-col md:flex-row justify-between gap-6">
         <div>
           <p class="font-medium">Change Password</p>
-          <p class="text-sm text-zinc-400">We’ll email you a reset link.</p>
+          <p class="text-sm text-zinc-400">
+            We’ll email you a reset link.
+          </p>
         </div>
-        <button id="change-password" class="bg-red-600 hover:bg-red-500 transition px-6 py-3 rounded-lg font-medium">
+
+        <button id="change-password"
+          class="bg-red-600 hover:bg-red-500 transition px-6 py-3 rounded-lg font-medium">
           Send Reset Email
         </button>
       </div>
+
     </section>
+
   </main>
 
-<script>
-feather.replace();
+  <script>
+    feather.replace();
 
-const API_URL = '/api';
-const token = localStorage.getItem('token');
-const userStr = localStorage.getItem('user');
+    /* ===== FULL API URL ===== */
+    const API_URL = 'https://opslinkservers-backend.onrender.com/api';
 
-// Redirect helper
-function redirectLogin() {
-  localStorage.clear();
-  window.location.href = '/login.html';
-}
+    /* ========= GET TOKEN & USER ========= */
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
 
-// Check auth
-if (!token || !userStr) redirectLogin();
-const user = JSON.parse(userStr);
-
-// Populate UI
-document.getElementById('email').textContent = user.email;
-document.getElementById('discord').textContent = user.discordUsername + (user.discordTag ? `#${user.discordTag}` : '');
-document.getElementById('role').textContent = user.role || 'user';
-document.getElementById('avatar').textContent = user.discordUsername?.[0]?.toUpperCase() || '?';
-
-// Load user servers
-async function loadServers() {
-  try {
-    const res = await fetch(`${API_URL}/servers/mine`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    if (res.status === 401) return redirectLogin();
-    const servers = await res.json();
-
-    const list = document.getElementById('servers-list');
-    const empty = document.getElementById('servers-empty');
-    list.innerHTML = '';
-
-    if (!Array.isArray(servers) || servers.length === 0) {
-      empty.classList.remove('hidden');
-      return;
+    function redirectLogin() {
+      localStorage.clear();
+      window.location.href = '/login.html';
     }
 
-    empty.classList.add('hidden');
-    servers.forEach(s => {
-      const card = document.createElement('div');
-      card.className = 'bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 space-y-3';
-      card.innerHTML = `
-        <div class="flex items-center gap-3">
-          <img src="${s.logo}" class="w-10 h-10 rounded-md object-cover" />
-          <div>
-            <p class="font-medium">${s.name}</p>
-            <p class="text-xs text-zinc-400">${s.status || 'pending'}</p>
-          </div>
-        </div>
-        <a href="${s.invite}" target="_blank" class="text-indigo-400 text-sm hover:underline">
-          Join Server →
-        </a>
-      `;
-      list.appendChild(card);
-    });
+    if (!token || !userStr) redirectLogin();
 
-  } catch (err) {
-    console.error(err);
-    redirectLogin();
-  }
-}
-loadServers();
+    let user;
+    try {
+      user = JSON.parse(userStr);
+    } catch {
+      redirectLogin();
+    }
 
-// Change email
-document.getElementById('change-email').onclick = async () => {
-  const newEmail = prompt('Enter your new email address');
-  if (!newEmail) return;
-  try {
-    const res = await fetch(`${API_URL}/auth/change-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ newEmail })
-    });
-    if (res.status === 401) return redirectLogin();
-    const data = await res.json();
-    alert(res.ok ? 'Email updated. Please verify it.' : data.error);
-  } catch (err) {
-    console.error(err);
-    alert('Something went wrong.');
-  }
-};
+    /* ========= POPULATE PROFILE ========= */
+    document.getElementById('email').textContent = user.email;
+    document.getElementById('discord').textContent =
+      user.discordUsername + (user.discordTag ? `#${user.discordTag}` : '');
+    document.getElementById('role').textContent = user.role || 'user';
+    document.getElementById('avatar').textContent =
+      user.discordUsername?.[0]?.toUpperCase() || '?';
 
-// Change password
-document.getElementById('change-password').onclick = async () => {
-  try {
-    const res = await fetch(`${API_URL}/auth/forgot-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: user.email })
-    });
-    const data = await res.json();
-    alert(res.ok ? 'Password reset email sent.' : data.error);
-  } catch (err) {
-    console.error(err);
-    alert('Something went wrong.');
-  }
-};
-</script>
+    /* ========= LOAD MY SERVERS ========= */
+    async function loadServers() {
+      try {
+        const res = await fetch(`${API_URL}/servers/mine`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.status === 401) return redirectLogin();
+
+        const servers = await res.json();
+        const list = document.getElementById('servers-list');
+        const empty = document.getElementById('servers-empty');
+
+        list.innerHTML = '';
+        if (!Array.isArray(servers) || servers.length === 0) {
+          empty.classList.remove('hidden');
+          return;
+        }
+
+        empty.classList.add('hidden');
+        servers.forEach(s => {
+          const card = document.createElement('div');
+          card.className = 'bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 space-y-3';
+          card.innerHTML = `
+            <div class="flex items-center gap-3">
+              <img src="${s.logo}" class="w-10 h-10 rounded-md object-cover" />
+              <div>
+                <p class="font-medium">${s.name}</p>
+                <p class="text-xs text-zinc-400">${s.status || 'pending'}</p>
+              </div>
+            </div>
+            ${s.invite ? `<a href="${s.invite}" target="_blank" class="text-indigo-400 text-sm hover:underline">Join Server →</a>` : ''}
+          `;
+          list.appendChild(card);
+        });
+
+      } catch (err) {
+        console.error('Error fetching servers:', err);
+        // Only show an error, don't logout automatically
+        const list = document.getElementById('servers-list');
+        list.innerHTML = `<p class="text-red-500">Failed to load servers. Try again later.</p>`;
+      }
+    }
+    loadServers();
+
+    /* ========= CHANGE EMAIL ========= */
+    document.getElementById('change-email').onclick = async () => {
+      const newEmail = prompt('Enter your new email address');
+      if (!newEmail) return;
+
+      try {
+        const res = await fetch(`${API_URL}/auth/change-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ newEmail })
+        });
+
+        if (res.status === 401) return redirectLogin();
+
+        const data = await res.json();
+        alert(res.ok ? 'Email updated. Please verify it.' : data.error);
+      } catch (err) {
+        console.error('Error changing email:', err);
+        alert('Something went wrong. Try again later.');
+      }
+    };
+
+    /* ========= CHANGE PASSWORD ========= */
+    document.getElementById('change-password').onclick = async () => {
+      try {
+        const res = await fetch(`${API_URL}/auth/forgot-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user.email })
+        });
+
+        const data = await res.json();
+        alert(res.ok ? 'Password reset email sent.' : data.error);
+      } catch (err) {
+        console.error('Error sending reset email:', err);
+        alert('Something went wrong. Try again later.');
+      }
+    };
+  </script>
 
 </body>
 </html>
