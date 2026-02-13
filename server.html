@@ -202,51 +202,80 @@ if (!reviews.length) {
       reviews.map(async r => {
         total += r.rating;
 
-        if (!r.discordUsername) return { ...r, role: 'user' };
+        if (!r.discordUsername || !r.discordUserID) {
+          return { ...r, roles: ['user'] };
+        }
 
         try {
-          const res = await fetch(`${API_URL}/api/servers/role/${encodeURIComponent(r.discordUsername)}`);
+          const res = await fetch(
+            `${API_URL}/api/servers/role/${encodeURIComponent(r.discordUsername)}`
+          );
           const data = await res.json();
-          const role = data.role || 'user';
 
-          return { ...r, role };
+          const roles = new Set(['user']);
+
+          if (data?.role === 'admin') roles.add('admin');
+          if (owner && r.discordUserID === owner.userID) roles.add('owner');
+
+          return { ...r, roles: [...roles] };
         } catch (err) {
           console.error('Error fetching reviewer role:', err);
-          return { ...r, role: 'user' }; // fallback
+          return { ...r, roles: ['user'] };
         }
       })
     );
 
-    // Render reviews and average
+    // Render reviews
     reviewsList.innerHTML = '';
+
     enhancedReviews.forEach(r => {
-      const isAdmin = r.role === 'admin';
-      const isOwner = owner && r.discordUserID === owner.userID;
+      const isAdmin = r.roles.includes('admin');
+      const isOwner = r.roles.includes('owner');
 
       reviewsList.innerHTML += `
         <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
           <div class="flex justify-between mb-1">
-            <div class="flex items-center gap-2 relative">
+            <div class="flex items-center gap-2">
               <span class="font-semibold text-sm">
-                ${r.discordUsername} ${isOwner ? '[SERVER OWNER]' : ''}
+                ${r.discordUsername}
               </span>
-              ${
-                isAdmin
-                  ? `
-                  <div class="relative group">
-                    <img src="assets/staff.png" alt="OpsLink Staff" class="w-4 h-4"/>
-                    <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 text-xs rounded bg-black text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                      Official OpsLink Staff
-                    </span>
-                  </div>
+
+              <div class="flex items-center gap-1">
+
+                ${
+                  isOwner
+                    ? `
+                    <div class="relative group">
+                      <span class="text-xs font-bold text-amber-400">👑</span>
+                      <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 text-xs rounded bg-black text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        Server Owner
+                      </span>
+                    </div>
                   `
-                  : ''
-              }
+                    : ''
+                }
+
+                ${
+                  isAdmin
+                    ? `
+                    <div class="relative group">
+                      <img src="assets/staff.png" alt="OpsLink Staff" class="w-4 h-4"/>
+                      <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 text-xs rounded bg-black text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        Official OpsLink Staff
+                      </span>
+                    </div>
+                  `
+                    : ''
+                }
+
+              </div>
             </div>
+
             <span class="text-yellow-400 text-sm">
               ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
             </span>
           </div>
+
           <p class="text-sm text-zinc-300">${r.comment}</p>
         </div>
       `;
@@ -261,7 +290,6 @@ if (!reviews.length) {
 
   fetchReviewsWithRoles();
 }
-
 
 /* --- SHOW EDIT BUTTON IF OWNER --- */
 if (currentUser && owner && owner.userID) {
