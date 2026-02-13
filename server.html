@@ -202,7 +202,6 @@ if (!reviews.length) {
       reviews.map(async r => {
         total += r.rating;
 
-        // Use discordUsername instead of discordUserID
         if (!r.discordUsername) return { ...r, role: 'user' };
 
         try {
@@ -218,41 +217,41 @@ if (!reviews.length) {
       })
     );
 
- // Render reviews and average
-reviewsList.innerHTML = '';
-enhancedReviews.forEach(r => {
-  const isAdmin = r.role === 'admin';
-  const isOwner = owner && r.discordUserID === owner.userID; // check if reviewer is server owner
+    // Render reviews and average
+    reviewsList.innerHTML = '';
+    enhancedReviews.forEach(r => {
+      const isAdmin = r.role === 'admin';
+      // Only show SERVER OWNER if reviewer is owner and NOT admin/staff
+      const isOwner = owner && r.discordUserID === owner.userID && !isAdmin;
 
-  reviewsList.innerHTML += `
-    <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
-      <div class="flex justify-between mb-1">
-        <div class="flex items-center gap-2 relative">
-          <span class="font-semibold text-sm">
-            ${r.discordUsername} ${isOwner ? '[SERVER OWNER]' : ''}
-          </span>
-          ${
-            isAdmin
-              ? `
-              <div class="relative group">
-                <img src="assets/staff.png" alt="OpsLink Staff" class="w-4 h-4"/>
-                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 text-xs rounded bg-black text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  Official OpsLink Staff
-                </span>
-              </div>
-              `
-              : ''
-          }
+      reviewsList.innerHTML += `
+        <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
+          <div class="flex justify-between mb-1">
+            <div class="flex items-center gap-2 relative">
+              <span class="font-semibold text-sm">
+                ${r.discordUsername} ${isOwner ? '[SERVER OWNER]' : ''}
+              </span>
+              ${
+                isAdmin
+                  ? `
+                  <div class="relative group">
+                    <img src="assets/staff.png" alt="OpsLink Staff" class="w-4 h-4"/>
+                    <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 text-xs rounded bg-black text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                      Official OpsLink Staff
+                    </span>
+                  </div>
+                  `
+                  : ''
+              }
+            </div>
+            <span class="text-yellow-400 text-sm">
+              ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
+            </span>
+          </div>
+          <p class="text-sm text-zinc-300">${r.comment}</p>
         </div>
-        <span class="text-yellow-400 text-sm">
-          ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
-        </span>
-      </div>
-      <p class="text-sm text-zinc-300">${r.comment}</p>
-    </div>
-  `;
-});
-
+      `;
+    });
 
     const avg = (total / enhancedReviews.length).toFixed(1);
     document.getElementById('averageStars').textContent =
@@ -263,7 +262,6 @@ enhancedReviews.forEach(r => {
 
   fetchReviewsWithRoles();
 }
-
 
 
 /* --- SHOW EDIT BUTTON IF OWNER --- */
