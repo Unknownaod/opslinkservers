@@ -1,239 +1,254 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OpsLink Settings</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OpsLink · Account Settings</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+
+  <style>
+    .glass {
+      background: rgba(24, 24, 27, 0.85);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .glow:hover {
+      box-shadow: 0 0 30px rgba(99,102,241,0.25);
+    }
+  </style>
 </head>
 
-<body class="bg-zinc-900 text-white min-h-screen flex">
+<body class="bg-gradient-to-br from-black via-zinc-900 to-black text-white min-h-screen flex">
 
   <!-- Sidebar -->
-  <aside class="w-64 bg-zinc-800 p-6 flex flex-col gap-6 hidden md:flex">
-    <h2 class="text-2xl font-bold mb-4">Settings</h2>
-    <nav class="flex flex-col gap-2 text-zinc-300">
-      <a href="#profile" class="hover:text-white px-2 py-1 rounded hover:bg-zinc-700">Profile</a>
-      <a href="#my-servers" class="hover:text-white px-2 py-1 rounded hover:bg-zinc-700">My Servers</a>
-      <a href="#server-management" class="hover:text-white px-2 py-1 rounded hover:bg-zinc-700">Server Management</a>
-      <a href="#role-settings" class="hover:text-white px-2 py-1 rounded hover:bg-zinc-700">Role Settings</a>
+  <aside class="w-72 p-8 hidden lg:flex flex-col gap-10 glass">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">OpsLink</h1>
+      <p class="text-sm text-zinc-400 mt-1">Account Settings</p>
+    </div>
+
+    <nav class="flex flex-col gap-3 text-zinc-300">
+      <a href="#profile" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-800">
+        <i data-feather="user"></i> Profile
+      </a>
+      <a href="#servers" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-800">
+        <i data-feather="server"></i> My Servers
+      </a>
+      <a href="#security" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-800">
+        <i data-feather="shield"></i> Security
+      </a>
     </nav>
+
+    <div class="mt-auto text-xs text-zinc-500">
+      © OpsLink <span id="year"></span>
+    </div>
   </aside>
 
-  <!-- Main Content -->
-  <main class="flex-1 p-8 space-y-12">
+  <!-- Main -->
+  <main class="flex-1 p-10 space-y-14">
+
+    <!-- Header -->
     <header>
-      <h1 class="text-4xl font-bold mb-2">OpsLink Settings</h1>
-      <p class="text-zinc-400">Manage your profile, servers, and roles from one dashboard.</p>
+      <h2 class="text-4xl font-semibold tracking-tight">Account</h2>
+      <p class="text-zinc-400 mt-2 max-w-xl">
+        Manage your account, servers, and security preferences.
+      </p>
     </header>
 
-    <!-- Profile Card -->
-    <section id="profile" class="bg-zinc-800 rounded-lg p-6 shadow-lg space-y-4">
-      <h2 class="text-2xl font-semibold">Your Profile</h2>
-      <div class="space-y-2">
-        <p>Email: <span id="user-email" class="font-medium"></span></p>
-        <p>Discord Username: <span id="user-discord" class="font-medium"></span></p>
-        <button class="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition" id="change-email-btn">
+    <!-- Profile -->
+    <section id="profile" class="glass rounded-2xl p-8 space-y-6">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-full bg-indigo-600 flex items-center justify-center text-xl font-bold">
+          <span id="avatar-letter">?</span>
+        </div>
+        <div>
+          <h3 class="text-xl font-semibold">Profile Information</h3>
+          <p class="text-sm text-zinc-400">Your account identity</p>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <div>
+          <p class="text-xs uppercase text-zinc-500">Email</p>
+          <p id="user-email" class="font-medium text-indigo-400 mt-1"></p>
+        </div>
+
+        <div>
+          <p class="text-xs uppercase text-zinc-500">Discord</p>
+          <p id="user-discord" class="font-medium mt-1"></p>
+        </div>
+
+        <div>
+          <p class="text-xs uppercase text-zinc-500">Role</p>
+          <p id="user-role" class="font-medium mt-1"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- My Servers -->
+    <section id="servers" class="glass rounded-2xl p-8 space-y-6">
+      <div>
+        <h3 class="text-xl font-semibold">My Servers</h3>
+        <p class="text-sm text-zinc-400">
+          Servers you’ve submitted to OpsLink
+        </p>
+      </div>
+
+      <div id="servers-list" class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <!-- Injected -->
+      </div>
+
+      <p id="servers-empty" class="hidden text-zinc-400 text-sm">
+        You haven’t submitted any servers yet.
+      </p>
+    </section>
+
+    <!-- Security -->
+    <section id="security" class="glass rounded-2xl p-8 space-y-8">
+      <div>
+        <h3 class="text-xl font-semibold">Security</h3>
+        <p class="text-sm text-zinc-400">
+          Manage email and password security
+        </p>
+      </div>
+
+      <div class="flex flex-col md:flex-row justify-between gap-6">
+        <div>
+          <p class="font-medium">Email Address</p>
+          <p class="text-sm text-zinc-400 max-w-md">
+            Change your email before verification.
+          </p>
+        </div>
+
+        <button id="change-email-btn"
+          class="glow bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-3 rounded-lg font-medium hover:scale-[1.02] transition">
           Change Email
+        </button>
+      </div>
+
+      <hr class="border-zinc-800">
+
+      <div class="flex flex-col md:flex-row justify-between gap-6">
+        <div>
+          <p class="font-medium">Password</p>
+          <p class="text-sm text-zinc-400 max-w-md">
+            Reset your password securely via email.
+          </p>
+        </div>
+
+        <button id="change-password-btn"
+          class="glow bg-gradient-to-r from-red-600 to-rose-600 px-6 py-3 rounded-lg font-medium hover:scale-[1.02] transition">
+          Send Reset Email
         </button>
       </div>
     </section>
 
-    <!-- My Servers Card -->
-    <section id="my-servers" class="bg-zinc-800 rounded-lg p-6 shadow-lg space-y-4">
-      <h2 class="text-2xl font-semibold">Your Submitted Servers</h2>
-      <div id="server-list" class="space-y-2">
-        <!-- Servers injected here -->
-      </div>
-      <button id="submit-server-btn" class="bg-green-600 px-4 py-2 rounded hover:bg-green-700 transition">
-        Submit a Server
-      </button>
-    </section>
-
-    <!-- Server Management Card -->
-    <section id="server-management" class="bg-zinc-800 rounded-lg p-6 shadow-lg space-y-4">
-      <h2 class="text-2xl font-semibold">Manage Server</h2>
-      <div class="flex flex-col md:flex-row gap-4 md:items-end">
-        <div class="flex-1">
-          <label for="server-id" class="block mb-1 text-zinc-300">Server ID:</label>
-          <input type="text" id="server-id" placeholder="Enter Server ID"
-            class="w-full px-3 py-2 rounded bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        </div>
-        <button id="fetch-server-btn"
-          class="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition">Fetch Server</button>
-      </div>
-      <div id="server-management-actions" class="hidden mt-4 flex flex-wrap gap-2">
-        <button id="approve-server-btn"
-          class="bg-green-600 px-4 py-2 rounded hover:bg-green-700 transition">Approve Server</button>
-        <button id="deny-server-btn" class="bg-red-600 px-4 py-2 rounded hover:bg-red-700 transition">Deny Server</button>
-        <button id="edit-server-btn" class="bg-yellow-600 px-4 py-2 rounded hover:bg-yellow-700 transition">Request Edit</button>
-        <button id="delete-server-btn" class="bg-zinc-500 px-4 py-2 rounded hover:bg-zinc-600 transition">Delete Server</button>
-      </div>
-    </section>
-
-    <!-- Role Settings Card -->
-    <section id="role-settings" class="bg-zinc-800 rounded-lg p-6 shadow-lg space-y-4">
-      <h2 class="text-2xl font-semibold">Role Settings</h2>
-      <div class="flex flex-col md:flex-row gap-4 md:items-end">
-        <div class="flex-1">
-          <label for="role-username" class="block mb-1 text-zinc-300">Discord Username:</label>
-          <input type="text" id="role-username" placeholder="Enter Discord Username"
-            class="w-full px-3 py-2 rounded bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        </div>
-        <button id="get-role-btn" class="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition">Get Role</button>
-      </div>
-      <div id="user-role" class="text-green-400 font-medium mt-2"></div>
-    </section>
   </main>
 
-  <!-- Scripts -->
+  <!-- Script -->
   <script>
-    const apiBaseUrl = 'https://yourapi.com/api';
+    feather.replace();
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-    async function getUserProfile() {
-      try {
-        const res = await fetch(`${apiBaseUrl}/profile`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
-        });
-        const data = await res.json();
-        document.getElementById('user-email').textContent = data.email;
-        document.getElementById('user-discord').textContent = data.discordUsername;
-      } catch (err) {
-        console.error('Failed to fetch user profile:', err);
-      }
+    const API_AUTH = 'https://opslinkservers-backend.onrender.com/api/auth';
+    const API_SERVERS = 'https://opslinkservers-backend.onrender.com/api/servers';
+    const token = localStorage.getItem('authToken');
+
+    if (!token) location.href = '/login.html';
+
+    function decodeJWT(token) {
+      return JSON.parse(atob(token.split('.')[1]));
     }
 
-    async function getUserServers() {
-      try {
-        const res = await fetch(`${apiBaseUrl}/servers/mine`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
-        });
-        const servers = await res.json();
-        const serverList = document.getElementById('server-list');
-        serverList.innerHTML = '';
-        servers.forEach(server => {
-          const div = document.createElement('div');
-          div.className = 'bg-zinc-700 rounded px-3 py-2';
-          div.innerHTML = `<strong>${server.name}</strong> - Invite: <a class="text-indigo-400 hover:underline" href="${server.invite}" target="_blank">${server.invite}</a>`;
-          serverList.appendChild(div);
-        });
-      } catch (err) {
-        console.error('Failed to fetch servers:', err);
+    const user = decodeJWT(token);
+
+    document.getElementById('user-email').textContent = user.email;
+    document.getElementById('user-discord').textContent = user.discordUsername;
+    document.getElementById('user-role').textContent = user.role || 'user';
+    document.getElementById('avatar-letter').textContent =
+      user.discordUsername?.charAt(0).toUpperCase() || '?';
+
+    /* =========================
+       Load My Servers
+    ========================= */
+    async function loadServers() {
+      const res = await fetch(`${API_SERVERS}/mine`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const servers = await res.json();
+      const list = document.getElementById('servers-list');
+      const empty = document.getElementById('servers-empty');
+
+      if (!res.ok || !servers.length) {
+        empty.classList.remove('hidden');
+        return;
       }
+
+      servers.forEach(server => {
+        const card = document.createElement('div');
+        card.className = 'bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 space-y-3';
+
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <img src="${server.logo}" class="w-10 h-10 rounded-md object-cover" />
+            <div>
+              <p class="font-medium">${server.name}</p>
+              <p class="text-xs text-zinc-400">${server.status || 'pending'}</p>
+            </div>
+          </div>
+
+          <a href="${server.invite}" target="_blank"
+            class="inline-block text-indigo-400 text-sm hover:underline">
+            Join Server →
+          </a>
+        `;
+
+        list.appendChild(card);
+      });
     }
 
-    async function submitServer() {
-      const serverData = {
-        name: 'New Server',
-        invite: 'https://discord.gg/example',
-        description: 'A great server',
-        language: 'English',
-        members: 100,
-        type: 'community',
-        rules: 'Be respectful',
-        website: 'https://example.com',
-        logo: 'https://example.com/logo.png',
-        nsfw: false,
-        tags: ['gaming', 'discord'],
-        discordServerId: '1234567890'
-      };
-      try {
-        const res = await fetch(`${apiBaseUrl}/servers`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          },
-          body: JSON.stringify(serverData)
-        });
-        const data = await res.json();
-        if (res.ok) alert('Server submitted successfully!');
-        else alert(data.error || 'Failed to submit server.');
-      } catch (err) {
-        console.error('Failed to submit server:', err);
-      }
-    }
+    loadServers();
 
-    async function fetchServer() {
-      const serverId = document.getElementById('server-id').value;
-      if (!serverId) return alert('Enter a valid Server ID.');
-      try {
-        const res = await fetch(`${apiBaseUrl}/servers/${serverId}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
-        });
-        const server = await res.json();
-        if (res.ok) document.getElementById('server-management-actions').classList.remove('hidden');
-        else alert(server.error || 'Server not found.');
-      } catch (err) {
-        console.error(err);
-      }
-    }
+    /* =========================
+       Change Email
+    ========================= */
+    document.getElementById('change-email-btn').addEventListener('click', async () => {
+      const newEmail = prompt('Enter your new email');
+      if (!newEmail) return;
 
-    async function approveServer() {
-      const serverId = document.getElementById('server-id').value;
-      if (!serverId) return alert('Enter Server ID.');
-      try {
-        const res = await fetch(`${apiBaseUrl}/servers/${serverId}/status`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          },
-          body: JSON.stringify({ status: 'approved' })
-        });
-        const data = await res.json();
-        if (res.ok) alert('Server approved!');
-        else alert(data.error || 'Failed to approve.');
-      } catch (err) {
-        console.error(err);
-      }
-    }
+      const res = await fetch(`${API_AUTH}/change-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oldEmail: user.email, newEmail })
+      });
 
-    async function denyServer() {
-      const serverId = document.getElementById('server-id').value;
-      const reason = prompt('Enter rejection reason');
-      if (!serverId || !reason) return alert('Provide valid server ID and reason.');
-      try {
-        const res = await fetch(`${apiBaseUrl}/servers/${serverId}/status`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          },
-          body: JSON.stringify({ status: 'denied', rejectionReason: reason })
-        });
-        const data = await res.json();
-        if (res.ok) alert('Server denied!');
-        else alert(data.error || 'Failed to deny.');
-      } catch (err) {
-        console.error(err);
-      }
-    }
+      const data = await res.json();
 
-    async function getUserRole() {
-      const username = document.getElementById('role-username').value;
-      if (!username) return alert('Enter Discord username.');
-      try {
-        const res = await fetch(`${apiBaseUrl}/role/${username}`);
-        const data = await res.json();
-        if (res.ok) document.getElementById('user-role').textContent = `Role: ${data.role}`;
-        else alert(data.error || 'Failed to fetch role.');
-      } catch (err) {
-        console.error(err);
-      }
-    }
+      if (!res.ok) return alert(data.error || 'Failed');
 
-    // Event Listeners
-    document.getElementById('submit-server-btn').addEventListener('click', submitServer);
-    document.getElementById('fetch-server-btn').addEventListener('click', fetchServer);
-    document.getElementById('approve-server-btn').addEventListener('click', approveServer);
-    document.getElementById('deny-server-btn').addEventListener('click', denyServer);
-    document.getElementById('get-role-btn').addEventListener('click', getUserRole);
+      alert('Email updated. Verify your new email.');
+      localStorage.removeItem('authToken');
+      location.href = '/verify.html';
+    });
 
-    // Initial load
-    getUserProfile();
-    getUserServers();
+    /* =========================
+       Change Password
+    ========================= */
+    document.getElementById('change-password-btn').addEventListener('click', async () => {
+      const res = await fetch(`${API_AUTH}/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email })
+      });
+
+      const data = await res.json();
+      if (!res.ok) return alert(data.error || 'Failed');
+
+      alert('Password reset email sent.');
+    });
   </script>
 
 </body>
