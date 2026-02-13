@@ -133,124 +133,179 @@
 
   </main>
 
-  <script>
-    feather.replace();
+ <script>
+feather.replace();
 
-    /* ===== FULL API URL ===== */
-    const API_URL = 'https://opslinkservers-backend.onrender.com/api';
+/* ===== FULL API URL ===== */
+const API_URL = 'https://opslinkservers-backend.onrender.com/api';
 
-    /* ========= GET TOKEN & USER ========= */
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
+/* ========= GET TOKEN & USER ========= */
+const token = localStorage.getItem('token');
+const userStr = localStorage.getItem('user');
 
-    function redirectLogin() {
-      localStorage.clear();
-      window.location.href = '/login.html';
-    }
+function redirectLogin() {
+  localStorage.clear();
+  window.location.href = '/login.html';
+}
 
-    if (!token || !userStr) redirectLogin();
+if (!token || !userStr) redirectLogin();
 
-    let user;
-    try {
-      user = JSON.parse(userStr);
-    } catch {
-      redirectLogin();
-    }
+let user;
+try {
+  user = JSON.parse(userStr);
+} catch {
+  redirectLogin();
+}
 
-    /* ========= POPULATE PROFILE ========= */
-    document.getElementById('email').textContent = user.email;
-    document.getElementById('discord').textContent =
-      user.discordUsername + (user.discordTag ? `#${user.discordTag}` : '');
-    document.getElementById('role').textContent = user.role || 'user';
-    document.getElementById('avatar').textContent =
-      user.discordUsername?.[0]?.toUpperCase() || '?';
+/* ========= POPULATE PROFILE ========= */
+document.getElementById('email').textContent = user.email;
+document.getElementById('discord').textContent =
+  user.discordUsername + (user.discordTag ? `#${user.discordTag}` : '');
+document.getElementById('role').textContent = user.role || 'user';
+document.getElementById('avatar').textContent =
+  user.discordUsername?.[0]?.toUpperCase() || '?';
 
-    /* ========= LOAD MY SERVERS ========= */
-    async function loadServers() {
-      try {
-        const res = await fetch(`${API_URL}/servers/mine`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+/* ========= CUSTOM MODAL UTILS ========= */
+function createModal({ title = '', message = '', placeholder = '', confirmText = 'OK', onConfirm }) {
+  // Remove existing modal if present
+  const existing = document.getElementById('custom-modal');
+  if (existing) existing.remove();
 
-        if (res.status === 401) return redirectLogin();
+  const modal = document.createElement('div');
+  modal.id = 'custom-modal';
+  modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/70';
 
-        const servers = await res.json();
-        const list = document.getElementById('servers-list');
-        const empty = document.getElementById('servers-empty');
+  modal.innerHTML = `
+    <div class="bg-zinc-900 rounded-xl p-8 w-96 flex flex-col gap-4 shadow-lg">
+      <h3 class="text-xl font-semibold">${title}</h3>
+      ${message ? `<p class="text-zinc-400">${message}</p>` : ''}
+      ${placeholder !== null ? `<input id="modal-input" type="text" placeholder="${placeholder}" class="w-full p-2 rounded bg-zinc-800 text-white border border-zinc-700">` : ''}
+      <div class="flex justify-end gap-2">
+        <button id="modal-cancel" class="px-4 py-2 bg-zinc-700 rounded hover:bg-zinc-600">Cancel</button>
+        <button id="modal-confirm" class="px-4 py-2 bg-indigo-600 rounded hover:bg-indigo-500">${confirmText}</button>
+      </div>
+    </div>
+  `;
 
-        list.innerHTML = '';
-        if (!Array.isArray(servers) || servers.length === 0) {
-          empty.classList.remove('hidden');
-          return;
-        }
+  document.body.appendChild(modal);
 
-        empty.classList.add('hidden');
-        servers.forEach(s => {
-          const card = document.createElement('div');
-          card.className = 'bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 space-y-3';
-          card.innerHTML = `
-            <div class="flex items-center gap-3">
-              <img src="${s.logo}" class="w-10 h-10 rounded-md object-cover" />
-              <div>
-                <p class="font-medium">${s.name}</p>
-                <p class="text-xs text-zinc-400">${s.status || 'pending'}</p>
-              </div>
-            </div>
-          `;
-          list.appendChild(card);
-        });
-
-      } catch (err) {
-        console.error('Error fetching servers:', err);
-        // Only show an error, don't logout automatically
-        const list = document.getElementById('servers-list');
-        list.innerHTML = `<p class="text-red-500">Failed to load servers. Try again later.</p>`;
-      }
-    }
-    loadServers();
-
-    /* ========= CHANGE EMAIL ========= */
-    document.getElementById('change-email').onclick = async () => {
-      const newEmail = prompt('Enter your new email address');
-      if (!newEmail) return;
-
-      try {
-        const res = await fetch(`${API_URL}/auth/change-email`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ newEmail })
-        });
-
-        if (res.status === 401) return redirectLogin();
-
-        const data = await res.json();
-        alert(res.ok ? 'Email updated. Please verify it.' : data.error);
-      } catch (err) {
-        console.error('Error changing email:', err);
-        alert('Something went wrong. Try again later.');
-      }
+  return new Promise((resolve, reject) => {
+    modal.querySelector('#modal-cancel').onclick = () => {
+      modal.remove();
+      reject('cancelled');
     };
-
-    /* ========= CHANGE PASSWORD ========= */
-    document.getElementById('change-password').onclick = async () => {
-      try {
-        const res = await fetch(`${API_URL}/auth/forgot-password`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: user.email })
-        });
-
-        const data = await res.json();
-        alert(res.ok ? 'Password reset email sent.' : data.error);
-      } catch (err) {
-        console.error('Error sending reset email:', err);
-        alert('Something went wrong. Try again later.');
-      }
+    modal.querySelector('#modal-confirm').onclick = () => {
+      const value = modal.querySelector('#modal-input')?.value || null;
+      modal.remove();
+      resolve(value);
     };
-  </script>
+  });
+}
+
+function showMessage({ title = '', message = '', confirmText = 'OK' }) {
+  createModal({ title, message, placeholder: null, confirmText }).catch(() => {});
+}
+
+/* ========= LOAD MY SERVERS ========= */
+async function loadServers() {
+  try {
+    const res = await fetch(`${API_URL}/servers/mine`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (res.status === 401) return redirectLogin();
+
+    const servers = await res.json();
+    const list = document.getElementById('servers-list');
+    const empty = document.getElementById('servers-empty');
+
+    list.innerHTML = '';
+    if (!Array.isArray(servers) || servers.length === 0) {
+      empty.classList.remove('hidden');
+      return;
+    }
+
+    empty.classList.add('hidden');
+    servers.forEach(s => {
+      const card = document.createElement('div');
+      card.className = 'bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 space-y-3';
+      card.innerHTML = `
+        <div class="flex items-center gap-3">
+          <img src="${s.logo}" class="w-10 h-10 rounded-md object-cover" />
+          <div>
+            <p class="font-medium">${s.name}</p>
+            <p class="text-xs text-zinc-400">${s.status || 'pending'}</p>
+          </div>
+        </div>
+        ${s.invite ? `<a href="${s.invite}" target="_blank" class="text-indigo-400 text-sm hover:underline">Join Server →</a>` : ''}
+      `;
+      list.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error('Error fetching servers:', err);
+    const list = document.getElementById('servers-list');
+    list.innerHTML = `<p class="text-red-500">Failed to load servers. Try again later.</p>`;
+  }
+}
+loadServers();
+
+/* ========= CHANGE EMAIL ========= */
+document.getElementById('change-email').onclick = async () => {
+  try {
+    const newEmail = await createModal({
+      title: 'Change Email',
+      message: 'Enter your new email address',
+      placeholder: 'new-email@example.com',
+      confirmText: 'Update'
+    });
+
+    if (!newEmail) return;
+
+    const res = await fetch(`${API_URL}/auth/change-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ newEmail })
+    });
+
+    if (res.status === 401) return redirectLogin();
+
+    const data = await res.json();
+    showMessage({
+      title: 'Email Update',
+      message: res.ok ? 'Email updated successfully. Please verify it.' : data.error
+    });
+  } catch (err) {
+    if (err !== 'cancelled') {
+      console.error('Error changing email:', err);
+      showMessage({ title: 'Error', message: 'Something went wrong. Try again later.' });
+    }
+  }
+};
+
+/* ========= CHANGE PASSWORD ========= */
+document.getElementById('change-password').onclick = async () => {
+  try {
+    const res = await fetch(`${API_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: user.email })
+    });
+
+    const data = await res.json();
+    showMessage({
+      title: 'Password Reset',
+      message: res.ok ? 'Password reset email sent.' : data.error
+    });
+  } catch (err) {
+    console.error('Error sending reset email:', err);
+    showMessage({ title: 'Error', message: 'Something went wrong. Try again later.' });
+  }
+};
+</script>
 
 </body>
 </html>
