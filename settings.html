@@ -1,209 +1,260 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OpsLink Settings</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpsLink · Settings</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+
+  <style>
+    .glass {
+      background: rgba(24, 24, 27, 0.85);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+  </style>
 </head>
 
-<body class="bg-zinc-900 text-white min-h-screen flex">
+<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white flex">
 
   <!-- Sidebar -->
-  <aside class="w-64 bg-zinc-800 p-6 flex flex-col gap-6 hidden md:flex">
-    <h2 class="text-2xl font-bold mb-4">Settings</h2>
+  <aside class="w-72 glass p-8 hidden lg:flex flex-col gap-10">
+    <div>
+      <h1 class="text-2xl font-bold">OpsLink</h1>
+      <p class="text-sm text-zinc-400">Account Settings</p>
+    </div>
+
     <nav class="flex flex-col gap-2 text-zinc-300">
-      <a href="#profile" class="hover:text-white px-2 py-1 rounded hover:bg-zinc-700">Profile</a>
-      <a href="#my-servers" class="hover:text-white px-2 py-1 rounded hover:bg-zinc-700">My Servers</a>
-      <a href="#server-management" class="hover:text-white px-2 py-1 rounded hover:bg-zinc-700">Server Management</a>
-      <a href="#role-settings" class="hover:text-white px-2 py-1 rounded hover:bg-zinc-700">Role Settings</a>
+      <a href="#profile" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-800">
+        <i data-feather="user"></i> Profile
+      </a>
+      <a href="#servers" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-800">
+        <i data-feather="server"></i> My Servers
+      </a>
+      <a href="#security" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-800">
+        <i data-feather="shield"></i> Security
+      </a>
     </nav>
   </aside>
 
-  <!-- Main Content -->
-  <main class="flex-1 p-8 space-y-12">
+  <!-- Main -->
+  <main class="flex-1 p-10 space-y-14">
+
     <header>
-      <h1 class="text-4xl font-bold mb-2">OpsLink Settings</h1>
-      <p class="text-zinc-400">Manage your profile, servers, and roles from one dashboard.</p>
+      <h2 class="text-4xl font-semibold">Account</h2>
+      <p class="text-zinc-400 mt-2">
+        Manage your account, servers, and security.
+      </p>
     </header>
 
-    <!-- Profile Card -->
-    <section id="profile" class="bg-zinc-800 rounded-lg p-6 shadow-lg space-y-4">
-      <h2 class="text-2xl font-semibold">Your Profile</h2>
-      <div class="space-y-2">
-        <p>Email: <span id="user-email" class="font-medium"></span></p>
-        <p>Discord Username: <span id="user-discord" class="font-medium"></span></p>
-        <div class="flex gap-4">
-          <button id="change-password-btn"
-            class="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition">Change Password</button>
-          <button id="change-email-btn"
-            class="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition">Change Email</button>
+    <!-- Profile -->
+    <section id="profile" class="glass rounded-2xl p-8 space-y-6">
+      <div class="flex items-center gap-4">
+        <div id="avatar"
+          class="w-14 h-14 rounded-full bg-indigo-600 flex items-center justify-center text-xl font-bold">
+          ?
+        </div>
+        <div>
+          <h3 class="text-xl font-semibold">Profile</h3>
+          <p class="text-sm text-zinc-400">Account identity</p>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <div>
+          <p class="text-xs uppercase text-zinc-500">Email</p>
+          <p id="email" class="text-indigo-400 font-medium mt-1"></p>
+        </div>
+        <div>
+          <p class="text-xs uppercase text-zinc-500">Discord</p>
+          <p id="discord" class="font-medium mt-1"></p>
+        </div>
+        <div>
+          <p class="text-xs uppercase text-zinc-500">Role</p>
+          <p id="role" class="font-medium mt-1"></p>
         </div>
       </div>
     </section>
 
-    <!-- My Servers Card -->
-    <section id="my-servers" class="bg-zinc-800 rounded-lg p-6 shadow-lg space-y-4">
-      <h2 class="text-2xl font-semibold">Your Submitted Servers</h2>
-      <div id="server-list" class="space-y-2">
-        <!-- Servers injected here -->
+    <!-- My Servers -->
+    <section id="servers" class="glass rounded-2xl p-8 space-y-6">
+      <div>
+        <h3 class="text-xl font-semibold">My Servers</h3>
+        <p class="text-sm text-zinc-400">Servers you own or submitted</p>
       </div>
-      <button id="submit-server-btn" class="bg-green-600 px-4 py-2 rounded hover:bg-green-700 transition">
-        Submit a Server
-      </button>
+
+      <div id="servers-list" class="grid md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+      <p id="servers-empty" class="hidden text-sm text-zinc-400">
+        No servers found.
+      </p>
     </section>
 
-    <!-- Server Management Card -->
-    <section id="server-management" class="bg-zinc-800 rounded-lg p-6 shadow-lg space-y-4">
-      <h2 class="text-2xl font-semibold">Manage Server</h2>
-      <div class="flex flex-col md:flex-row gap-4 md:items-end">
-        <div class="flex-1">
-          <label for="server-id" class="block mb-1 text-zinc-300">Server ID:</label>
-          <input type="text" id="server-id" placeholder="Enter Server ID"
-            class="w-full px-3 py-2 rounded bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    <!-- Security -->
+    <section id="security" class="glass rounded-2xl p-8 space-y-8">
+
+      <div>
+        <h3 class="text-xl font-semibold">Security</h3>
+        <p class="text-sm text-zinc-400">Email & password management</p>
+      </div>
+
+      <div class="flex flex-col md:flex-row justify-between gap-6">
+        <div>
+          <p class="font-medium">Change Email</p>
+          <p class="text-sm text-zinc-400">
+            Update your email and re-verify it.
+          </p>
         </div>
-        <button id="fetch-server-btn"
-          class="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition">Fetch Server</button>
+
+        <button id="change-email"
+          class="bg-indigo-600 hover:bg-indigo-500 transition px-6 py-3 rounded-lg font-medium">
+          Change Email
+        </button>
       </div>
-      <div id="server-management-actions" class="hidden mt-4 flex flex-wrap gap-2">
-        <button id="approve-server-btn" class="bg-green-600 px-4 py-2 rounded hover:bg-green-700 transition">Approve Server</button>
-        <button id="deny-server-btn" class="bg-red-600 px-4 py-2 rounded hover:bg-red-700 transition">Deny Server</button>
-        <button id="edit-server-btn" class="bg-yellow-600 px-4 py-2 rounded hover:bg-yellow-700 transition">Request Edit</button>
-        <button id="delete-server-btn" class="bg-zinc-500 px-4 py-2 rounded hover:bg-zinc-600 transition">Delete Server</button>
+
+      <hr class="border-zinc-800">
+
+      <div class="flex flex-col md:flex-row justify-between gap-6">
+        <div>
+          <p class="font-medium">Change Password</p>
+          <p class="text-sm text-zinc-400">
+            We’ll email you a reset link.
+          </p>
+        </div>
+
+        <button id="change-password"
+          class="bg-red-600 hover:bg-red-500 transition px-6 py-3 rounded-lg font-medium">
+          Send Reset Email
+        </button>
       </div>
+
     </section>
 
-    <!-- Role Settings Card -->
-    <section id="role-settings" class="bg-zinc-800 rounded-lg p-6 shadow-lg space-y-4">
-      <h2 class="text-2xl font-semibold">Role Settings</h2>
-      <div class="flex flex-col md:flex-row gap-4 md:items-end">
-        <div class="flex-1">
-          <label for="role-username" class="block mb-1 text-zinc-300">Discord Username:</label>
-          <input type="text" id="role-username" placeholder="Enter Discord Username"
-            class="w-full px-3 py-2 rounded bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        </div>
-        <button id="get-role-btn" class="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 transition">Get Role</button>
-      </div>
-      <div id="user-role" class="text-green-400 font-medium mt-2"></div>
-    </section>
   </main>
 
-  <!-- Scripts -->
   <script>
-    const apiBaseUrl = 'https://yourapi.com/api';
+    feather.replace();
 
-    // -----------------------------
-    // Check if user is logged in
-    // -----------------------------
-    const token = localStorage.getItem('token');
-    if (!token) {
-      window.location.href = '/login.html';
+    // ====== AUTH CHECK ======
+    const token = localStorage.getItem('authToken');
+
+    function redirectLogin() {
+      localStorage.removeItem('authToken');
+      window.location.href = '/login';
     }
 
-    // -----------------------------
-    // Fetch User Profile
-    // -----------------------------
-    async function getUserProfile() {
+    if (!token) redirectLogin();
+
+    function parseJWT(token) {
       try {
-        const res = await fetch(`${apiBaseUrl}/auth/profile`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error('Unauthorized');
-        const data = await res.json();
-        document.getElementById('user-email').textContent = data.email;
-        document.getElementById('user-discord').textContent = data.discordUsername;
-      } catch (err) {
-        console.error('Failed to fetch user profile:', err);
-        window.location.href = '/login.html';
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload;
+      } catch {
+        return null;
       }
     }
 
-    // -----------------------------
-    // Fetch User Servers
-    // -----------------------------
-    async function getUserServers() {
+    const user = parseJWT(token);
+
+    // Check token validity and expiration
+    if (!user || (user.exp && Date.now() >= user.exp * 1000)) {
+      redirectLogin();
+    }
+
+    // ====== POPULATE PROFILE ======
+    document.getElementById('email').textContent = user.email;
+    document.getElementById('discord').textContent =
+      user.discordUsername + (user.discordTag ? `#${user.discordTag}` : '');
+    document.getElementById('role').textContent = user.role || 'user';
+    document.getElementById('avatar').textContent =
+      user.discordUsername?.[0]?.toUpperCase() || '?';
+
+    // ====== LOAD MY SERVERS ======
+    async function loadServers() {
       try {
-        const res = await fetch(`${apiBaseUrl}/servers/mine`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        const res = await fetch('/api/servers/mine', {
+          headers: { Authorization: `Bearer ${token}` }
         });
-        if (!res.ok) throw new Error('Failed to fetch servers');
+
+        if (res.status === 401) return redirectLogin();
+
         const servers = await res.json();
-        const serverList = document.getElementById('server-list');
-        serverList.innerHTML = '';
-        servers.forEach(server => {
-          const div = document.createElement('div');
-          div.className = 'bg-zinc-700 rounded px-3 py-2 flex justify-between items-center';
-          div.innerHTML = `<span><strong>${server.name}</strong> - Invite: <a class="text-indigo-400 hover:underline" href="${server.invite}" target="_blank">${server.invite}</a></span>`;
-          serverList.appendChild(div);
-        });
-      } catch (err) {
-        console.error(err);
-      }
-    }
+        const list = document.getElementById('servers-list');
+        const empty = document.getElementById('servers-empty');
 
-    // -----------------------------
-    // Change Password
-    // -----------------------------
-    async function changePassword() {
-      const email = document.getElementById('user-email').textContent;
-      if (!email) return alert('Email missing');
-      try {
-        const res = await fetch(`${apiBaseUrl}/auth/forgot-password`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ email })
-        });
-        const data = await res.json();
-        if (res.ok) alert('Password reset email sent.');
-        else alert(data.error || 'Failed to initiate password reset');
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    // -----------------------------
-    // Change Email
-    // -----------------------------
-    async function changeEmail() {
-      const newEmail = prompt('Enter new email:');
-      const oldEmail = document.getElementById('user-email').textContent;
-      if (!newEmail) return;
-      try {
-        const res = await fetch(`${apiBaseUrl}/auth/change-email`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ oldEmail, newEmail })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          alert('Email updated and verification sent.');
-          document.getElementById('user-email').textContent = newEmail;
-        } else {
-          alert(data.error || 'Failed to change email');
+        if (!Array.isArray(servers) || servers.length === 0) {
+          empty.classList.remove('hidden');
+          return;
         }
+
+        servers.forEach(s => {
+          const card = document.createElement('div');
+          card.className = 'bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 space-y-3';
+          card.innerHTML = `
+            <div class="flex items-center gap-3">
+              <img src="${s.logo}" class="w-10 h-10 rounded-md object-cover" />
+              <div>
+                <p class="font-medium">${s.name}</p>
+                <p class="text-xs text-zinc-400">${s.status || 'pending'}</p>
+              </div>
+            </div>
+            <a href="${s.invite}" target="_blank"
+              class="text-indigo-400 text-sm hover:underline">
+              Join Server →
+            </a>
+          `;
+          list.appendChild(card);
+        });
       } catch (err) {
         console.error(err);
+        redirectLogin();
       }
     }
+    loadServers();
 
-    // -----------------------------
-    // Event Listeners
-    // -----------------------------
-    document.getElementById('change-password-btn').addEventListener('click', changePassword);
-    document.getElementById('change-email-btn').addEventListener('click', changeEmail);
+    // ====== CHANGE EMAIL ======
+    document.getElementById('change-email').onclick = async () => {
+      const newEmail = prompt('Enter your new email address');
+      if (!newEmail) return;
 
-    // -----------------------------
-    // Initial Load
-    // -----------------------------
-    getUserProfile();
-    getUserServers();
+      try {
+        const res = await fetch('/api/auth/change-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ newEmail })
+        });
+
+        if (res.status === 401) return redirectLogin();
+
+        const data = await res.json();
+        alert(res.ok ? 'Email updated. Please verify it.' : data.error);
+      } catch (err) {
+        console.error(err);
+        alert('Something went wrong.');
+      }
+    };
+
+    // ====== CHANGE PASSWORD ======
+    document.getElementById('change-password').onclick = async () => {
+      try {
+        const res = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user.email })
+        });
+
+        const data = await res.json();
+        alert(res.ok ? 'Password reset email sent.' : data.error);
+      } catch (err) {
+        console.error(err);
+        alert('Something went wrong.');
+      }
+    };
   </script>
 
 </body>
-
 </html>
