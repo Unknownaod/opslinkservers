@@ -221,8 +221,7 @@ if (!reviews.length) {
     reviewsList.innerHTML = '';
     enhancedReviews.forEach(r => {
       const isAdmin = r.role === 'admin';
-      // Only show SERVER OWNER if reviewer is owner and NOT admin/staff
-      const isOwner = owner && r.discordUserID === owner.userID && !isAdmin;
+      const isOwner = owner && r.discordUserID === owner.userID;
 
       reviewsList.innerHTML += `
         <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
