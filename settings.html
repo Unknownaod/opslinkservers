@@ -237,7 +237,6 @@ async function loadServers() {
             <p class="text-xs text-zinc-400">${s.status || 'pending'}</p>
           </div>
         </div>
-        ${s.invite ? `<a href="${s.invite}" target="_blank" class="text-indigo-400 text-sm hover:underline">Join Server →</a>` : ''}
       `;
       list.appendChild(card);
     });
