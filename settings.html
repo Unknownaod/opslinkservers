@@ -2,34 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>OpsLink · Account Settings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpsLink · Settings</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/feather-icons"></script>
 
   <style>
     .glass {
-      background: rgba(24,24,27,0.85);
+      background: rgba(24, 24, 27, 0.85);
       backdrop-filter: blur(18px);
       border: 1px solid rgba(255,255,255,0.06);
-    }
-    .glow:hover {
-      box-shadow: 0 0 30px rgba(99,102,241,0.25);
     }
   </style>
 </head>
 
-<body class="bg-gradient-to-br from-black via-zinc-900 to-black text-white min-h-screen flex">
+<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white flex">
 
   <!-- Sidebar -->
-  <aside class="w-72 p-8 hidden lg:flex flex-col gap-10 glass">
+  <aside class="w-72 glass p-8 hidden lg:flex flex-col gap-10">
     <div>
       <h1 class="text-2xl font-bold">OpsLink</h1>
       <p class="text-sm text-zinc-400">Account Settings</p>
     </div>
 
-    <nav class="flex flex-col gap-3 text-zinc-300">
+    <nav class="flex flex-col gap-2 text-zinc-300">
       <a href="#profile" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-800">
         <i data-feather="user"></i> Profile
       </a>
@@ -40,10 +37,6 @@
         <i data-feather="shield"></i> Security
       </a>
     </nav>
-
-    <div class="mt-auto text-xs text-zinc-500">
-      © OpsLink <span id="year"></span>
-    </div>
   </aside>
 
   <!-- Main -->
@@ -52,15 +45,16 @@
     <header>
       <h2 class="text-4xl font-semibold">Account</h2>
       <p class="text-zinc-400 mt-2">
-        Manage your account, servers, and security preferences.
+        Manage your account, servers, and security.
       </p>
     </header>
 
     <!-- Profile -->
     <section id="profile" class="glass rounded-2xl p-8 space-y-6">
       <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded-full bg-indigo-600 flex items-center justify-center text-xl font-bold">
-          <span id="avatar-letter">?</span>
+        <div id="avatar"
+          class="w-14 h-14 rounded-full bg-indigo-600 flex items-center justify-center text-xl font-bold">
+          ?
         </div>
         <div>
           <h3 class="text-xl font-semibold">Profile</h3>
@@ -71,15 +65,15 @@
       <div class="grid md:grid-cols-3 gap-6">
         <div>
           <p class="text-xs uppercase text-zinc-500">Email</p>
-          <p id="user-email" class="font-medium text-indigo-400 mt-1"></p>
+          <p id="email" class="text-indigo-400 font-medium mt-1"></p>
         </div>
         <div>
           <p class="text-xs uppercase text-zinc-500">Discord</p>
-          <p id="user-discord" class="font-medium mt-1"></p>
+          <p id="discord" class="font-medium mt-1"></p>
         </div>
         <div>
           <p class="text-xs uppercase text-zinc-500">Role</p>
-          <p id="user-role" class="font-medium mt-1"></p>
+          <p id="role" class="font-medium mt-1"></p>
         </div>
       </div>
     </section>
@@ -88,12 +82,12 @@
     <section id="servers" class="glass rounded-2xl p-8 space-y-6">
       <div>
         <h3 class="text-xl font-semibold">My Servers</h3>
-        <p class="text-sm text-zinc-400">Servers you’ve submitted</p>
+        <p class="text-sm text-zinc-400">Servers you own or submitted</p>
       </div>
 
       <div id="servers-list" class="grid md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
-      <p id="servers-empty" class="hidden text-zinc-400 text-sm">
-        You haven’t submitted any servers yet.
+      <p id="servers-empty" class="hidden text-sm text-zinc-400">
+        No servers found.
       </p>
     </section>
 
@@ -105,65 +99,77 @@
         <p class="text-sm text-zinc-400">Email & password management</p>
       </div>
 
-      <div class="flex justify-between flex-col md:flex-row gap-6">
+      <div class="flex flex-col md:flex-row justify-between gap-6">
         <div>
           <p class="font-medium">Change Email</p>
           <p class="text-sm text-zinc-400">
-            Updates your email and resends verification.
+            Update your email and re-verify it.
           </p>
         </div>
 
-        <button id="change-email-btn"
-          class="glow bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-3 rounded-lg font-medium">
+        <button id="change-email"
+          class="bg-indigo-600 hover:bg-indigo-500 transition px-6 py-3 rounded-lg font-medium">
           Change Email
         </button>
       </div>
 
       <hr class="border-zinc-800">
 
-      <div class="flex justify-between flex-col md:flex-row gap-6">
+      <div class="flex flex-col md:flex-row justify-between gap-6">
         <div>
           <p class="font-medium">Change Password</p>
           <p class="text-sm text-zinc-400">
-            Secure password reset via email.
+            We’ll email you a reset link.
           </p>
         </div>
 
-        <button id="change-password-btn"
-          class="glow bg-gradient-to-r from-red-600 to-rose-600 px-6 py-3 rounded-lg font-medium">
+        <button id="change-password"
+          class="bg-red-600 hover:bg-red-500 transition px-6 py-3 rounded-lg font-medium">
           Send Reset Email
         </button>
       </div>
 
     </section>
+
   </main>
 
-  <!-- Script -->
   <script>
     feather.replace();
-    document.getElementById('year').textContent = new Date().getFullYear();
 
-    const AUTH_API = 'https://opslinkservers-backend.onrender.com/api/auth';
-    const SERVERS_API = 'https://opslinkservers-backend.onrender.com/api/servers';
+    /* ========= AUTH CHECK ========= */
     const token = localStorage.getItem('authToken');
-
     if (!token) {
-      alert('You must be logged in.');
+      window.location.href = 'login.html';
     }
 
-    const user = JSON.parse(atob(token.split('.')[1]));
+    /* ========= SAFE DECODE (UI ONLY) ========= */
+    let user;
+    try {
+      user = JSON.parse(atob(token.split('.')[1]));
+    } catch {
+      window.location.href = 'login.html';
+    }
 
-    document.getElementById('user-email').textContent = user.email;
-    document.getElementById('user-discord').textContent = user.discordUsername;
-    document.getElementById('user-role').textContent = user.role || 'user';
-    document.getElementById('avatar-letter').textContent =
+    /* ========= POPULATE PROFILE ========= */
+    document.getElementById('email').textContent = user.email;
+    document.getElementById('discord').textContent =
+      user.discordUsername + (user.discordTag ? `#${user.discordTag}` : '');
+    document.getElementById('role').textContent = user.role || 'user';
+    document.getElementById('avatar').textContent =
       user.discordUsername?.[0]?.toUpperCase() || '?';
 
-    /* Load servers */
-    fetch(`${SERVERS_API}/mine`, {
-      headers: { Authorization: `Bearer ${token}` }
+    /* ========= LOAD MY SERVERS ========= */
+    fetch('/api/servers/mine', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     })
-    .then(res => res.json())
+    .then(res => {
+      if (res.status === 401) {
+        window.location.href = 'login.html';
+      }
+      return res.json();
+    })
     .then(servers => {
       const list = document.getElementById('servers-list');
       const empty = document.getElementById('servers-empty');
@@ -174,10 +180,11 @@
       }
 
       servers.forEach(s => {
-        const el = document.createElement('div');
-        el.className = 'bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 space-y-3';
+        const card = document.createElement('div');
+        card.className =
+          'bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 space-y-3';
 
-        el.innerHTML = `
+        card.innerHTML = `
           <div class="flex items-center gap-3">
             <img src="${s.logo}" class="w-10 h-10 rounded-md object-cover" />
             <div>
@@ -190,28 +197,37 @@
             Join Server →
           </a>
         `;
-        list.appendChild(el);
+
+        list.appendChild(card);
       });
     });
 
-    /* Change Email */
-    document.getElementById('change-email-btn').onclick = async () => {
-      const newEmail = prompt('Enter new email address');
+    /* ========= CHANGE EMAIL ========= */
+    document.getElementById('change-email').onclick = async () => {
+      const newEmail = prompt('Enter your new email address');
       if (!newEmail) return;
 
-      const res = await fetch(`${AUTH_API}/change-email`, {
+      const res = await fetch('/api/auth/change-email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ oldEmail: user.email, newEmail })
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ newEmail })
       });
+
+      if (res.status === 401) {
+        window.location.href = 'login.html';
+        return;
+      }
 
       const data = await res.json();
       alert(res.ok ? 'Email updated. Please verify it.' : data.error);
     };
 
-    /* Change Password */
-    document.getElementById('change-password-btn').onclick = async () => {
-      const res = await fetch(`${AUTH_API}/forgot-password`, {
+    /* ========= CHANGE PASSWORD ========= */
+    document.getElementById('change-password').onclick = async () => {
+      const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email })
