@@ -136,7 +136,7 @@ async function loadServers(){
   servers = await res.json();
   generateTags();
   applyFilters();
-  populateSponsorDropdown();
+  renderSponsorDropdown();
 }
 
 // --- GENERATE TAG BUTTONS ---
