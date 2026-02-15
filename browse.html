@@ -82,7 +82,7 @@
 const API_URL = 'https://opslinkservers-backend.onrender.com';
 let servers = [];
 let filteredServers = [];
-let activeTags = []; // store multiple selected tags
+let activeTags = []; // multiple selected tags
 let currentPage = 1;
 const serversPerPage = 9;
 
@@ -163,26 +163,34 @@ function updateTagHighlight() {
 // --- APPLY FILTERS + SORT ---
 function applyFilters() {
   const search = document.getElementById('searchInput').value.toLowerCase();
-  const nsfw = document.getElementById('nsfwToggle').checked;
-  const sort = document.getElementById('sortSelect')?.value || 'premium';
+  const nsfwToggle = document.getElementById('nsfwToggle').checked;
+  const sort = document.getElementById('sortSelect')?.value || 'all';
 
   filteredServers = servers
-    .filter(s => nsfw || !s.nsfw)
+    .filter(s => nsfwToggle || !s.nsfw)
     .filter(s => activeTags.length === 0 || s.tags?.some(tag => activeTags.includes(tag)))
     .filter(s =>
       s.name.toLowerCase().includes(search) ||
       (s.description || '').toLowerCase().includes(search)
     );
 
-  // Sort by premium first
+  // Always move premium servers to top
   filteredServers.sort((a,b) => {
     const aPremium = a.submitterDiscord?.ispremium ? 1 : 0;
     const bPremium = b.submitterDiscord?.ispremium ? 1 : 0;
     if(aPremium !== bPremium) return bPremium - aPremium;
-    // Secondary sort
+
+    // Additional filter logic
     if(sort === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
     if(sort === 'members') return (b.members||0) - (a.members||0);
-    return 0;
+    if(sort === 'nsfw') return (b.nsfw?1:0) - (a.nsfw?1:0);
+    if(sort === 'verified') {
+      const aVerified = a.submitterDiscord?.isVerified ? 1 : 0;
+      const bVerified = b.submitterDiscord?.isVerified ? 1 : 0;
+      return bVerified - aVerified;
+    }
+
+    return 0; // 'all' preserves premium-first order
   });
 
   renderServers();
@@ -280,6 +288,7 @@ document.getElementById('sortSelect').onchange = () => { currentPage=1; applyFil
 
 loadServers();
 </script>
+
 
 </body>
 </html>
