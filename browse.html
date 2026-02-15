@@ -54,16 +54,20 @@
     </label>
   </div>
 
-  <!-- SORT & TAG FILTERS -->
-  <div class="flex flex-wrap gap-4 mb-6 items-center">
-    <select id="sortSelect" class="p-2 rounded-xl bg-zinc-800 text-white/80 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-      <option value="premium">Premium First</option>
-      <option value="newest">Newest</option>
-      <option value="members">Most Members</option>
-    </select>
-  </div>
+<!-- SORT & TAG FILTERS -->
+<div class="flex flex-wrap gap-4 mb-6 items-center">
+  <!-- SORT DROPDOWN -->
+  <select id="sortSelect" class="p-2 rounded-xl bg-zinc-800 text-white/80 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    <option value="all">All Servers</option>
+    <option value="newest">Newest</option>
+    <option value="members">Most Members</option>
+    <option value="nsfw">NSFW Only</option>
+    <option value="verified">Verified Owners Only</option>
+  </select>
 
-  <div id="tagContainer" class="flex flex-wrap gap-2 mb-6"></div>
+  <!-- TAGS CONTAINER -->
+  <div id="tagContainer" class="flex flex-wrap gap-2 ml-4"></div>
+</div>
 
   <!-- SERVERS GRID -->
   <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
