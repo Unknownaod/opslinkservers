@@ -18,64 +18,62 @@
     <a href="submit.html" class="hover:opacity-80">Submit</a>
     <a href="messages.html" class="hover:opacity-80">Messages</a>
     <a href="/support" class="hover:opacity-80">Support</a>
-    <a href="login.html" id="loginBtn"
-      class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10 transition">
-      Login
-    </a>
-    <a href="#" id="adminBtn"
-      class="hidden rounded-full bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-2 hover:brightness-110 transition">
-      Admin Dashboard
-    </a>
+    <a href="login.html" id="loginBtn" class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10 transition">Login</a>
+    <a href="#" id="adminBtn" class="hidden rounded-full bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-2 hover:brightness-110 transition">Admin Dashboard</a>
+    <a href="#" id="sponsorBtn" class="hidden rounded-full bg-yellow-500 text-black px-4 py-2 hover:brightness-110 transition">Sponsor Servers</a>
   </div>
 </nav>
 
 <section class="px-10 py-10">
 
-  <h1 class="text-5xl font-bold mb-6">Browse Servers</h1>
+<h1 class="text-5xl font-bold mb-6">Browse Servers</h1>
 
-  <!-- SEARCH / FILTERS -->
-  <div class="flex flex-wrap gap-4 mb-6 items-center">
-    <input
-      id="searchInput"
-      type="text"
-      placeholder="Search servers..."
-      class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 flex-grow outline-none focus:border-white/20"
-    />
-
-    <label class="ml-auto flex items-center gap-3 cursor-pointer select-none text-sm">
-      <span>Show NSFW</span>
-      <div class="relative">
-        <input type="checkbox" id="nsfwToggle" class="sr-only peer" />
-        <div class="w-12 h-6 bg-zinc-700 rounded-full peer-checked:bg-red-600 transition-colors"></div>
-        <div
-          class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transform transition-transform peer-checked:translate-x-6"
-        ></div>
-      </div>
-    </label>
-  </div>
-
-<!-- SORT & TAG FILTERS -->
+<!-- SEARCH / FILTERS -->
 <div class="flex flex-wrap gap-4 mb-6 items-center">
-  <!-- SORT DROPDOWN -->
+  <input id="searchInput" type="text" placeholder="Search servers..."
+    class="p-3 rounded-xl bg-zinc-900 border border-zinc-800 flex-grow outline-none focus:border-white/20" />
+
+  <label class="ml-auto flex items-center gap-3 cursor-pointer select-none text-sm">
+    <span>Show NSFW</span>
+    <div class="relative">
+      <input type="checkbox" id="nsfwToggle" class="sr-only peer" />
+      <div class="w-12 h-6 bg-zinc-700 rounded-full peer-checked:bg-red-600 transition-colors"></div>
+      <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transform transition-transform peer-checked:translate-x-6"></div>
+    </div>
+  </label>
+
+  <!-- SORT -->
   <select id="sortSelect" class="p-2 rounded-xl bg-zinc-800 text-white/80 focus:outline-none focus:ring-2 focus:ring-indigo-500">
     <option value="all">All Servers</option>
     <option value="newest">Newest</option>
     <option value="members">Most Members</option>
-    <option value="nsfw">NSFW Only</option>
-    <option value="verified">Verified Owners Only</option>
+    <option value="nsfw">NSFW First</option>
+    <option value="verified">Verified Users</option>
   </select>
-
-  <!-- TAGS CONTAINER -->
-  <div id="tagContainer" class="flex flex-wrap gap-2 ml-4"></div>
 </div>
 
-  <!-- SERVERS GRID -->
-  <div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+<!-- TAG FILTERS -->
+<div id="tagContainer" class="flex flex-wrap gap-2 mb-6"></div>
 
-  <!-- PAGINATION -->
-  <div id="pagination" class="mt-8 flex justify-center gap-2 flex-wrap"></div>
+<!-- SERVERS GRID -->
+<div id="serversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+
+<!-- PAGINATION -->
+<div id="pagination" class="flex gap-2 justify-center mt-6"></div>
 
 </section>
+
+<!-- ADMIN SPONSOR MODAL -->
+<div id="sponsorModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-6 z-50">
+  <div class="bg-zinc-900 rounded-2xl p-8 max-w-2xl w-full relative border border-zinc-800">
+    <button id="closeSponsorModal" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-2xl">&times;</button>
+    <h2 class="text-2xl font-bold mb-4">Sponsor / Unsponsor a Server</h2>
+    <select id="sponsorSelect" class="w-full p-2 rounded-xl bg-zinc-800 mb-4">
+      <option value="">Select a server...</option>
+    </select>
+    <button id="confirmSponsor" class="bg-yellow-500 text-black px-4 py-2 rounded-xl hover:bg-yellow-400 transition">Toggle Sponsorship</button>
+  </div>
+</div>
 
 <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
   <span>© 2026 OpsLink Servers</span>
@@ -86,169 +84,152 @@
 const API_URL = 'https://opslinkservers-backend.onrender.com';
 let servers = [];
 let filteredServers = [];
-let activeTags = []; // multiple selected tags
+let activeTags = [];
 let currentPage = 1;
 const serversPerPage = 9;
 
-// --- NAV LOGIN ---
 const token = localStorage.getItem('token');
 const userStr = localStorage.getItem('user');
 let currentUser = userStr ? JSON.parse(userStr) : null;
 
 const loginBtn = document.getElementById('loginBtn');
 const adminBtn = document.getElementById('adminBtn');
-const navLinks = document.getElementById('navLinks');
+const sponsorBtn = document.getElementById('sponsorBtn');
 
-if (currentUser) {
-  loginBtn.textContent = 'Logout';
-  loginBtn.href = '#';
-  loginBtn.onclick = () => { localStorage.clear(); location.reload(); };
-  if (currentUser.role === 'admin') {
+if(currentUser){
+  loginBtn.textContent='Logout';
+  loginBtn.href='#';
+  loginBtn.onclick=()=>{localStorage.clear(); location.reload();};
+  if(currentUser.role==='admin'){
     adminBtn.classList.remove('hidden');
-    adminBtn.href = 'dashboard.html';
+    sponsorBtn.classList.remove('hidden');
   }
 }
 
 // --- LOAD SERVERS ---
-async function loadServers() {
+async function loadServers(){
   const res = await fetch(`${API_URL}/api/servers`);
   servers = await res.json();
   generateTags();
+  populateSponsorDropdown();
   applyFilters();
 }
 
-// --- GENERATE TAG BUTTONS ---
-function generateTags() {
+// --- TAGS ---
+function generateTags(){
   const tagContainer = document.getElementById('tagContainer');
-  tagContainer.innerHTML = '';
-
+  tagContainer.innerHTML='';
   const tagsSet = new Set();
-  servers.forEach(s => (s.tags || []).forEach(tag => tagsSet.add(tag)));
+  servers.forEach(s=> (s.tags||[]).forEach(t=>tagsSet.add(t)));
   const tags = Array.from(tagsSet).sort();
 
-  // "All Servers" button
+  // "All Servers"
   const allBtn = document.createElement('button');
-  allBtn.textContent = 'All Servers';
-  allBtn.className = tagButtonClass('all');
-  allBtn.onclick = () => { activeTags = []; currentPage = 1; applyFilters(); updateTagHighlight(); };
+  allBtn.textContent='All Servers';
+  allBtn.className=tagButtonClass('all');
+  allBtn.onclick=()=>{activeTags=[]; currentPage=1; applyFilters(); updateTagHighlight();};
   tagContainer.appendChild(allBtn);
 
-  // Tag buttons
-  tags.forEach(tag => {
-    const btn = document.createElement('button');
-    btn.textContent = tag.toUpperCase();
-    btn.className = tagButtonClass(tag);
-    btn.onclick = () => {
-      const index = activeTags.indexOf(tag);
-      if(index === -1) activeTags.push(tag);
-      else activeTags.splice(index, 1);
-      currentPage = 1;
-      applyFilters();
-      updateTagHighlight();
+  tags.forEach(tag=>{
+    const btn=document.createElement('button');
+    btn.textContent=tag.toUpperCase();
+    btn.className=tagButtonClass(tag);
+    btn.onclick=()=>{
+      const i = activeTags.indexOf(tag);
+      if(i===-1) activeTags.push(tag); else activeTags.splice(i,1);
+      currentPage=1; applyFilters(); updateTagHighlight();
     };
     tagContainer.appendChild(btn);
   });
 }
 
-// --- TAG BUTTON STYLING ---
-function tagButtonClass(tag) {
-  if(tag === 'all') return `px-4 py-1 rounded-full text-sm font-semibold ${activeTags.length===0?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
+function tagButtonClass(tag){
+  if(tag==='all') return `px-4 py-1 rounded-full text-sm font-semibold ${activeTags.length===0?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
   return `px-4 py-1 rounded-full text-sm font-semibold ${activeTags.includes(tag)?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
 }
 
-function updateTagHighlight() {
+function updateTagHighlight(){
   const tagContainer = document.getElementById('tagContainer');
-  Array.from(tagContainer.children).forEach(btn => {
+  Array.from(tagContainer.children).forEach(btn=>{
     const tag = btn.textContent.toLowerCase();
-    btn.className = tagButtonClass(tag==='all'?'all':tag);
+    btn.className=tagButtonClass(tag==='all'?'all':tag);
   });
 }
 
-// --- APPLY FILTERS + SORT ---
-function applyFilters() {
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  const nsfwToggle = document.getElementById('nsfwToggle').checked;
-  const sort = document.getElementById('sortSelect')?.value || 'all';
+// --- FILTER ---
+function applyFilters(){
+  const search = document.getElementById('searchInput')?.value.toLowerCase()||'';
+  const nsfwToggle = document.getElementById('nsfwToggle')?.checked||false;
+  const sort = document.getElementById('sortSelect')?.value||'all';
 
   filteredServers = servers
-    .filter(s => nsfwToggle || !s.nsfw)
-    .filter(s => activeTags.length === 0 || s.tags?.some(tag => activeTags.includes(tag)))
-    .filter(s =>
-      s.name.toLowerCase().includes(search) ||
-      (s.description || '').toLowerCase().includes(search)
-    );
+    .filter(s=> nsfwToggle || !s.nsfw)
+    .filter(s=> activeTags.length===0 || s.tags?.some(t=>activeTags.includes(t)))
+    .filter(s=> s.name.toLowerCase().includes(search) || (s.description||'').toLowerCase().includes(search));
 
-  // Always move premium servers to top
-  filteredServers.sort((a,b) => {
-    const aPremium = a.submitterDiscord?.ispremium ? 1 : 0;
-    const bPremium = b.submitterDiscord?.ispremium ? 1 : 0;
-    if(aPremium !== bPremium) return bPremium - aPremium;
+  filteredServers.sort((a,b)=>{
+    if(a.sponsored && !b.sponsored) return -1;
+    if(b.sponsored && !a.sponsored) return 1;
 
-    // Additional filter logic
-    if(sort === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
-    if(sort === 'members') return (b.members||0) - (a.members||0);
-    if(sort === 'nsfw') return (b.nsfw?1:0) - (a.nsfw?1:0);
-    if(sort === 'verified') {
-      const aVerified = a.submitterDiscord?.isVerified ? 1 : 0;
-      const bVerified = b.submitterDiscord?.isVerified ? 1 : 0;
-      return bVerified - aVerified;
-    }
+    const aPremium = a.submitterDiscord?.ispremium?1:0;
+    const bPremium = b.submitterDiscord?.ispremium?1:0;
+    if(aPremium!==bPremium) return bPremium-aPremium;
 
-    return 0; // 'all' preserves premium-first order
+    if(sort==='newest') return new Date(b.createdAt)-new Date(a.createdAt);
+    if(sort==='members') return (b.members||0)-(a.members||0);
+    if(sort==='nsfw') return (b.nsfw?1:0)-(a.nsfw?1:0);
+    if(sort==='verified') return (b.submitterDiscord?.isVerified?1:0)-(a.submitterDiscord?.isVerified?1:0);
+    return 0;
   });
 
   renderServers();
 }
 
 // --- RENDER SERVERS ---
-function renderServers() {
+function renderServers(){
   const grid = document.getElementById('serversGrid');
-  grid.innerHTML = '';
+  grid.innerHTML='';
+  if(!filteredServers.length){document.getElementById('pagination').innerHTML=''; grid.innerHTML='<div class="col-span-full text-center text-zinc-400 mt-10">No servers found</div>'; return;}
 
-  if(!filteredServers.length) {
-    grid.innerHTML = '<div class="col-span-full text-center text-zinc-400 mt-10">No servers found</div>';
-    document.getElementById('pagination').innerHTML = '';
-    return;
-  }
+  const start=(currentPage-1)*serversPerPage;
+  const end=start+serversPerPage;
+  const pageServers=filteredServers.slice(start,end);
 
-  const start = (currentPage-1)*serversPerPage;
-  const end = start+serversPerPage;
-  const pageServers = filteredServers.slice(start,end);
+  pageServers.forEach(s=>{
+    let invite = s.invite||'';
+    if(!invite.startsWith('http')) invite='https://discord.gg/'+invite.replace(/^discord\.gg\/?/i,'');
 
-  pageServers.forEach(s => {
-    let invite = s.invite || '';
-    if(!invite.startsWith('http')) invite = 'https://discord.gg/' + invite.replace(/^discord\.gg\/?/i,'');
+    const premiumLabel = s.submitterDiscord?.ispremium?' <span class="text-indigo-400 font-bold">[PREMIUM]</span>':'';
+    const sponsoredLabel = s.sponsored?'<span class="text-yellow-400 text-xs font-semibold ml-2">[Sponsored Post]</span>':'';
+    const cardClass = s.sponsored
+      ? 'group border-2 border-yellow-400 bg-gradient-to-br from-yellow-800 via-yellow-700 to-yellow-600 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-[1.03] cursor-pointer flex flex-col'
+      : 'group bg-gradient-to-br from-black via-zinc-900 to-black border border-zinc-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-[1.02] cursor-pointer flex flex-col';
 
-    const premiumLabel = s.submitterDiscord?.ispremium ? ' <span class="text-indigo-400 font-bold">[PREMIUM]</span>' : '';
-
-    const card = document.createElement('div');
-    card.className = 'group bg-gradient-to-br from-black via-zinc-900 to-black border border-zinc-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-[1.02] cursor-pointer flex flex-col';
-    card.innerHTML = `
+    const card=document.createElement('div');
+    card.className=cardClass;
+    card.innerHTML=`
       <div class="relative px-6 pt-6 flex items-start justify-between">
         <div class="flex items-center gap-4">
           <img src="${s.logo}" alt="${s.name}" class="w-14 h-14 rounded-2xl object-cover shadow-xl bg-black" />
           <div class="flex flex-col">
             <div class="flex items-center gap-3">
               <span class="w-3 h-3 bg-green-500 rounded-full"></span>
-              <h3 class="text-2xl font-bold text-white truncate">${s.name}${premiumLabel}</h3>
+              <h3 class="text-2xl font-bold text-white truncate">${s.name}${premiumLabel}${sponsoredLabel}</h3>
             </div>
           </div>
         </div>
       </div>
-
       <div class="px-6 pb-6 pt-4 flex flex-col gap-4">
-        <div class="flex flex-wrap gap-2">
-          ${(s.tags||[]).map(tag => `<span class="px-3 py-1 text-xs font-semibold rounded-full bg-[#2a2d3d] text-white">${tag.toUpperCase()}</span>`).join('')}
-        </div>
+        <div class="flex flex-wrap gap-2">${(s.tags||[]).map(t=>`<span class="px-3 py-1 text-xs font-semibold rounded-full bg-[#2a2d3d] text-white">${t.toUpperCase()}</span>`).join('')}</div>
         <p class="text-sm text-zinc-300 leading-relaxed line-clamp-3">${s.description}</p>
         <div class="border-t border-[#2a2d3d]"></div>
         <div class="flex items-center justify-between">
-          <span class="text-xs text-zinc-400">${s.members != null ? s.members.toLocaleString() : 'N/A'} members</span>
+          <span class="text-xs text-zinc-400">${s.members!=null?s.members.toLocaleString():'N/A'} members</span>
           <a href="${invite}" target="_blank" class="px-6 py-2 rounded-full bg-[#2b2f42] hover:bg-[#3a3f5c] font-bold tracking-wide transition">JOIN ➜</a>
         </div>
       </div>
     `;
-    card.onclick = e => { if(e.target.tagName!=='A') window.location.href=`server.html?guildid=${s._id}`; };
+    card.onclick=e=>{if(e.target.tagName!=='A') window.location.href=`server.html?guildid=${s._id}`;};
     grid.appendChild(card);
   });
 
@@ -256,42 +237,70 @@ function renderServers() {
 }
 
 // --- PAGINATION ---
-function renderPagination() {
+function renderPagination(){
   const pagination = document.getElementById('pagination');
-  pagination.innerHTML = '';
-  const totalPages = Math.ceil(filteredServers.length / serversPerPage);
-  if(totalPages <= 1) return;
+  pagination.innerHTML='';
+  const totalPages = Math.ceil(filteredServers.length/serversPerPage);
+  if(totalPages<=1) return;
 
-  const prev = document.createElement('button');
-  prev.textContent = 'Prev';
-  prev.disabled = currentPage===1;
-  prev.className = `px-4 py-2 rounded-full font-semibold ${prev.disabled ? 'bg-zinc-700 text-white/50' : 'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
-  prev.onclick = () => { if(currentPage>1){currentPage--; renderServers();} };
+  const prev=document.createElement('button');
+  prev.textContent='Prev';
+  prev.disabled=currentPage===1;
+  prev.className=`px-4 py-2 rounded-full font-semibold ${prev.disabled?'bg-zinc-700 text-white/50':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
+  prev.onclick=()=>{if(currentPage>1){currentPage--;renderServers();}};
   pagination.appendChild(prev);
 
   for(let i=1;i<=totalPages;i++){
-    const btn = document.createElement('button');
-    btn.textContent = i;
-    btn.className = `px-4 py-2 rounded-full font-semibold ${i===currentPage?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
-    btn.onclick = () => { currentPage=i; renderServers(); };
+    const btn=document.createElement('button');
+    btn.textContent=i;
+    btn.className=`px-4 py-2 rounded-full font-semibold ${i===currentPage?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
+    btn.onclick=()=>{currentPage=i; renderServers();};
     pagination.appendChild(btn);
   }
 
-  const next = document.createElement('button');
-  next.textContent = 'Next';
-  next.disabled = currentPage===totalPages;
-  next.className = `px-4 py-2 rounded-full font-semibold ${next.disabled?'bg-zinc-700 text-white/50':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
-  next.onclick = () => { if(currentPage<totalPages){currentPage++; renderServers();} };
+  const next=document.createElement('button');
+  next.textContent='Next';
+  next.disabled=currentPage===totalPages;
+  next.className=`px-4 py-2 rounded-full font-semibold ${next.disabled?'bg-zinc-700 text-white/50':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
+  next.onclick=()=>{if(currentPage<totalPages){currentPage++;renderServers();}};
   pagination.appendChild(next);
 }
 
+// --- SPONSOR MODAL ---
+const sponsorModal=document.getElementById('sponsorModal');
+sponsorBtn.onclick=()=>sponsorModal.classList.remove('hidden');
+document.getElementById('closeSponsorModal').onclick=()=>sponsorModal.classList.add('hidden');
+
+function populateSponsorDropdown(){
+  const select=document.getElementById('sponsorSelect');
+  select.innerHTML='<option value="">Select a server...</option>';
+  servers.forEach(s=>{
+    const opt=document.createElement('option');
+    opt.value=s._id;
+    opt.textContent=s.name + (s.sponsored?' [Currently Sponsored]':'');
+    select.appendChild(opt);
+  });
+}
+
+document.getElementById('confirmSponsor').onclick=()=>{
+  const id=document.getElementById('sponsorSelect').value;
+  if(!id) return alert('Select a server');
+  const server = servers.find(s=>s._id===id);
+  if(server){
+    server.sponsored = !server.sponsored;
+    alert(`${server.name} is now ${server.sponsored?'sponsored':'not sponsored'}`);
+    populateSponsorDropdown();
+    applyFilters();
+    sponsorModal.classList.add('hidden');
+  }
+};
+
 // --- SEARCH / NSFW / SORT ---
-document.getElementById('searchInput').oninput = () => { currentPage=1; applyFilters(); };
-document.getElementById('nsfwToggle').onchange = () => { currentPage=1; applyFilters(); };
-document.getElementById('sortSelect').onchange = () => { currentPage=1; applyFilters(); };
+document.getElementById('sortSelect').onchange=()=>{currentPage=1; applyFilters();};
+document.getElementById('searchInput')?.addEventListener('input',()=>{currentPage=1;applyFilters();});
+document.getElementById('nsfwToggle')?.addEventListener('change',()=>{currentPage=1;applyFilters();});
 
 loadServers();
 </script>
-  
 </body>
 </html>
