@@ -68,23 +68,12 @@
   <div class="bg-zinc-900 rounded-2xl p-8 max-w-2xl w-full relative border border-zinc-800">
     <button id="closeSponsorModal" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-2xl">&times;</button>
     <h2 class="text-2xl font-bold mb-4">Sponsor / Unsponsor a Server</h2>
-
-    <!-- SEARCH BAR -->
-    <input id="sponsorSearchInput" type="text" placeholder="Search servers..."
-      class="w-full p-3 mb-4 rounded-xl bg-zinc-800 border border-zinc-700 text-white outline-none focus:ring-2 focus:ring-indigo-500" />
-
-    <!-- SERVER DROPDOWN -->
-    <select id="sponsorServerSelect" class="w-full p-2 rounded-xl bg-zinc-800 mb-4">
+    <select id="sponsorSelect" class="w-full p-2 rounded-xl bg-zinc-800 mb-4">
       <option value="">Select a server...</option>
     </select>
-
-    <div class="flex gap-4">
-      <button id="addSponsorBtn" class="flex-1 bg-yellow-500 text-black px-4 py-2 rounded-xl hover:bg-yellow-400 transition">Add Sponsorship</button>
-      <button id="removeSponsorBtn" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-500 transition">Remove Sponsorship</button>
-    </div>
+    <button id="confirmSponsor" class="bg-yellow-500 text-black px-4 py-2 rounded-xl hover:bg-yellow-400 transition">Toggle Sponsorship</button>
   </div>
 </div>
-
 
 <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
   <span>© 2026 OpsLink Servers</span>
@@ -93,155 +82,145 @@
 
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
-let servers = [], filteredServers = [], activeTags = new Set(), currentPage = 1, serversPerPage = 9;
+let servers = [];
+let filteredServers = [];
+let activeTags = [];
+let currentPage = 1;
+const serversPerPage = 9;
+
 const token = localStorage.getItem('token');
 const userStr = localStorage.getItem('user');
 let currentUser = userStr ? JSON.parse(userStr) : null;
 
-// NAV
 const loginBtn = document.getElementById('loginBtn');
 const adminBtn = document.getElementById('adminBtn');
-const sponsorModal = document.getElementById('sponsorModal');
-const sponsorServerSelect = document.getElementById('sponsorServerSelect');
-const sponsorSearchInput = document.getElementById('sponsorSearchInput');
-const addSponsorBtn = document.getElementById('addSponsorBtn');
-const removeSponsorBtn = document.getElementById('removeSponsorBtn');
+const sponsorBtn = document.getElementById('sponsorBtn');
 
 if(currentUser){
   loginBtn.textContent='Logout';
   loginBtn.href='#';
-  loginBtn.onclick = ()=>{ localStorage.clear(); location.reload(); };
+  loginBtn.onclick=()=>{localStorage.clear(); location.reload();};
   if(currentUser.role==='admin'){
     adminBtn.classList.remove('hidden');
-    adminBtn.onclick = ()=> sponsorModal.classList.remove('hidden');
+    sponsorBtn.classList.remove('hidden');
   }
 }
 
-// --- LIVE SERVER POLLING ---
-async function refreshServersLive(){
-  try {
-    const res = await fetch(`${API_URL}/api/servers`);
-    if(!res.ok) throw new Error('Failed to fetch servers');
-    servers = await res.json();
-    generateTags();
-    applyFilters();
-    renderSponsorDropdown(sponsorSearchInput.value);
-  } catch(err) {
-    console.error('Live refresh error:', err);
-  }
-}
-
-// Poll every 10 seconds
-setInterval(refreshServersLive, 10000);
-
-// LOAD SERVERS (initial)
+// --- LOAD SERVERS ---
 async function loadServers(){
-  await refreshServersLive();
+  const res = await fetch(`${API_URL}/api/servers`);
+  servers = await res.json();
+  generateTags();
+  populateSponsorDropdown();
+  applyFilters();
 }
 
-// TAG BUTTONS
+// --- TAGS ---
 function generateTags(){
-  const container = document.getElementById('tagContainer');
-  container.innerHTML='';
+  const tagContainer = document.getElementById('tagContainer');
+  tagContainer.innerHTML='';
   const tagsSet = new Set();
-  servers.forEach(s=>(s.tags||[]).forEach(t=>tagsSet.add(t)));
+  servers.forEach(s=> (s.tags||[]).forEach(t=>tagsSet.add(t)));
   const tags = Array.from(tagsSet).sort();
 
-  // All Servers
+  // "All Servers"
   const allBtn = document.createElement('button');
   allBtn.textContent='All Servers';
   allBtn.className=tagButtonClass('all');
-  allBtn.onclick = ()=>{
-    activeTags.clear(); currentPage=1; applyFilters(); updateTagHighlight();
-  };
-  container.appendChild(allBtn);
+  allBtn.onclick=()=>{activeTags=[]; currentPage=1; applyFilters(); updateTagHighlight();};
+  tagContainer.appendChild(allBtn);
 
   tags.forEach(tag=>{
     const btn=document.createElement('button');
     btn.textContent=tag.toUpperCase();
     btn.className=tagButtonClass(tag);
-    btn.onclick = ()=>{
-      if(activeTags.has(tag)) activeTags.delete(tag); else activeTags.add(tag);
+    btn.onclick=()=>{
+      const i = activeTags.indexOf(tag);
+      if(i===-1) activeTags.push(tag); else activeTags.splice(i,1);
       currentPage=1; applyFilters(); updateTagHighlight();
     };
-    container.appendChild(btn);
+    tagContainer.appendChild(btn);
   });
 }
 
 function tagButtonClass(tag){
-  if(tag==='all') return `px-4 py-1 rounded-full text-sm font-semibold ${activeTags.size===0?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
-  return `px-4 py-1 rounded-full text-sm font-semibold ${activeTags.has(tag)?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
+  if(tag==='all') return `px-4 py-1 rounded-full text-sm font-semibold ${activeTags.length===0?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
+  return `px-4 py-1 rounded-full text-sm font-semibold ${activeTags.includes(tag)?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
 }
 
-function updateTagHighlight(){ generateTags(); }
+function updateTagHighlight(){
+  const tagContainer = document.getElementById('tagContainer');
+  Array.from(tagContainer.children).forEach(btn=>{
+    const tag = btn.textContent.toLowerCase();
+    btn.className=tagButtonClass(tag==='all'?'all':tag);
+  });
+}
 
-// FILTER & SORT
+// --- FILTER ---
 function applyFilters(){
-  const search=document.getElementById('searchInput').value.toLowerCase();
-  const nsfw=document.getElementById('nsfwToggle').checked;
-  const sort=document.getElementById('sortSelect').value;
+  const search = document.getElementById('searchInput')?.value.toLowerCase()||'';
+  const nsfwToggle = document.getElementById('nsfwToggle')?.checked||false;
+  const sort = document.getElementById('sortSelect')?.value||'all';
 
   filteredServers = servers
-    .filter(s=> nsfw || !s.nsfw)
-    .filter(s=> activeTags.size===0 || (s.tags||[]).some(t=>activeTags.has(t)))
+    .filter(s=> nsfwToggle || !s.nsfw)
+    .filter(s=> activeTags.length===0 || s.tags?.some(t=>activeTags.includes(t)))
     .filter(s=> s.name.toLowerCase().includes(search) || (s.description||'').toLowerCase().includes(search));
 
-  if(sort==='all'){ 
-    filteredServers.sort((a,b)=>{
-      const aPrem=a.submitterDiscord?.ispremium?1:0;
-      const bPrem=b.submitterDiscord?.ispremium?1:0;
-      return bPrem - aPrem || new Date(b.createdAt) - new Date(a.createdAt);
-    });
-  }else if(sort==='newest'){ filteredServers.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); }
-  else if(sort==='members'){ filteredServers.sort((a,b)=> (b.members||0)-(a.members||0)); }
+  filteredServers.sort((a,b)=>{
+    if(a.sponsored && !b.sponsored) return -1;
+    if(b.sponsored && !a.sponsored) return 1;
+
+    const aPremium = a.submitterDiscord?.ispremium?1:0;
+    const bPremium = b.submitterDiscord?.ispremium?1:0;
+    if(aPremium!==bPremium) return bPremium-aPremium;
+
+    if(sort==='newest') return new Date(b.createdAt)-new Date(a.createdAt);
+    if(sort==='members') return (b.members||0)-(a.members||0);
+    if(sort==='nsfw') return (b.nsfw?1:0)-(a.nsfw?1:0);
+    if(sort==='verified') return (b.submitterDiscord?.isVerified?1:0)-(a.submitterDiscord?.isVerified?1:0);
+    return 0;
+  });
 
   renderServers();
 }
 
-// RENDER SERVERS
+// --- RENDER SERVERS ---
 function renderServers(){
-  const grid=document.getElementById('serversGrid');
+  const grid = document.getElementById('serversGrid');
   grid.innerHTML='';
-
-  if(!filteredServers.length){
-    grid.innerHTML='<div class="col-span-full text-center text-zinc-400 mt-10">No servers found</div>';
-    document.getElementById('pagination').innerHTML=''; return;
-  }
-
-  const sponsored = filteredServers.filter(s=>s.sponsored);
-  const normal = filteredServers.filter(s=>!s.sponsored);
-  const displayServers=[...sponsored,...normal];
+  if(!filteredServers.length){document.getElementById('pagination').innerHTML=''; grid.innerHTML='<div class="col-span-full text-center text-zinc-400 mt-10">No servers found</div>'; return;}
 
   const start=(currentPage-1)*serversPerPage;
   const end=start+serversPerPage;
-  const pageServers=displayServers.slice(start,end);
+  const pageServers=filteredServers.slice(start,end);
 
   pageServers.forEach(s=>{
-    let invite=s.invite||''; 
+    let invite = s.invite||'';
     if(!invite.startsWith('http')) invite='https://discord.gg/'+invite.replace(/^discord\.gg\/?/i,'');
 
-    const premiumLabel = s.submitterDiscord?.ispremium ? ' <span class="text-indigo-400 font-bold">[PREMIUM]</span>':'';
-    const sponsoredLabel = s.sponsored ? '<div class="bg-yellow-500 text-black px-2 py-1 rounded-full text-xs font-bold mb-1 inline-block">SPONSORED POST</div>':'';
+    const premiumLabel = s.submitterDiscord?.ispremium?' <span class="text-indigo-400 font-bold">[PREMIUM]</span>':'';
+    const sponsoredLabel = s.sponsored?'<span class="text-yellow-400 text-xs font-semibold ml-2">[Sponsored Post]</span>':'';
+    const cardClass = s.sponsored
+      ? 'group border-2 border-yellow-400 bg-gradient-to-br from-yellow-800 via-yellow-700 to-yellow-600 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-[1.03] cursor-pointer flex flex-col'
+      : 'group bg-gradient-to-br from-black via-zinc-900 to-black border border-zinc-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-[1.02] cursor-pointer flex flex-col';
 
     const card=document.createElement('div');
-    card.className='group bg-gradient-to-br from-black via-zinc-900 to-black border border-zinc-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-[1.02] cursor-pointer flex flex-col';
+    card.className=cardClass;
     card.innerHTML=`
-      <div class="px-6 pt-6 flex flex-col">
-        ${sponsoredLabel}
-        <div class="flex items-start gap-4">
-          <img src="${s.logo}" alt="${s.name}" class="w-14 h-14 rounded-2xl object-cover shadow-xl bg-black"/>
+      <div class="relative px-6 pt-6 flex items-start justify-between">
+        <div class="flex items-center gap-4">
+          <img src="${s.logo}" alt="${s.name}" class="w-14 h-14 rounded-2xl object-cover shadow-xl bg-black" />
           <div class="flex flex-col">
             <div class="flex items-center gap-3">
               <span class="w-3 h-3 bg-green-500 rounded-full"></span>
-              <h3 class="text-2xl font-bold text-white truncate">${s.name}${premiumLabel}</h3>
+              <h3 class="text-2xl font-bold text-white truncate">${s.name}${premiumLabel}${sponsoredLabel}</h3>
             </div>
           </div>
         </div>
       </div>
       <div class="px-6 pb-6 pt-4 flex flex-col gap-4">
-        <div class="flex flex-wrap gap-2">
-          ${(s.tags||[]).map(t=>`<span class="px-3 py-1 text-xs font-semibold rounded-full bg-[#2a2d3d] text-white">${t.toUpperCase()}</span>`).join('')}
-        </div>
+        <div class="flex flex-wrap gap-2">${(s.tags||[]).map(t=>`<span class="px-3 py-1 text-xs font-semibold rounded-full bg-[#2a2d3d] text-white">${t.toUpperCase()}</span>`).join('')}</div>
         <p class="text-sm text-zinc-300 leading-relaxed line-clamp-3">${s.description}</p>
         <div class="border-t border-[#2a2d3d]"></div>
         <div class="flex items-center justify-between">
@@ -250,32 +229,32 @@ function renderServers(){
         </div>
       </div>
     `;
-    card.onclick = e=>{ if(e.target.tagName!=='A') window.location.href=`server.html?guildid=${s._id}`; };
+    card.onclick=e=>{if(e.target.tagName!=='A') window.location.href=`server.html?guildid=${s._id}`;};
     grid.appendChild(card);
   });
 
-  renderPagination(displayServers.length);
+  renderPagination();
 }
 
-// PAGINATION
-function renderPagination(totalLength){
+// --- PAGINATION ---
+function renderPagination(){
   const pagination = document.getElementById('pagination');
   pagination.innerHTML='';
-  const totalPages=Math.ceil(totalLength/serversPerPage);
+  const totalPages = Math.ceil(filteredServers.length/serversPerPage);
   if(totalPages<=1) return;
 
   const prev=document.createElement('button');
   prev.textContent='Prev';
   prev.disabled=currentPage===1;
   prev.className=`px-4 py-2 rounded-full font-semibold ${prev.disabled?'bg-zinc-700 text-white/50':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
-  prev.onclick=()=>{ if(currentPage>1){currentPage--; renderServers(); } };
+  prev.onclick=()=>{if(currentPage>1){currentPage--;renderServers();}};
   pagination.appendChild(prev);
 
   for(let i=1;i<=totalPages;i++){
     const btn=document.createElement('button');
     btn.textContent=i;
     btn.className=`px-4 py-2 rounded-full font-semibold ${i===currentPage?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
-    btn.onclick=()=>{ currentPage=i; renderServers(); };
+    btn.onclick=()=>{currentPage=i; renderServers();};
     pagination.appendChild(btn);
   }
 
@@ -283,64 +262,71 @@ function renderPagination(totalLength){
   next.textContent='Next';
   next.disabled=currentPage===totalPages;
   next.className=`px-4 py-2 rounded-full font-semibold ${next.disabled?'bg-zinc-700 text-white/50':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
-  next.onclick=()=>{ if(currentPage<totalPages){currentPage++; renderServers(); } };
+  next.onclick=()=>{if(currentPage<totalPages){currentPage++;renderServers();}};
   pagination.appendChild(next);
 }
 
-// ADMIN MODAL SPONSORSHIP
-function renderSponsorDropdown(search=''){
-  sponsorServerSelect.innerHTML='';
-  const filtered=servers.filter(s=>s.name.toLowerCase().includes(search.toLowerCase()));
-  filtered.forEach(s=>{
-    const option=document.createElement('option');
-    option.value=s._id;
-    option.textContent=s.name + (s.sponsored ? ' [Sponsored]' : '');
-    sponsorServerSelect.appendChild(option);
-  });
-}
-sponsorSearchInput.addEventListener('input',(e)=>{ renderSponsorDropdown(e.target.value); });
-
-// ADD SPONSOR (live backend)
-addSponsorBtn.onclick=async()=>{
-  const serverId=sponsorServerSelect.value;
-  if(!serverId) return alert('Select a server');
-  try {
-    const res = await fetch(`${API_URL}/api/servers/${serverId}/sponsor`,{
-      method:'POST',
-      headers:{ 'Authorization':`Bearer ${token}` }
-    });
-    if(!res.ok) throw new Error('Failed to sponsor');
-    alert('Server sponsored');
-    await refreshServersLive();
-    sponsorModal.classList.add('hidden');
-  } catch(err){ alert(err.message); }
-};
-
-// REMOVE SPONSOR (live backend)
-removeSponsorBtn.onclick=async()=>{
-  const serverId=sponsorServerSelect.value;
-  if(!serverId) return alert('Select a server');
-  try {
-    const res = await fetch(`${API_URL}/api/servers/${serverId}/unsponsor`,{
-      method:'POST',
-      headers:{ 'Authorization':`Bearer ${token}` }
-    });
-    if(!res.ok) throw new Error('Failed to remove sponsorship');
-    alert('Sponsorship removed');
-    await refreshServersLive();
-    sponsorModal.classList.add('hidden');
-  } catch(err){ alert(err.message); }
-};
-
+// --- SPONSOR MODAL ---
+const sponsorModal=document.getElementById('sponsorModal');
+sponsorBtn.onclick=()=>sponsorModal.classList.remove('hidden');
 document.getElementById('closeSponsorModal').onclick=()=>sponsorModal.classList.add('hidden');
 
-// SEARCH / NSFW / SORT EVENTS
-document.getElementById('searchInput').oninput = ()=>{ currentPage=1; applyFilters(); };
-document.getElementById('nsfwToggle').onchange = ()=>{ currentPage=1; applyFilters(); };
-document.getElementById('sortSelect').onchange = ()=>{ currentPage=1; applyFilters(); };
+function populateSponsorDropdown(){
+  const select=document.getElementById('sponsorSelect');
+  select.innerHTML='<option value="">Select a server...</option>';
+  servers.forEach(s=>{
+    const opt=document.createElement('option');
+    opt.value=s._id;
+    opt.textContent=s.name + (s.sponsored?' [Currently Sponsored]':'');
+    select.appendChild(opt);
+  });
+}
+
+document.getElementById('confirmSponsor').onclick = async () => {
+  const id = document.getElementById('sponsorSelect').value;
+  if (!id) return alert('Select a server');
+
+  const server = servers.find(s => s._id === id);
+  if (server) {
+    // Send POST request to update sponsorship status
+    const res = await fetch(`${API_URL}/api/servers/sponsor/${id}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // Assuming you have a token for auth
+      },
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      server.sponsored = data.sponsored;
+      alert(`${server.name} is now ${server.sponsored ? 'sponsored' : 'not sponsored'}`);
+      populateSponsorDropdown();
+      applyFilters();
+      sponsorModal.classList.add('hidden');
+    } else {
+      console.error("Failed to toggle sponsorship:", res.statusText);
+      alert('Failed to update sponsorship.');
+    }
+  }
+};
+
+// --- SEARCH / NSFW / SORT ---
+document.getElementById('sortSelect').onchange=()=>{currentPage=1; applyFilters();};
+document.getElementById('searchInput')?.addEventListener('input',()=>{currentPage=1;applyFilters();});
+document.getElementById('nsfwToggle')?.addEventListener('change',()=>{currentPage=1;applyFilters();});
 
 loadServers();
 </script>
-
 </body>
 </html>
+
+// routes/servers.js
+router.post('/sponsor/:id', async (req, res) => {
+  const server = await Server.findById(req.params.id);
+  if(!server) return res.status(404).json({error: 'Server not found'});
+
+  server.sponsored = !server.sponsored;
+  await server.save();
+  res.json({success: true, sponsored: server.sponsored});
+});
