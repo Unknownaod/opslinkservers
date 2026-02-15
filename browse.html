@@ -82,7 +82,7 @@
 const API_URL = 'https://opslinkservers-backend.onrender.com';
 let servers = [];
 let filteredServers = [];
-let activeTag = 'all';
+let activeTags = []; // store multiple selected tags
 let currentPage = 1;
 const serversPerPage = 9;
 
@@ -122,11 +122,11 @@ function generateTags() {
   servers.forEach(s => (s.tags || []).forEach(tag => tagsSet.add(tag)));
   const tags = Array.from(tagsSet).sort();
 
-  // "All" button
+  // "All Servers" button
   const allBtn = document.createElement('button');
-  allBtn.textContent = 'All';
+  allBtn.textContent = 'All Servers';
   allBtn.className = tagButtonClass('all');
-  allBtn.onclick = () => { activeTag = 'all'; currentPage = 1; applyFilters(); updateTagHighlight(); };
+  allBtn.onclick = () => { activeTags = []; currentPage = 1; applyFilters(); updateTagHighlight(); };
   tagContainer.appendChild(allBtn);
 
   // Tag buttons
@@ -134,23 +134,29 @@ function generateTags() {
     const btn = document.createElement('button');
     btn.textContent = tag.toUpperCase();
     btn.className = tagButtonClass(tag);
-    btn.onclick = () => { activeTag = tag; currentPage = 1; applyFilters(); updateTagHighlight(); };
+    btn.onclick = () => {
+      const index = activeTags.indexOf(tag);
+      if(index === -1) activeTags.push(tag);
+      else activeTags.splice(index, 1);
+      currentPage = 1;
+      applyFilters();
+      updateTagHighlight();
+    };
     tagContainer.appendChild(btn);
   });
 }
 
 // --- TAG BUTTON STYLING ---
 function tagButtonClass(tag) {
-  return `px-4 py-1 rounded-full text-sm font-semibold ${
-    activeTag === tag ? 'bg-indigo-600 text-white' : 'bg-zinc-800 text-white/80 hover:bg-zinc-700'
-  }`;
+  if(tag === 'all') return `px-4 py-1 rounded-full text-sm font-semibold ${activeTags.length===0?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
+  return `px-4 py-1 rounded-full text-sm font-semibold ${activeTags.includes(tag)?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
 }
 
 function updateTagHighlight() {
   const tagContainer = document.getElementById('tagContainer');
   Array.from(tagContainer.children).forEach(btn => {
-    const tag = btn.textContent.toLowerCase() === 'all' ? 'all' : btn.textContent.toLowerCase();
-    btn.className = tagButtonClass(tag);
+    const tag = btn.textContent.toLowerCase();
+    btn.className = tagButtonClass(tag==='all'?'all':tag);
   });
 }
 
@@ -162,24 +168,22 @@ function applyFilters() {
 
   filteredServers = servers
     .filter(s => nsfw || !s.nsfw)
-    .filter(s => activeTag === 'all' || (s.tags || []).includes(activeTag))
+    .filter(s => activeTags.length === 0 || s.tags?.some(tag => activeTags.includes(tag)))
     .filter(s =>
       s.name.toLowerCase().includes(search) ||
       (s.description || '').toLowerCase().includes(search)
     );
 
-  // Sort
-  if(sort === 'premium') {
-    filteredServers.sort((a,b) => {
-      const aPremium = a.submitterDiscord?.ispremium ? 1 : 0;
-      const bPremium = b.submitterDiscord?.ispremium ? 1 : 0;
-      return bPremium - aPremium; // premium first
-    });
-  } else if(sort === 'newest') {
-    filteredServers.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-  } else if(sort === 'members') {
-    filteredServers.sort((a,b) => (b.members||0) - (a.members||0));
-  }
+  // Sort by premium first
+  filteredServers.sort((a,b) => {
+    const aPremium = a.submitterDiscord?.ispremium ? 1 : 0;
+    const bPremium = b.submitterDiscord?.ispremium ? 1 : 0;
+    if(aPremium !== bPremium) return bPremium - aPremium;
+    // Secondary sort
+    if(sort === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
+    if(sort === 'members') return (b.members||0) - (a.members||0);
+    return 0;
+  });
 
   renderServers();
 }
@@ -276,5 +280,6 @@ document.getElementById('sortSelect').onchange = () => { currentPage=1; applyFil
 
 loadServers();
 </script>
+
 </body>
 </html>
