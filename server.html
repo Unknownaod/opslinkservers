@@ -221,7 +221,11 @@ if (!reviews.length) {
     reviewsList.innerHTML = '';
     enhancedReviews.forEach(r => {
       const isAdmin = r.role === 'admin';
-      const isOwner = owner && r.discordUserID === owner.userID;
+      // Use submitterDiscord to check owner
+      const isOwner =
+        s.submitterDiscord &&
+        r.discordUserID &&
+        r.discordUserID.toString() === s.submitterDiscord.userID.toString();
 
       reviewsList.innerHTML += `
         <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
@@ -263,12 +267,14 @@ if (!reviews.length) {
 }
 
 /* --- SHOW EDIT BUTTON IF OWNER --- */
-if (currentUser && owner && owner.userID) {
-  if (currentUser.discordUserID === owner.userID) {
-    document.getElementById('editBtn').classList.remove('hidden');
-    }
-  }
+if (
+  currentUser &&
+  s.submitterDiscord &&
+  currentUser.discordUserID.toString() === s.submitterDiscord.userID.toString()
+) {
+  document.getElementById('editBtn').classList.remove('hidden');
 }
+
 
 
 /* --- SUBMIT REVIEW --- */
