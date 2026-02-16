@@ -124,10 +124,30 @@
   </section>
 
   <!-- Footer -->
-  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
-    <span>© 2026 OpsLink Servers</span>
-    <span>Not affiliated with Discord</span>
-  </footer>
+<footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex flex-col md:flex-row justify-between gap-4">
+  <!-- Left -->
+  <span>
+    © 2026 OpsLink Servers. All rights reserved.
+  </span>
+
+  <!-- Right -->
+  <div class="flex flex-wrap items-center gap-4">
+    <a href="/support/docs/" class="hover:text-zinc-200 transition">
+      Docs
+    </a>
+    <a href="/support/tickets/" class="hover:text-zinc-200 transition">
+      Support Hub
+    </a>
+    <a href="/support/legal/" class="hover:text-zinc-200 transition">
+      Legal
+    </a>
+    <span class="hidden md:inline">•</span>
+    <span>
+      Not affiliated with Discord Inc.
+    </span>
+  </div>
+</footer>
+
 
   <script>
     const API_URL = "https://opslinkservers-backend.onrender.com";
