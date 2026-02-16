@@ -327,7 +327,7 @@ document.getElementById('change-password').onclick = async () => {
   }
 };
 
-   /* ========= CHANGE DISCORD USERNAME ========= */
+/* ========= CHANGE DISCORD USERNAME ========= */
 document.getElementById('change-username').onclick = async () => {
   try {
     const newUsername = await createModal({
@@ -339,13 +339,14 @@ document.getElementById('change-username').onclick = async () => {
 
     if (!newUsername) return;
 
+    // Send only the newDiscordUsername — JWT identifies the user
     const res = await fetch(`${API_URL}/auth/change-username`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({ userId: user._id, newDiscordUsername: newUsername })
+      body: JSON.stringify({ newDiscordUsername: newUsername })
     });
 
     if (res.status === 401) return redirectLogin();
