@@ -208,24 +208,27 @@ if (!reviews.length) {
           const res = await fetch(`${API_URL}/api/servers/role/${encodeURIComponent(r.discordUsername)}`);
           const data = await res.json();
           const role = data.role || 'user';
-
           return { ...r, role };
         } catch (err) {
           console.error('Error fetching reviewer role:', err);
-          return { ...r, role: 'user' }; // fallback
+          return { ...r, role: 'user' };
         }
       })
     );
 
-    // Render reviews and average
+    // Render reviews
     reviewsList.innerHTML = '';
     enhancedReviews.forEach(r => {
       const isAdmin = r.role === 'admin';
-      // Use submitterDiscord to check owner
+
+      // SERVER OWNER check based on submitterDiscord username/tag
       const isOwner =
         s.submitterDiscord &&
-        r.discordUserID &&
-        r.discordUserID.toString() === s.submitterDiscord.userID.toString();
+        r.discordUsername &&
+        r.discordUsername === s.submitterDiscord.username &&
+        (s.submitterDiscord.tag
+          ? r.discordTag === s.submitterDiscord.tag
+          : true); // match tag if available
 
       reviewsList.innerHTML += `
         <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
@@ -256,6 +259,7 @@ if (!reviews.length) {
       `;
     });
 
+    // Average rating
     const avg = (total / enhancedReviews.length).toFixed(1);
     document.getElementById('averageStars').textContent =
       '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
@@ -265,6 +269,7 @@ if (!reviews.length) {
 
   fetchReviewsWithRoles();
 }
+
 
 /* --- SHOW EDIT BUTTON IF OWNER --- */
 if (
