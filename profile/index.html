@@ -219,7 +219,7 @@ copyLinkBtn.onclick = () => {
 
 // Socials
 function fetchSocials() {
-  fetch(`${API_URL}/socials/${currentUserId}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
+  fetch(`${API_URL}/profile/socials/${currentUserId}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
     .then(res => res.json())
     .then(data => {
       socialsContainer.innerHTML = '';
