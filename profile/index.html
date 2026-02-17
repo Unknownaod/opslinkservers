@@ -109,12 +109,7 @@ loginBtn.textContent = token ? 'Logout' : 'Login';
 loginBtn.href = token ? '#' : '/auth/login/';
 loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
 
-if (loggedInUser && loggedInUser._id) {
-  addSocialsForm.classList.remove('hidden');
-}
-const currentUserId = loggedInUser?._id;
-
-// Fetch profile
+// Fetch profile using JWT
 fetch(`${API_URL}/profile`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
   .then(res => res.json())
   .then(data => {
@@ -122,6 +117,8 @@ fetch(`${API_URL}/profile`, token ? { headers: { Authorization: `Bearer ${token}
       profileContainer.innerHTML = '<p class="text-zinc-400">Profile not found.</p>';
       return;
     }
+
+    const currentUserId = data._id;
 
     document.getElementById('profileUsername').textContent = data.discordUsername || '';
     document.getElementById('profileTag').textContent = data.discordTag ? `#${data.discordTag}` : '';
@@ -131,7 +128,12 @@ fetch(`${API_URL}/profile`, token ? { headers: { Authorization: `Bearer ${token}
     document.getElementById('profileRole').innerHTML = `Role: <span class="font-semibold ${roleColor}">${data.role}</span>`;
     document.getElementById('profileEmail').textContent = data.email ? `Email: ${data.email}` : '';
     document.getElementById('profileVerified').textContent = data.isVerified !== undefined ? `Verified: ${data.isVerified ? 'Yes' : 'No'}` : '';
-    document.getElementById('profileID').innerHTML = `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
+    document.getElementById('profileID').innerHTML = `User ID: <span class="font-semibold text-blue-400">${currentUserId}</span>`;
+
+    // Show Add Socials only if viewing own profile
+    if (loggedInUser && loggedInUser._id === currentUserId) {
+      addSocialsForm.classList.remove('hidden');
+    }
 
     renderSocials(data.socials || []);
     fetchServers();
@@ -156,7 +158,7 @@ function renderSocials(socials) {
     div.innerHTML = `
       <img src="${logo}" alt="${s.platform}" class="w-5 h-5" />
       <a href="${s.url}" target="_blank" class="underline text-blue-400">${s.handle}</a>
-      <button class="ml-2 px-2 py-1 bg-red-600 rounded text-xs" onclick="deleteSocial('${s._id}')">Delete</button>
+      ${loggedInUser && loggedInUser._id === s.user ? `<button class="ml-2 px-2 py-1 bg-red-600 rounded text-xs" onclick="deleteSocial('${s._id}')">Delete</button>` : ''}
     `;
     socialsContainer.appendChild(div);
   });
@@ -183,8 +185,7 @@ addSocialBtn.onclick = () => {
       socialHandle.value = '';
       socialPlatform.value = '';
       fetch(`${API_URL}/profile`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(res => res.json())
-        .then(updatedProfile => renderSocials(updatedProfile.socials || []));
+        .then(res => res.json()).then(updatedProfile => renderSocials(updatedProfile.socials || []));
     } else {
       socialMsg.textContent = data.message || 'Failed to add social.';
     }
@@ -197,9 +198,10 @@ function deleteSocial(id) {
   fetch(`${API_URL}/socials/delete/${id}`, { method:'DELETE', headers:{ Authorization: `Bearer ${token}` } })
     .then(res => res.json())
     .then(data => {
-      if (data.success) fetch(`${API_URL}/profile`, { headers:{ Authorization: `Bearer ${token}` } })
-                           .then(res => res.json()).then(updatedProfile => renderSocials(updatedProfile.socials || []));
-      else alert('Failed to delete social.');
+      if (data.success) {
+        fetch(`${API_URL}/profile`, { headers:{ Authorization: `Bearer ${token}` } })
+          .then(res => res.json()).then(updatedProfile => renderSocials(updatedProfile.socials || []));
+      } else alert('Failed to delete social.');
     })
     .catch(err => console.error(err));
 }
@@ -237,7 +239,7 @@ function fetchServers() {
 
 // Copy profile link
 copyLinkBtn.onclick = () => {
-  if (!currentUserId) return;
+  if (!loggedInUser?._id) return;
   const shareLink = `${window.location.origin}/profile/`;
   navigator.clipboard.writeText(shareLink)
     .then(() => { copyLinkBtn.textContent = 'Link Copied!'; setTimeout(() => copyLinkBtn.textContent = 'Copy Profile Link', 2000); })
