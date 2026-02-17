@@ -201,7 +201,6 @@ if (token && userStr) {
     }
   });
 
-  // Optional: hide dropdown when clicking outside
   document.addEventListener('click', (e) => {
     if (!dropdownContainer.contains(e.target)) {
       dropdownMenu.classList.remove('opacity-100');
@@ -221,7 +220,7 @@ if (token && userStr) {
 }
 
 // --------------------------
-// Live stats (everyone sees) – moved outside if block
+// Live stats
 // --------------------------
 function animateValue(el, start, end, duration = 1200) {
   const range = end - start;
@@ -298,7 +297,7 @@ document.addEventListener('click', e => {
   t.style.opacity = 1;
   t.style.pointerEvents = 'all';
 
-  // Animate logo: scale up and glow
+  // scale up and glow
   tl.style.opacity = 1;
   tl.style.transform = 'scale(1.05)';
   tl.style.filter = 'drop-shadow(0 0 25px rgba(80,200,255,0.8))';
