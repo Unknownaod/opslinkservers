@@ -239,25 +239,39 @@ async function loadConnections() {
     data.socials.forEach(s => {
       if (!s.connected) return;
       const platform = s.platform;
+      if (!s.username) return; // skip if username missing
 
       const card = document.createElement('div');
       card.className = `flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform duration-150 gap-2`;
 
       let extraInfo = '';
-      // Special handling for Spotify
       if (platform === 'spotify' && s.currentlyPlaying) {
         extraInfo = `<p class="text-sm text-zinc-300 truncate">🎵 Now Playing: ${s.currentlyPlaying.name} by ${s.currentlyPlaying.artists.join(', ')}</p>`;
       }
 
-      // For GitHub or other platforms, show username and clickable profile URL
-      const profileLink = s.profileUrl ? `<a href="${s.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>` : s.username;
+      // Generate profile link
+      let profileLink = s.profileUrl || '';
+      if (!profileLink) {
+        switch (platform) {
+          case 'github': profileLink = `https://github.com/${s.username}`; break;
+          case 'twitter': profileLink = `https://twitter.com/${s.username}`; break;
+          case 'linkedin': profileLink = `https://linkedin.com/in/${s.username}`; break;
+          case 'tiktok': profileLink = `https://www.tiktok.com/@${s.username}`; break;
+          default: profileLink = '';
+        }
+      }
+
+      // Make it clickable if URL exists
+      const displayUsername = profileLink
+        ? `<a href="${profileLink}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>`
+        : s.username;
 
       card.innerHTML = `
         <div class="flex items-center gap-3">
           <img src="${platformLogos[platform] || ''}" alt="${platform}" class="w-6 h-6" />
           <span class="font-medium capitalize">${platform}</span>
         </div>
-        <p class="text-sm text-zinc-300 truncate">${profileLink}</p>
+        <p class="text-sm text-zinc-300 truncate">${displayUsername}</p>
         ${extraInfo}
       `;
 
