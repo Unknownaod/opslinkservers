@@ -539,10 +539,10 @@ const platforms = {
 };
 
 // =====================
-// Get JWT from localStorage
+// Get JWT from localStorage or URL
 // =====================
    
-// If OAuth just redirected back and token is in query string, store it
+// If OAuth just redirected back with token in query string, store it
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has("token")) {
   token = urlParams.get("token");
@@ -551,6 +551,9 @@ if (urlParams.has("token")) {
   window.history.replaceState({}, document.title, window.location.pathname);
 }
 
+// =====================
+// Load connections
+// =====================
 async function loadConnections() {
   if (!token) return redirectLogin();
 
@@ -595,19 +598,29 @@ async function loadConnections() {
   }
 }
 
+// =====================
+// Connect platform (OAuth)
+// =====================
 function connectPlatform(platform) {
   if (!platforms[platform] || !token) return redirectLogin();
 
-  // Open OAuth in a new tab
-  window.open(
-    `${platforms[platform].oauth}?token=${encodeURIComponent(token)}`,
-    "_blank"
-  );
+  const oauthUrl = `${platforms[platform].oauth}?token=${encodeURIComponent(token)}`;
+  const newTab = window.open(oauthUrl, "_blank");
 
-  alert("A new tab has opened for OAuth. After connecting, your session will refresh automatically.");
+  if (!newTab) return alert("Popup blocked. Please allow popups for this site.");
+
+  // Poll the new tab; when it closes, refresh connections automatically
+  const timer = setInterval(() => {
+    if (newTab.closed) {
+      clearInterval(timer);
+      loadConnections();
+    }
+  }, 1000);
 }
 
-/* ========= CONNECTION BUTTONS ========= */
+// =====================
+// Connection buttons
+// =====================
 const connectButtonsContainer = document.createElement("div");
 connectButtonsContainer.className = "flex flex-wrap gap-3 mt-4";
 
@@ -621,8 +634,11 @@ Object.keys(platforms).forEach(p => {
 
 connectionsList.parentNode.insertBefore(connectButtonsContainer, connectionsList);
 
-/* ========= INITIAL LOAD ========= */
+// =====================
+// Initial load
+// =====================
 loadConnections();
+
 
 
 </script>
