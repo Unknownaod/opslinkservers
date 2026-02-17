@@ -170,6 +170,15 @@ if (token && userStr) {
     window.location.reload();
   });
 
+  // Extract user ID from JWT (for profile link)
+  let userId;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    userId = payload.id || payload._id;
+  } catch {
+    userId = user._id; // fallback
+  }
+
   // Create dropdown container
   const dropdownContainer = document.createElement('div');
   dropdownContainer.className = 'relative ml-2';
@@ -184,7 +193,7 @@ if (token && userStr) {
   const dropdownMenu = document.createElement('div');
   dropdownMenu.className = 'absolute right-0 mt-2 w-36 bg-zinc-900 border border-zinc-700 rounded shadow-lg text-sm text-white opacity-0 pointer-events-none transition-opacity';
   dropdownMenu.innerHTML = `
-    <a href="/profile/" class="block px-4 py-2 hover:bg-zinc-700">View Profile</a>
+    <a href="/profile/?user=${userId}" class="block px-4 py-2 hover:bg-zinc-700">View Profile</a>
     <a href="/settings/" class="block px-4 py-2 hover:bg-zinc-700">Settings</a>
   `;
   dropdownContainer.appendChild(dropdownMenu);
@@ -262,6 +271,7 @@ async function fetchLiveStats() {
 fetchLiveStats();
 setInterval(fetchLiveStats, 2.5 * 60 * 1000 + Math.random() * 2.5 * 60 * 1000);
 </script>
+
 
 
 <div id="t" style="
