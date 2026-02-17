@@ -128,8 +128,6 @@ if (!token) {
         return;
       }
 
-      window.history.replaceState({}, document.title, `/profile/${data._id}`);
-
       // Fill profile info
       document.getElementById('profileUsername').textContent = data.discordUsername || '';
       document.getElementById('profileTag').textContent = data.discordTag ? `#${data.discordTag}` : '';
