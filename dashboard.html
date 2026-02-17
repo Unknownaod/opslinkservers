@@ -61,7 +61,7 @@ let currentUser = null;
 async function checkAdmin() {
   if (!token || !userStr) return location.href = '/login.html';
   currentUser = JSON.parse(userStr);
-  if (currentUser.role !== 'admin') return location.href = '/';
+  if (currentUser.role !== 'admin' && currentUser.role !== 'management') return location.href = '/';
   return true;
 }
 
