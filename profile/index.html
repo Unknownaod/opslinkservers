@@ -290,27 +290,38 @@ async function loadConnections() {
 // ---------------------
 // Copy Profile Link
 // ---------------------
-copyLinkBtn.onclick = () => {
-  if (!loggedInUser?._id) return;
+copyLinkBtn.onclick = async () => {
+  if (!token) return;
 
-  // Include the user's actual profile ID in the link
-  const shareLink = `${window.location.origin}/profile/${loggedInUser._id}`;
-
-  navigator.clipboard.writeText(shareLink)
-    .then(() => {
-      copyLinkBtn.textContent = 'Link Copied!';
-      setTimeout(() => {
-        copyLinkBtn.textContent = 'Copy Profile Link';
-      }, 2000);
-    })
-    .catch((err) => {
-      console.error('Failed to copy profile link:', err);
-      copyLinkBtn.textContent = 'Failed to copy';
-      setTimeout(() => {
-        copyLinkBtn.textContent = 'Copy Profile Link';
-      }, 2000);
+  try {
+    // Hit your existing route: GET /api/profile
+    const res = await fetch(`${API_URL}/profile`, {
+      headers: { Authorization: `Bearer ${token}` }
     });
+
+    if (!res.ok) throw new Error('Failed to fetch profile');
+
+    const data = await res.json();
+    if (!data?._id) throw new Error('No user ID returned');
+
+    const shareLink = `${window.location.origin}/profile/${data._id}`;
+
+    await navigator.clipboard.writeText(shareLink);
+
+    copyLinkBtn.textContent = 'Link Copied!';
+    setTimeout(() => {
+      copyLinkBtn.textContent = 'Copy Profile Link';
+    }, 2000);
+
+  } catch (err) {
+    console.error('Failed to copy profile link:', err);
+    copyLinkBtn.textContent = 'Failed to copy';
+    setTimeout(() => {
+      copyLinkBtn.textContent = 'Copy Profile Link';
+    }, 2000);
+  }
 };
+
 
 </script>
 
