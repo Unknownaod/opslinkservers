@@ -286,6 +286,34 @@ setInterval(fetchLiveStats, 2.5 * 60 * 1000 + Math.random() * 2.5 * 60 * 1000);
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof t !== 'undefined') {
+    t.style.opacity = 0;
+    t.style.pointerEvents = 'none';
+  }
+  if (typeof tl !== 'undefined') {
+    tl.style.opacity = 0;
+    tl.style.transform = 'scale(1)';
+    tl.style.filter = 'none';
+  }
+});
+
+// handle back/forward cache restoration
+window.addEventListener('pageshow', event => {
+  if (event.persisted) {
+    // page was restored from bfcache, reset styles
+    if (typeof t !== 'undefined') {
+      t.style.opacity = 0;
+      t.style.pointerEvents = 'none';
+    }
+    if (typeof tl !== 'undefined') {
+      tl.style.opacity = 0;
+      tl.style.transform = 'scale(1)';
+      tl.style.filter = 'none';
+    }
+  }
+});
+
 document.addEventListener('click', e => {
   const a = e.target.closest('a');
   if(!a) return;
@@ -294,24 +322,23 @@ document.addEventListener('click', e => {
 
   e.preventDefault();
 
+  // show overlay/animation
   t.style.opacity = 1;
   t.style.pointerEvents = 'all';
 
-  // scale up and glow
   tl.style.opacity = 1;
   tl.style.transform = 'scale(1.05)';
   tl.style.filter = 'drop-shadow(0 0 25px rgba(80,200,255,0.8))';
 
-  // subtle pulse after first scale
   setTimeout(() => {
     tl.style.transform = 'scale(1)';
     tl.style.filter = 'drop-shadow(0 0 40px rgba(80,200,255,1))';
   }, 300);
 
-  // go to next page after 1 second
   setTimeout(() => location.href = h, 1000);
 });
 </script>
+
 
 </body>
 </html>
