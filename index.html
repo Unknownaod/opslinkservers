@@ -149,119 +149,120 @@
 </footer>
 
 
-  <script>
-    const API_URL = "https://opslinkservers-backend.onrender.com";
-    const loginBtn = document.getElementById('loginBtn');
-    const adminBtn = document.getElementById('adminBtn');
-    const adminBtnHero = document.getElementById('adminBtnHero');
-    const navLinks = document.getElementById('navLinks');
+<script>
+const API_URL = "https://opslinkservers-backend.onrender.com";
+const loginBtn = document.getElementById('loginBtn');
+const adminBtn = document.getElementById('adminBtn');
+const adminBtnHero = document.getElementById('adminBtnHero');
+const navLinks = document.getElementById('navLinks');
 
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
+const token = localStorage.getItem('token');
+const userStr = localStorage.getItem('user');
 
-    if (token && userStr) {
-      const user = JSON.parse(userStr);
+if (token && userStr) {
+  const user = JSON.parse(userStr);
 
-      loginBtn.textContent = 'Logout';
-      loginBtn.href = '#';
-      loginBtn.addEventListener('click', () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.reload();
-      });
+  loginBtn.textContent = 'Logout';
+  loginBtn.href = '#';
+  loginBtn.addEventListener('click', () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.reload();
+  });
 
-// Create dropdown container
-const dropdownContainer = document.createElement('div');
-dropdownContainer.className = 'relative ml-2';
+  // Create dropdown container
+  const dropdownContainer = document.createElement('div');
+  dropdownContainer.className = 'relative ml-2';
 
-// Create trigger button
-const welcomeBtn = document.createElement('button');
-welcomeBtn.textContent = `Welcome, ${user.discordUsername}`;
-welcomeBtn.className = 'text-sm text-zinc-300 mr-2 px-2 py-1 hover:bg-white/10 rounded transition';
-dropdownContainer.appendChild(welcomeBtn);
+  // Create trigger button
+  const welcomeBtn = document.createElement('button');
+  welcomeBtn.textContent = `Welcome, ${user.discordUsername}`;
+  welcomeBtn.className = 'text-sm text-zinc-300 mr-2 px-2 py-1 hover:bg-white/10 rounded transition';
+  dropdownContainer.appendChild(welcomeBtn);
 
-// Create dropdown menu
-const dropdownMenu = document.createElement('div');
-dropdownMenu.className = 'absolute right-0 mt-2 w-36 bg-zinc-900 border border-zinc-700 rounded shadow-lg text-sm text-white opacity-0 pointer-events-none transition-opacity';
-dropdownMenu.innerHTML = `
-  <a href="profile.html" class="block px-4 py-2 hover:bg-zinc-700">View Profile</a>
-  <a href="settings.html" class="block px-4 py-2 hover:bg-zinc-700">Settings</a>
-`;
-dropdownContainer.appendChild(dropdownMenu);
+  // Create dropdown menu
+  const dropdownMenu = document.createElement('div');
+  dropdownMenu.className = 'absolute right-0 mt-2 w-36 bg-zinc-900 border border-zinc-700 rounded shadow-lg text-sm text-white opacity-0 pointer-events-none transition-opacity';
+  dropdownMenu.innerHTML = `
+    <a href="profile.html" class="block px-4 py-2 hover:bg-zinc-700">View Profile</a>
+    <a href="settings.html" class="block px-4 py-2 hover:bg-zinc-700">Settings</a>
+  `;
+  dropdownContainer.appendChild(dropdownMenu);
 
-// Toggle dropdown on click
-welcomeBtn.addEventListener('click', () => {
-  const isOpen = dropdownMenu.classList.contains('opacity-100');
-  if (isOpen) {
-    dropdownMenu.classList.remove('opacity-100');
-    dropdownMenu.classList.add('opacity-0', 'pointer-events-none');
-  } else {
-    dropdownMenu.classList.remove('opacity-0', 'pointer-events-none');
-    dropdownMenu.classList.add('opacity-100');
-  }
-});
+  // Toggle dropdown on click
+  welcomeBtn.addEventListener('click', () => {
+    const isOpen = dropdownMenu.classList.contains('opacity-100');
+    if (isOpen) {
+      dropdownMenu.classList.remove('opacity-100');
+      dropdownMenu.classList.add('opacity-0', 'pointer-events-none');
+    } else {
+      dropdownMenu.classList.remove('opacity-0', 'pointer-events-none');
+      dropdownMenu.classList.add('opacity-100');
+    }
+  });
 
-// Optional: hide dropdown when clicking outside
-document.addEventListener('click', (e) => {
-  if (!dropdownContainer.contains(e.target)) {
-    dropdownMenu.classList.remove('opacity-100');
-    dropdownMenu.classList.add('opacity-0', 'pointer-events-none');
-  }
-});
+  // Optional: hide dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!dropdownContainer.contains(e.target)) {
+      dropdownMenu.classList.remove('opacity-100');
+      dropdownMenu.classList.add('opacity-0', 'pointer-events-none');
+    }
+  });
 
-// Insert dropdown into nav
-navLinks.insertBefore(dropdownContainer, loginBtn);
-
+  // Insert dropdown into nav
+  navLinks.insertBefore(dropdownContainer, loginBtn);
 
   if (user.role === 'admin' || user.role === 'management') {
-  adminBtn.classList.remove('hidden');
-  adminBtn.href = 'dashboard.html';
-  adminBtnHero.classList.remove('hidden');
-  adminBtnHero.href = 'dashboard.html';
+    adminBtn.classList.remove('hidden');
+    adminBtn.href = 'dashboard.html';
+    adminBtnHero.classList.remove('hidden');
+    adminBtnHero.href = 'dashboard.html';
   }
+}
 
-    // Animate numbers from 0 → target
-    function animateValue(el, start, end, duration = 1200) {
-      const range = end - start;
-      let startTime = null;
-      function step(timestamp) {
-        if (!startTime) startTime = timestamp;
-        const progress = Math.min((timestamp - startTime) / duration, 1);
-        el.textContent = Math.floor(start + range * progress).toLocaleString();
-        if (progress < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }
+// --------------------------
+// Live stats (everyone sees) – moved outside if block
+// --------------------------
+function animateValue(el, start, end, duration = 1200) {
+  const range = end - start;
+  let startTime = null;
+  function step(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const progress = Math.min((timestamp - startTime) / duration, 1);
+    el.textContent = Math.floor(start + range * progress).toLocaleString();
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
 
-    const serverCountEl = document.getElementById('serverCount');
-    const memberCountEl = document.getElementById('memberCount');
-    let currentServers = 0;
-    let currentMembers = 0;
+const serverCountEl = document.getElementById('serverCount');
+const memberCountEl = document.getElementById('memberCount');
+let currentServers = 0;
+let currentMembers = 0;
 
-    async function fetchLiveStats() {
-      try {
-        const res = await fetch(`${API_URL}/api/servers`);
-        const servers = await res.json();
+async function fetchLiveStats() {
+  try {
+    const res = await fetch(`${API_URL}/api/servers`);
+    const servers = await res.json();
 
-        const approved = servers.filter(s => s.status === 'approved' || !s.status);
-        const totalServers = approved.length;
-        const totalMembers = approved.reduce((sum, s) => sum + (Number(s.members) || 0), 0);
+    const approved = servers.filter(s => s.status === 'approved' || !s.status);
+    const totalServers = approved.length;
+    const totalMembers = approved.reduce((sum, s) => sum + (Number(s.members) || 0), 0);
 
-        animateValue(serverCountEl, currentServers, totalServers);
-        animateValue(memberCountEl, currentMembers, totalMembers);
+    animateValue(serverCountEl, currentServers, totalServers);
+    animateValue(memberCountEl, currentMembers, totalMembers);
 
-        currentServers = totalServers;
-        currentMembers = totalMembers;
-      } catch (err) {
-        console.error("Error fetching live stats:", err);
-      }
-    }
+    currentServers = totalServers;
+    currentMembers = totalMembers;
+  } catch (err) {
+    console.error("Error fetching live stats:", err);
+  }
+}
 
-    // Initial fetch + refresh every 2–5 minutes
-    fetchLiveStats();
-    setInterval(fetchLiveStats, 2.5 * 60 * 1000 + Math.random() * 2.5 * 60 * 1000);
-    }
-  </script>
+// Initial fetch + refresh every 2–5 minutes
+fetchLiveStats();
+setInterval(fetchLiveStats, 2.5 * 60 * 1000 + Math.random() * 2.5 * 60 * 1000);
+</script>
 
 
 <div id="t" style="
