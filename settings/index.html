@@ -623,7 +623,8 @@ function connectPlatform(platform) {
     return;
   }
 
-  const oauthUrl = `${platforms[platform].oauth}?token=${token}`;
+  // Add token to query string for backend to identify the user
+  const oauthUrl = `${platforms[platform].oauth}?token=${encodeURIComponent(token)}`;
 
   const popup = window.open(
     oauthUrl,
@@ -671,6 +672,7 @@ connectionsList.parentNode.insertBefore(
 // INITIAL LOAD
 // ===============================
 loadConnections();
+
 
 </script>
 
