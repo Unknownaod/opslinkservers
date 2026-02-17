@@ -541,7 +541,8 @@ const platforms = {
 // =====================
 // Get JWT from localStorage or URL
 // =====================
-   
+let token = localStorage.getItem("token");
+
 // If OAuth just redirected back with token in query string, store it
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has("token")) {
@@ -571,24 +572,47 @@ async function loadConnections() {
     const socials = data.socials || [];
     connectionsList.innerHTML = '';
 
-    const connected = socials.filter(s => s.connected);
-    if (!connected.length) {
+    if (!socials.length) {
       connectionsEmpty.classList.remove('hidden');
     } else {
       connectionsEmpty.classList.add('hidden');
-      connected.forEach(s => {
+
+      socials.forEach(s => {
         const card = document.createElement('div');
         card.className = "bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex items-center justify-between";
-        card.innerHTML = `
-          <div class="flex items-center gap-3">
-            <img src="${platforms[s.platform]?.logo || ''}" class="w-6 h-6" />
-            <div>
-              <p class="font-medium">${s.username}</p>
-              <a href="${s.profileUrl}" target="_blank" class="text-xs text-indigo-400 hover:underline">View Profile</a>
+
+        // Connected or not
+        if (s.connected) {
+          card.innerHTML = `
+            <div class="flex items-center gap-3">
+              <img src="${platforms[s.platform]?.logo || ''}" class="w-6 h-6" />
+              <div>
+                <p class="font-medium">${s.username}</p>
+                <a href="${s.profileUrl}" target="_blank" class="text-xs text-indigo-400 hover:underline">View Profile</a>
+              </div>
             </div>
-          </div>
-          <span class="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded">Connected</span>
-        `;
+            <div class="flex gap-2 items-center">
+              <span class="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded">Connected</span>
+              <button class="text-xs px-2 py-1 rounded bg-red-600 hover:bg-red-500 text-white">Disconnect</button>
+            </div>
+          `;
+          const disconnectBtn = card.querySelector("button");
+          disconnectBtn.onclick = () => disconnectPlatform(s.platform);
+        } else {
+          // Show connect button if not connected
+          card.innerHTML = `
+            <div class="flex items-center gap-3">
+              <img src="${platforms[s.platform]?.logo || ''}" class="w-6 h-6" />
+              <div>
+                <p class="font-medium">${platforms[s.platform]?.name}</p>
+              </div>
+            </div>
+            <button class="text-xs px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white">Connect</button>
+          `;
+          const connectBtn = card.querySelector("button");
+          connectBtn.onclick = () => connectPlatform(s.platform);
+        }
+
         connectionsList.appendChild(card);
       });
     }
@@ -619,7 +643,30 @@ function connectPlatform(platform) {
 }
 
 // =====================
-// Connection buttons
+// Disconnect platform
+// =====================
+async function disconnectPlatform(platform) {
+  if (!token) return redirectLogin();
+
+  if (!confirm(`Are you sure you want to disconnect ${platforms[platform].name}?`)) return;
+
+  try {
+    const res = await fetch(`${API_URL}/profile/connections/${platform}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    loadConnections();
+  } catch (err) {
+    console.error(`Failed to disconnect ${platform}`, err);
+    alert(`Failed to disconnect ${platforms[platform].name}.`);
+  }
+}
+
+// =====================
+// Connection buttons (main panel)
 // =====================
 const connectButtonsContainer = document.createElement("div");
 connectButtonsContainer.className = "flex flex-wrap gap-3 mt-4";
@@ -638,6 +685,7 @@ connectionsList.parentNode.insertBefore(connectButtonsContainer, connectionsList
 // Initial load
 // =====================
 loadConnections();
+
 
 
 
