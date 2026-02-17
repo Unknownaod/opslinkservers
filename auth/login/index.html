@@ -18,10 +18,10 @@
 <nav class="flex items-center justify-between px-10 py-6">
   <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
   <div class="flex items-center gap-8 text-sm">
-    <a href="index.html" class="hover:opacity-80">Home</a>
-    <a href="browse.html" class="hover:opacity-80">Browse</a>
-    <a href="submit.html" class="hover:opacity-80">Submit</a>
-    <a href="signup.html" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Sign Up</a>
+    <a href="/" class="hover:opacity-80">Home</a>
+    <a href="/servers/" class="hover:opacity-80">Browse</a>
+    <a href="/submit/" class="hover:opacity-80">Submit</a>
+    <a href="/auth/signup/" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Sign Up</a>
   </div>
 </nav>
 
@@ -50,7 +50,7 @@
     </button>
 
     <p class="mt-4 text-sm text-zinc-400">
-      Don't have an account? <a href="signup.html" class="text-white underline hover:text-zinc-300">Register here</a>
+      Don't have an account? <a href="/auth/signup/" class="text-white underline hover:text-zinc-300">Register here</a>
     </p>
   </div>
 </section>
@@ -169,7 +169,7 @@ confirmBtn.addEventListener('click', async () => {
     if (!res.ok) throw new Error(data.error || "Failed to send reset email");
     showToast({ title: "Success!", message: "Reset email sent!", type: "success" });
     modal.classList.add('hidden');
-    setTimeout(() => window.location.href = 'passwordverify.html', 1000);
+    setTimeout(() => window.location.href = '../../passwordverify.html', 1000);
   } catch (err) {
     showToast({ title: "Error!", message: err.message || "Failed to send reset email", type: "error" });
     modal.classList.add('hidden');
@@ -217,7 +217,7 @@ qrBtn.addEventListener('click', async () => {
       qrCanvas.style.display = 'none';
       spinLogo.classList.remove('hidden');
       qrMessage.textContent = 'Login approved! Redirecting...';
-      setTimeout(() => window.location.href = 'index.html', 1500);
+      setTimeout(() => window.location.href = '/', 1500);
       if (qrSocket) qrSocket.disconnect();
     });
 
