@@ -477,7 +477,7 @@ addSocialBtn.onclick = async () => {
   }
 
   try {
-    const res = await fetch(`${API_URL}/socials/add`, {
+    const res = await fetch(`${API_URL}/profile/socials/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ platform, handle })
@@ -499,7 +499,7 @@ addSocialBtn.onclick = async () => {
 // Delete a social
 async function deleteSocial(id) {
   try {
-    const res = await fetch(`${API_URL}/socials/delete/${id}`, { method:'DELETE', headers:{ Authorization: `Bearer ${token}` } });
+    const res = await fetch(`${API_URL}/profile/socials/delete/${id}`, { method:'DELETE', headers:{ Authorization: `Bearer ${token}` } });
     const data = await res.json();
     if (data.success) loadSocials();
     else alert('Failed to delete social.');
