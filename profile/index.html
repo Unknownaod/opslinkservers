@@ -278,18 +278,19 @@ function deleteSocial(id) {
 
 // Discord Widget
 function fetchDiscordWidget() {
-  if (!token) return;
-  fetch(`${API_URL}/profile/discord/widget`, { headers: { Authorization: `Bearer ${token}` } })
+  if (!currentUserId) return;
+
+  fetch(`${API_URL}/profile/${currentUserId}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
     .then(res => res.json())
     .then(data => {
-      if (!data) return;
+      if (!data.discordWidget) return;
       discordWidget.style.display = 'block';
-      widgetAvatar.src = data.avatar || 'assets/default.jpg';
-      widgetUsername.textContent = data.username || '';
-      widgetStatus.textContent = `Status: ${data.status || 'Offline'}`;
-      widgetActivity.textContent = data.activity || '';
+      widgetAvatar.src = data.discordWidget.avatar || 'assets/default.jpg';
+      widgetUsername.textContent = data.discordWidget.username || '';
+      widgetStatus.textContent = `Status: ${data.discordWidget.status || 'Offline'}`;
+      widgetActivity.textContent = data.discordWidget.activity || '';
       widgetBadges.innerHTML = '';
-      (data.badges || []).forEach(b => {
+      (data.discordWidget.badges || []).forEach(b => {
         const span = document.createElement('span');
         span.className = 'px-2 py-1 bg-purple-600 rounded text-xs';
         span.textContent = b;
@@ -298,6 +299,7 @@ function fetchDiscordWidget() {
     })
     .catch(err => console.error(err));
 }
+
 </script>
 
 </body>
