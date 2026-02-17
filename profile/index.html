@@ -20,7 +20,7 @@
   </nav>
 
   <!-- PROFILE SECTION -->
-  <section class="px-10 py-10 max-w-4xl mx-auto flex flex-col gap-6">
+  <section class="px-10 py-10 max-w-5xl mx-auto flex flex-col gap-6">
     <h1 class="text-5xl font-bold mb-6">Profile</h1>
 
     <div id="profileContainer" class="flex flex-col md:flex-row gap-6 items-start">
@@ -32,14 +32,12 @@
         <p id="profileRole" class="text-zinc-400"></p>
         <p id="profileEmail" class="text-zinc-400"></p>
         <p id="profileVerified" class="text-zinc-400"></p>
-        <p id="profileID" class="text-zinc-400 break-all"></p> <!-- User ID -->
+        <p id="profileID" class="text-zinc-400 break-all"></p>
         <button id="copyLinkBtn" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm">Copy Profile Link</button>
-
-        <!-- Discord Login Button -->
         <a id="discordLoginBtn" href="/auth/discord" class="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-white text-sm">Login with Discord</a>
       </div>
 
-      <!-- Servers, Socials, and Discord Widget -->
+      <!-- Servers, Socials, Discord Widget -->
       <div class="flex-1 flex flex-col gap-4">
         <!-- Servers Owned -->
         <h3 class="text-2xl font-semibold mb-4">Servers Owned</h3>
@@ -53,7 +51,7 @@
           <p>Loading socials...</p>
         </div>
 
-        <!-- Add Socials form (only visible to logged-in user) -->
+        <!-- Add Socials form -->
         <div id="addSocialsForm" class="hidden flex flex-col gap-2 mt-4 p-4 rounded border border-zinc-700 bg-zinc-900/50 w-full md:w-1/2">
           <h4 class="font-semibold text-lg text-white">Add a Social</h4>
           <div class="flex gap-2">
@@ -126,54 +124,39 @@ const platformLogos = {
 
 // Helpers
 function getQueryParam(param) {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get(param);
+  return new URLSearchParams(window.location.search).get(param);
 }
-
 function updateURLWithUserID(id) {
   const url = new URL(window.location);
   url.searchParams.set('user', id);
   window.history.replaceState({}, '', url);
 }
 
-// Check login
+// Auth
 const token = localStorage.getItem('token');
-const userStr = localStorage.getItem('user');
-let loggedInUser = null;
-
-if (userStr) loggedInUser = JSON.parse(userStr);
-
+const loggedInUser = JSON.parse(localStorage.getItem('user') || 'null');
 loginBtn.textContent = token ? 'Logout' : 'Login';
 loginBtn.href = token ? '#' : '/auth/login/';
 loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
-
 discordLoginBtn.style.display = token ? 'none' : 'block';
 
-// Determine which profile to fetch
-let userId = getQueryParam('user');
+// Determine profile
+let userId = getQueryParam('user') || loggedInUser?._id;
+if (!getQueryParam('user') && loggedInUser) updateURLWithUserID(userId);
 
-if (!userId && loggedInUser) {
-  userId = loggedInUser._id;
-  updateURLWithUserID(userId);
-}
-
-const profileEndpoint = `${API_URL}/profile${userId ? `/${userId}` : ''}`;
 let currentUserId = null;
-
-// Fetch profile
-fetch(profileEndpoint, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
+fetch(`${API_URL}/profile/${userId}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
   .then(res => res.json())
   .then(data => {
-    if (!data.discordUsername) {
+    if (!data?.discordUsername) {
       profileContainer.innerHTML = '<p class="text-zinc-400">Profile not found.</p>';
       serversContainer.innerHTML = '';
       return;
     }
-
     currentUserId = data._id;
 
     const roleColor = data.role === 'admin' ? 'text-red-500' :
-                      data.role === 'management' ? 'text-black' :
+                      data.role === 'management' ? 'text-orange-400' :
                       'text-blue-400';
 
     document.getElementById('profileUsername').textContent = data.discordUsername;
@@ -183,63 +166,55 @@ fetch(profileEndpoint, token ? { headers: { Authorization: `Bearer ${token}` } }
     document.getElementById('profileVerified').textContent = data.isVerified !== undefined ? `Verified: ${data.isVerified ? 'Yes' : 'No'}` : '';
     document.getElementById('profileID').innerHTML = `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
 
-    const isOwnProfile = loggedInUser && currentUserId && loggedInUser._id === currentUserId;
-    if (isOwnProfile) addSocialsForm.classList.remove('hidden');
+    if (loggedInUser?._id === currentUserId) addSocialsForm.classList.remove('hidden');
 
     fetchSocials();
     fetchDiscordWidget();
+    fetchServers();
   })
   .catch(err => {
     console.error(err);
     profileContainer.innerHTML = '<p class="text-red-500">Failed to load profile.</p>';
   });
 
-// Fetch servers owned
-const hasAdminPermissions = loggedInUser && (loggedInUser.role === 'admin' || loggedInUser.role === 'management');
-
-fetch(`${API_URL}/servers/mine${userId && hasAdminPermissions ? `?user=${userId}` : ''}`, 
-  token ? { headers: { Authorization: `Bearer ${token}` } } : {}
-)
-  .then(res => res.json())
-  .then(servers => {
-    serversContainer.innerHTML = '';
-    if (!servers.length) {
-      serversContainer.innerHTML = '<p class="text-zinc-400">No servers found for this user.</p>';
-      return;
-    }
-
-    servers.forEach(s => {
-      const div = document.createElement('div');
-      div.className = `p-4 rounded border ${
-        s.status === 'approved' ? 'border-green-500 bg-green-900/30' :
-        s.status === 'denied' ? 'border-red-500 bg-red-900/30' :
-        'border-zinc-700 bg-zinc-900/50'
-      }`;
-
-      div.innerHTML = `
-        <h4 class="font-semibold text-lg">${s.name}</h4>
-        <p class="text-sm text-zinc-300 mb-1">Status: ${s.status}</p>
-        ${s.status === 'approved' ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>` : ''}
-      `;
-      serversContainer.appendChild(div);
+// Fetch servers
+function fetchServers() {
+  fetch(`${API_URL}/servers/mine${userId ? `?user=${userId}` : ''}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
+    .then(res => res.json())
+    .then(servers => {
+      serversContainer.innerHTML = '';
+      if (!servers.length) {
+        serversContainer.innerHTML = '<p class="text-zinc-400">No servers found.</p>';
+        return;
+      }
+      servers.forEach(s => {
+        const div = document.createElement('div');
+        div.className = `p-4 rounded border ${
+          s.status === 'approved' ? 'border-green-500 bg-green-900/30' :
+          s.status === 'denied' ? 'border-red-500 bg-red-900/30' :
+          'border-zinc-700 bg-zinc-900/50'
+        }`;
+        div.innerHTML = `
+          <h4 class="font-semibold text-lg">${s.name}</h4>
+          <p class="text-sm text-zinc-300 mb-1">Status: ${s.status}</p>
+          ${s.status === 'approved' ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>` : ''}
+        `;
+        serversContainer.appendChild(div);
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
     });
-  })
-  .catch(err => {
-    console.error(err);
-    serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
-  });
+}
 
 // Copy profile link
 copyLinkBtn.onclick = () => {
   if (!currentUserId) return;
   const shareLink = `${window.location.origin}/profile/?user=${currentUserId}`;
-  navigator.clipboard.writeText(shareLink).then(() => {
-    copyLinkBtn.textContent = 'Link Copied!';
-    setTimeout(() => { copyLinkBtn.textContent = 'Copy Profile Link'; }, 2000);
-  }).catch(err => {
-    console.error(err);
-    copyLinkBtn.textContent = 'Failed to copy';
-  });
+  navigator.clipboard.writeText(shareLink)
+    .then(() => { copyLinkBtn.textContent = 'Link Copied!'; setTimeout(() => copyLinkBtn.textContent = 'Copy Profile Link', 2000); })
+    .catch(() => { copyLinkBtn.textContent = 'Failed to copy'; });
 };
 
 // Socials
@@ -248,73 +223,44 @@ function fetchSocials() {
     .then(res => res.json())
     .then(data => {
       socialsContainer.innerHTML = '';
-      if (!data.length) {
-        socialsContainer.innerHTML = '<p class="text-zinc-400">No socials added.</p>';
-        return;
-      }
-
+      if (!data.length) { socialsContainer.innerHTML = '<p class="text-zinc-400">No socials added.</p>'; return; }
       data.forEach(s => {
         const div = document.createElement('div');
         div.className = 'flex items-center gap-2';
-        const logo = platformLogos[s.platform] || '';
         div.innerHTML = `
-          <img src="${logo}" alt="${s.platform}" class="w-5 h-5" />
+          <img src="${platformLogos[s.platform] || ''}" alt="${s.platform}" class="w-5 h-5" />
           <a href="${s.url}" target="_blank" class="underline text-blue-400">${s.handle}</a>
-          ${loggedInUser && currentUserId === loggedInUser._id ? `<button class="ml-2 px-2 py-1 bg-red-600 rounded text-xs" onclick="deleteSocial('${s._id}')">Delete</button>` : ''}
+          ${loggedInUser?._id === currentUserId ? `<button class="ml-2 px-2 py-1 bg-red-600 rounded text-xs" onclick="deleteSocial('${s._id}')">Delete</button>` : ''}
         `;
         socialsContainer.appendChild(div);
       });
     })
-    .catch(err => {
-      console.error(err);
-      socialsContainer.innerHTML = '<p class="text-red-500">Failed to load socials.</p>';
-    });
+    .catch(err => { console.error(err); socialsContainer.innerHTML = '<p class="text-red-500">Failed to load socials.</p>'; });
 }
 
 addSocialBtn.onclick = () => {
   socialMsg.textContent = '';
   const platform = socialPlatform.value;
   const handle = socialHandle.value.trim();
-  if (!platform || !handle) {
-    socialMsg.textContent = 'Please select a platform and enter a username or URL.';
-    return;
-  }
+  if (!platform || !handle) { socialMsg.textContent = 'Please select a platform and enter a username or URL.'; return; }
 
   fetch(`${API_URL}/socials/add`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ platform, handle })
   })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        socialHandle.value = '';
-        socialPlatform.value = '';
-        fetchSocials();
-      } else {
-        socialMsg.textContent = data.message || 'Failed to add social.';
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      socialMsg.textContent = 'Failed to add social.';
-    });
-}
-
-// Delete Social
-function deleteSocial(id) {
-  fetch(`${API_URL}/profile/socials/delete/${id}`, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${token}` }
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) { socialHandle.value=''; socialPlatform.value=''; fetchSocials(); }
+    else socialMsg.textContent = data.message || 'Failed to add social.';
   })
+  .catch(() => { socialMsg.textContent = 'Failed to add social.'; });
+};
+
+function deleteSocial(id) {
+  fetch(`${API_URL}/profile/socials/delete/${id}`, { method:'DELETE', headers:{Authorization:`Bearer ${token}`} })
     .then(res => res.json())
-    .then(data => {
-      if (data.success) fetchSocials();
-      else alert('Failed to delete social.');
-    })
+    .then(data => { if(data.success) fetchSocials(); else alert('Failed to delete social.'); })
     .catch(err => console.error(err));
 }
 
@@ -326,9 +272,9 @@ function fetchDiscordWidget() {
     .then(data => {
       if (!data) return;
       discordWidget.style.display = 'block';
-      widgetAvatar.src = data.avatar;
-      widgetUsername.textContent = data.username;
-      widgetStatus.textContent = `Status: ${data.status}`;
+      widgetAvatar.src = data.avatar || 'assets/default.jpg';
+      widgetUsername.textContent = data.username || '';
+      widgetStatus.textContent = `Status: ${data.status || 'Offline'}`;
       widgetActivity.textContent = data.activity || '';
       widgetBadges.innerHTML = '';
       (data.badges || []).forEach(b => {
