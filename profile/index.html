@@ -153,32 +153,32 @@ let currentUserId = null;
 fetch(`${API_URL}/profile/${userId}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
   .then(res => res.json())
   .then(data => {
-    if (!data?.discordUsername) {
+    if (!data?._id) {
       profileContainer.innerHTML = '<p class="text-zinc-400">Profile not found.</p>';
       serversContainer.innerHTML = '';
       return;
     }
 
-    currentUserId = data._id?.toString(); // <-- ensure string
+    currentUserId = data._id.toString(); // ensure string
 
     const roleColor = data.role === 'admin' ? 'text-red-500' :
                       data.role === 'management' ? 'text-orange-400' :
                       'text-blue-400';
 
-    document.getElementById('profileUsername').textContent = data.discordUsername;
+    document.getElementById('profileUsername').textContent = data.discordUsername || '';
     document.getElementById('profileTag').textContent = data.discordTag ? `#${data.discordTag}` : '';
     document.getElementById('profileRole').innerHTML = `Role: <span class="font-semibold ${roleColor}">${data.role}</span>`;
     document.getElementById('profileEmail').textContent = data.email ? `Email: ${data.email}` : '';
     document.getElementById('profileVerified').textContent = data.isVerified !== undefined ? `Verified: ${data.isVerified ? 'Yes' : 'No'}` : '';
     document.getElementById('profileID').innerHTML = `User ID: <span class="font-semibold text-blue-400">${currentUserId}</span>`;
 
-    if (loggedInUser && loggedInUser._id && currentUserId &&
-        loggedInUser._id.toString() === currentUserId.toString()) {
-      addSocialsForm.classList.remove('hidden'); // show Add Socials form
+    // Show Add Socials only for own profile
+    if (loggedInUser && loggedInUser._id && loggedInUser._id.toString() === currentUserId) {
+      addSocialsForm.classList.remove('hidden');
     }
 
-    fetchSocials();
-    fetchDiscordWidget();
+    renderSocials(data.socials || []);
+    renderDiscordWidget(data.discordWidget || {});
     fetchServers();
   })
   .catch(err => {
@@ -186,6 +186,68 @@ fetch(`${API_URL}/profile/${userId}`, token ? { headers: { Authorization: `Beare
     profileContainer.innerHTML = '<p class="text-red-500">Failed to load profile.</p>';
   });
 
+// Render socials
+function renderSocials(socials) {
+  socialsContainer.innerHTML = '';
+  if (!socials.length) {
+    socialsContainer.innerHTML = '<p class="text-zinc-400">No socials added.</p>';
+    return;
+  }
+
+  socials.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'flex items-center gap-2';
+    const logo = platformLogos[s.platform] || '';
+    div.innerHTML = `
+      <img src="${logo}" alt="${s.platform}" class="w-5 h-5" />
+      <a href="${s.url}" target="_blank" class="underline text-blue-400">${s.handle}</a>
+      ${loggedInUser?._id.toString() === currentUserId ? `<button class="ml-2 px-2 py-1 bg-red-600 rounded text-xs" onclick="deleteSocial('${s._id}')">Delete</button>` : ''}
+    `;
+    socialsContainer.appendChild(div);
+  });
+}
+
+// Add social
+addSocialBtn.onclick = () => {
+  socialMsg.textContent = '';
+  const platform = socialPlatform.value;
+  const handle = socialHandle.value.trim();
+  if (!platform || !handle) {
+    socialMsg.textContent = 'Please select a platform and enter a username or URL.';
+    return;
+  }
+
+  fetch(`${API_URL}/socials/add`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ platform, handle })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      socialHandle.value = '';
+      socialPlatform.value = '';
+      fetch(`${API_URL}/profile/${currentUserId}`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => res.json())
+        .then(updatedProfile => renderSocials(updatedProfile.socials || []));
+    } else {
+      socialMsg.textContent = data.message || 'Failed to add social.';
+    }
+  })
+  .catch(() => { socialMsg.textContent = 'Failed to add social.'; });
+};
+
+// Delete social
+function deleteSocial(id) {
+  fetch(`${API_URL}/socials/delete/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+    .then(res => res.json())
+    .then(data => { 
+      if (data.success) fetch(`${API_URL}/profile/${currentUserId}`, { headers: { Authorization: `Bearer ${token}` } })
+                          .then(res => res.json()).then(updatedProfile => renderSocials(updatedProfile.socials || []));
+      else alert('Failed to delete social.');
+    })
+    .catch(err => console.error(err));
+}
 
 // Fetch servers
 function fetchServers() {
@@ -227,90 +289,24 @@ copyLinkBtn.onclick = () => {
     .catch(() => { copyLinkBtn.textContent = 'Failed to copy'; });
 };
 
-// Socials
-function fetchSocials() {
-  if (!currentUserId) return;
-
-  fetch(`${API_URL}/profile/${currentUserId}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
-    .then(res => res.json())
-    .then(data => {
-      socialsContainer.innerHTML = '';
-      const socials = data.socials || [];
-      if (!socials.length) {
-        socialsContainer.innerHTML = '<p class="text-zinc-400">No socials added.</p>';
-        return;
-      }
-
-      socials.forEach(s => {
-        const div = document.createElement('div');
-        div.className = 'flex items-center gap-2';
-        const logo = platformLogos[s.platform] || '';
-        div.innerHTML = `
-          <img src="${logo}" alt="${s.platform}" class="w-5 h-5" />
-          <a href="${s.url}" target="_blank" class="underline text-blue-400">${s.handle}</a>
-          ${loggedInUser?._id === currentUserId ? `<button class="ml-2 px-2 py-1 bg-red-600 rounded text-xs" onclick="deleteSocial('${s._id}')">Delete</button>` : ''}
-        `;
-        socialsContainer.appendChild(div);
-      });
-    })
-    .catch(err => {
-      console.error(err);
-      socialsContainer.innerHTML = '<p class="text-red-500">Failed to load socials.</p>';
-    });
+// Render Discord widget
+function renderDiscordWidget(widget) {
+  if (!widget || !widget.username) return;
+  discordWidget.style.display = 'block';
+  widgetAvatar.src = widget.avatar || 'assets/default.jpg';
+  widgetUsername.textContent = widget.username || '';
+  widgetStatus.textContent = `Status: ${widget.status || 'Offline'}`;
+  widgetActivity.textContent = widget.activity || '';
+  widgetBadges.innerHTML = '';
+  (widget.badges || []).forEach(b => {
+    const span = document.createElement('span');
+    span.className = 'px-2 py-1 bg-purple-600 rounded text-xs';
+    span.textContent = b;
+    widgetBadges.appendChild(span);
+  });
 }
-
-
-addSocialBtn.onclick = () => {
-  socialMsg.textContent = '';
-  const platform = socialPlatform.value;
-  const handle = socialHandle.value.trim();
-  if (!platform || !handle) { socialMsg.textContent = 'Please select a platform and enter a username or URL.'; return; }
-
-  fetch(`${API_URL}/socials/add`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ platform, handle })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) { socialHandle.value=''; socialPlatform.value=''; fetchSocials(); }
-    else socialMsg.textContent = data.message || 'Failed to add social.';
-  })
-  .catch(() => { socialMsg.textContent = 'Failed to add social.'; });
-};
-
-function deleteSocial(id) {
-  fetch(`${API_URL}/profile/socials/delete/${id}`, { method:'DELETE', headers:{Authorization:`Bearer ${token}`} })
-    .then(res => res.json())
-    .then(data => { if(data.success) fetchSocials(); else alert('Failed to delete social.'); })
-    .catch(err => console.error(err));
-}
-
-// Discord Widget
-function fetchDiscordWidget() {
-  if (!currentUserId) return;
-
-  fetch(`${API_URL}/profile/${currentUserId}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
-    .then(res => res.json())
-    .then(data => {
-      if (!data.discordWidget) return;
-      discordWidget.style.display = 'block';
-      widgetAvatar.src = data.discordWidget.avatar || 'assets/default.jpg';
-      widgetUsername.textContent = data.discordWidget.username || '';
-      widgetStatus.textContent = `Status: ${data.discordWidget.status || 'Offline'}`;
-      widgetActivity.textContent = data.discordWidget.activity || '';
-      widgetBadges.innerHTML = '';
-      (data.discordWidget.badges || []).forEach(b => {
-        const span = document.createElement('span');
-        span.className = 'px-2 py-1 bg-purple-600 rounded text-xs';
-        span.textContent = b;
-        widgetBadges.appendChild(span);
-      });
-    })
-    .catch(err => console.error(err));
-}
-
 </script>
+
 
 </body>
 </html>
