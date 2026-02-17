@@ -34,13 +34,56 @@
         <p id="profileVerified" class="text-zinc-400"></p>
         <p id="profileID" class="text-zinc-400 break-all"></p> <!-- User ID -->
         <button id="copyLinkBtn" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm">Copy Profile Link</button>
+
+        <!-- Discord Login Button -->
+        <a id="discordLoginBtn" href="/auth/discord" class="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-white text-sm">Login with Discord</a>
       </div>
 
-      <!-- Servers Owned -->
+      <!-- Servers, Socials, and Discord Widget -->
       <div class="flex-1 flex flex-col gap-4">
+        <!-- Servers Owned -->
         <h3 class="text-2xl font-semibold mb-4">Servers Owned</h3>
         <div id="serversContainer" class="flex flex-col gap-3">
           <p class="text-zinc-400">Loading servers...</p>
+        </div>
+
+        <!-- Socials Section -->
+        <h3 class="text-2xl font-semibold mb-4 mt-6">Socials</h3>
+        <div id="socialsContainer" class="flex flex-col gap-2 text-zinc-300">
+          <p>Loading socials...</p>
+        </div>
+
+        <!-- Add Socials form (only visible to logged-in user) -->
+        <div id="addSocialsForm" class="hidden flex flex-col gap-2 mt-4 p-4 rounded border border-zinc-700 bg-zinc-900/50 w-full md:w-1/2">
+          <h4 class="font-semibold text-lg text-white">Add a Social</h4>
+          <div class="flex gap-2">
+            <select id="socialPlatform" class="flex-1 p-2 rounded border border-zinc-600 bg-zinc-800 text-white">
+              <option value="">Select Platform</option>
+              <option value="discord">Discord</option>
+              <option value="twitter">Twitter</option>
+              <option value="instagram">Instagram</option>
+              <option value="github">GitHub</option>
+              <option value="tiktok">TikTok</option>
+              <option value="linkedin">LinkedIn</option>
+            </select>
+            <input type="text" id="socialHandle" placeholder="Username / URL" class="flex-2 p-2 rounded border border-zinc-600 bg-zinc-800 text-white" />
+          </div>
+          <button id="addSocialBtn" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm">Add Social</button>
+          <p id="socialMsg" class="text-sm text-red-500 mt-1"></p>
+        </div>
+
+        <!-- Discord Widget -->
+        <h3 class="text-2xl font-semibold mb-4 mt-6">Discord Widget</h3>
+        <div id="discordWidget" class="flex flex-col gap-2 p-4 rounded border border-zinc-700 bg-zinc-900/50 w-full md:w-full hidden">
+          <div class="flex items-center gap-3">
+            <img id="widgetAvatar" src="" alt="Avatar" class="w-16 h-16 rounded-full" />
+            <div>
+              <p id="widgetUsername" class="font-semibold text-lg"></p>
+              <p id="widgetStatus" class="text-sm text-zinc-400"></p>
+              <p id="widgetActivity" class="text-sm text-zinc-400"></p>
+            </div>
+          </div>
+          <div id="widgetBadges" class="flex gap-2 mt-2 flex-wrap"></div>
         </div>
       </div>
     </div>
@@ -58,6 +101,28 @@ const profileContainer = document.getElementById('profileContainer');
 const serversContainer = document.getElementById('serversContainer');
 const loginBtn = document.getElementById('loginBtn');
 const copyLinkBtn = document.getElementById('copyLinkBtn');
+const socialsContainer = document.getElementById('socialsContainer');
+const addSocialsForm = document.getElementById('addSocialsForm');
+const socialPlatform = document.getElementById('socialPlatform');
+const socialHandle = document.getElementById('socialHandle');
+const addSocialBtn = document.getElementById('addSocialBtn');
+const socialMsg = document.getElementById('socialMsg');
+const discordWidget = document.getElementById('discordWidget');
+const widgetAvatar = document.getElementById('widgetAvatar');
+const widgetUsername = document.getElementById('widgetUsername');
+const widgetStatus = document.getElementById('widgetStatus');
+const widgetActivity = document.getElementById('widgetActivity');
+const widgetBadges = document.getElementById('widgetBadges');
+const discordLoginBtn = document.getElementById('discordLoginBtn');
+
+const platformLogos = {
+  discord: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg',
+  twitter: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitter.svg',
+  instagram: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg',
+  github: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg',
+  tiktok: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg',
+  linkedin: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/linkedin.svg',
+};
 
 // Helpers
 function getQueryParam(param) {
@@ -79,21 +144,20 @@ let loggedInUser = null;
 if (userStr) loggedInUser = JSON.parse(userStr);
 
 loginBtn.textContent = token ? 'Logout' : 'Login';
-loginBtn.href = token ? '#' : 'login.html';
+loginBtn.href = token ? '#' : '/auth/login/';
 loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
 
-// Determine which profile to fetch
-let userId = getQueryParam('user'); // ?user=USERID
+discordLoginBtn.style.display = token ? 'none' : 'block';
 
-// If no ?user= and logged in, use own ID and update URL
+// Determine which profile to fetch
+let userId = getQueryParam('user');
+
 if (!userId && loggedInUser) {
   userId = loggedInUser._id;
   updateURLWithUserID(userId);
 }
 
 const profileEndpoint = `${API_URL}/profile${userId ? `/${userId}` : ''}`;
-
-// Store fetched user ID for shareable link
 let currentUserId = null;
 
 // Fetch profile
@@ -106,7 +170,7 @@ fetch(profileEndpoint, token ? { headers: { Authorization: `Bearer ${token}` } }
       return;
     }
 
-    currentUserId = data._id; // save for copy link
+    currentUserId = data._id;
 
     const roleColor = data.role === 'admin' ? 'text-red-500' :
                       data.role === 'management' ? 'text-black' :
@@ -118,6 +182,12 @@ fetch(profileEndpoint, token ? { headers: { Authorization: `Bearer ${token}` } }
     document.getElementById('profileEmail').textContent = data.email ? `Email: ${data.email}` : '';
     document.getElementById('profileVerified').textContent = data.isVerified !== undefined ? `Verified: ${data.isVerified ? 'Yes' : 'No'}` : '';
     document.getElementById('profileID').innerHTML = `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
+
+    const isOwnProfile = loggedInUser && currentUserId && loggedInUser._id === currentUserId;
+    if (isOwnProfile) addSocialsForm.classList.remove('hidden');
+
+    fetchSocials();
+    fetchDiscordWidget();
   })
   .catch(err => {
     console.error(err);
@@ -159,10 +229,9 @@ fetch(`${API_URL}/servers/mine${userId && hasAdminPermissions ? `?user=${userId}
     serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
   });
 
-// Copy profile link button
+// Copy profile link
 copyLinkBtn.onclick = () => {
   if (!currentUserId) return;
-
   const shareLink = `${window.location.origin}/profile/?user=${currentUserId}`;
   navigator.clipboard.writeText(shareLink).then(() => {
     copyLinkBtn.textContent = 'Link Copied!';
@@ -172,6 +241,105 @@ copyLinkBtn.onclick = () => {
     copyLinkBtn.textContent = 'Failed to copy';
   });
 };
+
+// Socials
+function fetchSocials() {
+  fetch(`${API_URL}/socials/${currentUserId}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
+    .then(res => res.json())
+    .then(data => {
+      socialsContainer.innerHTML = '';
+      if (!data.length) {
+        socialsContainer.innerHTML = '<p class="text-zinc-400">No socials added.</p>';
+        return;
+      }
+
+      data.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-2';
+        const logo = platformLogos[s.platform] || '';
+        div.innerHTML = `
+          <img src="${logo}" alt="${s.platform}" class="w-5 h-5" />
+          <a href="${s.url}" target="_blank" class="underline text-blue-400">${s.handle}</a>
+          ${loggedInUser && currentUserId === loggedInUser._id ? `<button class="ml-2 px-2 py-1 bg-red-600 rounded text-xs" onclick="deleteSocial('${s._id}')">Delete</button>` : ''}
+        `;
+        socialsContainer.appendChild(div);
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      socialsContainer.innerHTML = '<p class="text-red-500">Failed to load socials.</p>';
+    });
+}
+
+addSocialBtn.onclick = () => {
+  socialMsg.textContent = '';
+  const platform = socialPlatform.value;
+  const handle = socialHandle.value.trim();
+  if (!platform || !handle) {
+    socialMsg.textContent = 'Please select a platform and enter a username or URL.';
+    return;
+  }
+
+  fetch(`${API_URL}/socials/add`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ platform, handle })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        socialHandle.value = '';
+        socialPlatform.value = '';
+        fetchSocials();
+      } else {
+        socialMsg.textContent = data.message || 'Failed to add social.';
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      socialMsg.textContent = 'Failed to add social.';
+    });
+}
+
+// Delete Social
+function deleteSocial(id) {
+  fetch(`${API_URL}/socials/delete/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) fetchSocials();
+      else alert('Failed to delete social.');
+    })
+    .catch(err => console.error(err));
+}
+
+// Discord Widget
+function fetchDiscordWidget() {
+  if (!token) return;
+  fetch(`${API_URL}/discord/widget`, { headers: { Authorization: `Bearer ${token}` } })
+    .then(res => res.json())
+    .then(data => {
+      if (!data) return;
+      discordWidget.style.display = 'block';
+      widgetAvatar.src = data.avatar;
+      widgetUsername.textContent = data.username;
+      widgetStatus.textContent = `Status: ${data.status}`;
+      widgetActivity.textContent = data.activity || '';
+      widgetBadges.innerHTML = '';
+      (data.badges || []).forEach(b => {
+        const span = document.createElement('span');
+        span.className = 'px-2 py-1 bg-purple-600 rounded text-xs';
+        span.textContent = b;
+        widgetBadges.appendChild(span);
+      });
+    })
+    .catch(err => console.error(err));
+}
 </script>
 
 </body>
