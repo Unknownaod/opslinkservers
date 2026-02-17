@@ -96,7 +96,7 @@
   </footer>
 
 <script>
-const API_URL = 'https://opslinkservers-backend.onrender.com/api/profile';
+const API_URL = 'https://opslinkservers-backend.onrender.com/api';
 const profileContainer = document.getElementById('profileContainer');
 const serversContainer = document.getElementById('serversContainer');
 const loginBtn = document.getElementById('loginBtn');
@@ -306,7 +306,7 @@ addSocialBtn.onclick = () => {
 
 // Delete Social
 function deleteSocial(id) {
-  fetch(`${API_URL}/socials/delete/${id}`, {
+  fetch(`${API_URL}/profile/socials/delete/${id}`, {
     method: 'DELETE',
     headers: { Authorization: `Bearer ${token}` }
   })
@@ -321,7 +321,7 @@ function deleteSocial(id) {
 // Discord Widget
 function fetchDiscordWidget() {
   if (!token) return;
-  fetch(`${API_URL}/discord/widget`, { headers: { Authorization: `Bearer ${token}` } })
+  fetch(`${API_URL}/profile/discord/widget`, { headers: { Authorization: `Bearer ${token}` } })
     .then(res => res.json())
     .then(data => {
       if (!data) return;
