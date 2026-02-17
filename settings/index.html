@@ -647,31 +647,41 @@ function connectPlatform(platform) {
 // =====================
 async function disconnectPlatform(platform) {
   if (!token) {
+    // Redirect if the user is not logged in
     alert("You need to log in first.");
     return window.location.href = "/auth/login/";
   }
 
-  // Corrected confirmation message
-  if (!confirm(`Are you sure you want to disconnect ${platforms[platform] ? platforms[platform].name : platform}?`)) {
+  // Show confirmation dialog to the user
+  const platformName = platforms[platform]?.name || platform.charAt(0).toUpperCase() + platform.slice(1);
+  if (!confirm(`Are you sure you want to disconnect ${platformName}?`)) {
     return;
   }
 
   try {
-    const res = await fetch(`${API_URL}/profile/connections/${platform}`, {
+    // Make the DELETE request to the backend API
+    const res = await fetch(`${API_URL}/auth/connections/${platform}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` }
     });
 
     if (!res.ok) {
+      // If the response isn't okay, try to parse the error message
       const errData = await res.json().catch(() => ({}));
       throw new Error(errData.message || `HTTP ${res.status}`);
     }
 
-    alert(`${platforms[platform]?.name || platform} disconnected successfully!`);
-    loadConnections(); // refresh the connections UI
+    // Success message to inform the user that the platform was disconnected
+    alert(`${platformName} disconnected successfully!`);
+
+    // Refresh the list of connections in the UI
+    loadConnections(); 
   } catch (err) {
+    // Log the error to the console for debugging
     console.error(`Failed to disconnect ${platform}`, err);
-    alert(`Failed to disconnect ${platforms[platform]?.name || platform}: ${err.message}`);
+
+    // Show the error message to the user
+    alert(`Failed to disconnect ${platformName}: ${err.message}`);
   }
 }
 
