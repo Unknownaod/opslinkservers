@@ -141,7 +141,7 @@ if (currentUser) {
   welcome.className = 'text-zinc-300 text-sm';
   navLinks.insertBefore(welcome, loginBtn);
 
-  if (currentUser.role === 'admin') {
+  if (currentUser.role === 'admin' || currentUser.role === 'management') {
     adminBtn.classList.remove('hidden');
     adminBtn.href = 'dashboard.html';
   }
