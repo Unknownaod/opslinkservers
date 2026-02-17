@@ -222,7 +222,7 @@ const userStr = localStorage.getItem('user');
 
 function redirectLogin() {
   localStorage.clear();
-  window.location.href = '/login.html';
+  window.location.href = '/auth/login/';
 }
 
 if (!token || !userStr) redirectLogin();
