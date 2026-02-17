@@ -290,11 +290,29 @@ async function loadConnections() {
 // ---------------------
 copyLinkBtn.onclick = () => {
   if (!loggedInUser?._id) return;
-  const shareLink = `${window.location.origin}/profile/`;
+
+  // Build the full profile URL including the user's ID
+  const shareLink = `${window.location.origin}/profile/${loggedInUser._id}`;
+
+  // Attempt to copy to clipboard
   navigator.clipboard.writeText(shareLink)
-    .then(() => { copyLinkBtn.textContent = 'Link Copied!'; setTimeout(() => copyLinkBtn.textContent = 'Copy Profile Link', 2000); })
-    .catch(() => { copyLinkBtn.textContent = 'Failed to copy'; });
+    .then(() => {
+      // Success feedback
+      copyLinkBtn.textContent = 'Link Copied!';
+      setTimeout(() => {
+        copyLinkBtn.textContent = 'Copy Profile Link';
+      }, 2000);
+    })
+    .catch((err) => {
+      // Failure feedback
+      console.error('Clipboard copy failed:', err);
+      copyLinkBtn.textContent = 'Failed to copy';
+      setTimeout(() => {
+        copyLinkBtn.textContent = 'Copy Profile Link';
+      }, 2000);
+    });
 };
+
 </script>
 
 </body>
