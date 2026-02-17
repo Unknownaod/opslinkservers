@@ -127,7 +127,7 @@ document.getElementById('loginForm').addEventListener('submit', async e => {
       localStorage.setItem('user', JSON.stringify(user));
       e.target.reset();
       showToast({ title: "Success!", message: "Logged in! Redirecting...", type: "success" });
-      setTimeout(() => window.location.href = 'index.html', 1500);
+      setTimeout(() => window.location.href = '/', 1500);
     } else {
       const err = await res.json();
       showToast({ title: "Error!", message: err.error || "Login failed", type: "error" });
