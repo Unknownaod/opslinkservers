@@ -563,18 +563,16 @@ const platforms = {
 // LOAD CONNECTIONS
 // ===============================
 async function loadConnections() {
-  try {
-    const res = await fetch(`${API_URL}/profile/connections`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+  if (!token) return redirectLogin();
 
+  try {
+    const res = await fetch(`${API_URL}/profile/connections?token=${encodeURIComponent(token)}`);
     if (res.status === 401) return redirectLogin();
 
     const data = await res.json();
     const socials = data.socials || [];
 
     connectionsList.innerHTML = "";
-
     const connected = socials.filter(s => s.connected);
 
     if (!connected.length) {
@@ -618,21 +616,23 @@ async function loadConnections() {
 // CONNECT PLATFORM (OAuth Start)
 // ===============================
 function connectPlatform(platform) {
-  if (!platforms[platform] || !token) {
-    redirectLogin();
-    return;
-  }
+  if (!platforms[platform] || !token) return redirectLogin();
 
-  // Add token to query string for backend to identify the user
+  // OAuth URL with JWT in query string (state is handled by backend)
   const oauthUrl = `${platforms[platform].oauth}?token=${encodeURIComponent(token)}`;
 
   const popup = window.open(
     oauthUrl,
     "_blank",
-    "width=600,height=700"
+    "width=600,height=700,noopener,noreferrer"
   );
 
-  // Auto-refresh connections when popup closes
+  if (!popup) return alert("Popup blocked. Please allow popups for this site.");
+
+  // Focus popup if possible
+  popup.focus();
+
+  // Poll popup to auto-refresh connections after OAuth
   const timer = setInterval(() => {
     if (popup.closed) {
       clearInterval(timer);
@@ -672,6 +672,7 @@ connectionsList.parentNode.insertBefore(
 // INITIAL LOAD
 // ===============================
 loadConnections();
+
 
 
 </script>
