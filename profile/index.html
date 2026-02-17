@@ -36,7 +36,7 @@
         <button id="copyLinkBtn" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm">Copy Profile Link</button>
       </div>
 
-      <!-- Servers, Socials -->
+      <!-- Servers & Socials -->
       <div class="flex-1 flex flex-col gap-4">
         <!-- Servers Owned -->
         <h3 class="text-2xl font-semibold mb-4">Servers Owned</h3>
@@ -46,27 +46,8 @@
 
         <!-- Socials Section -->
         <h3 class="text-2xl font-semibold mb-4 mt-6">Socials</h3>
-        <div id="socialsContainer" class="flex flex-col gap-2 text-zinc-300">
-          <p>Loading socials...</p>
-        </div>
-
-        <!-- Add Socials form -->
-        <div id="addSocialsForm" class="hidden flex flex-col gap-2 mt-4 p-4 rounded border border-zinc-700 bg-zinc-900/50 w-full md:w-1/2">
-          <h4 class="font-semibold text-lg text-white">Add a Social</h4>
-          <div class="flex gap-2">
-            <select id="socialPlatform" class="flex-1 p-2 rounded border border-zinc-600 bg-zinc-800 text-white">
-              <option value="">Select Platform</option>
-              <option value="discord">Discord</option>
-              <option value="twitter">Twitter</option>
-              <option value="instagram">Instagram</option>
-              <option value="github">GitHub</option>
-              <option value="tiktok">TikTok</option>
-              <option value="linkedin">LinkedIn</option>
-            </select>
-            <input type="text" id="socialHandle" placeholder="Username / URL" class="flex-2 p-2 rounded border border-zinc-600 bg-zinc-800 text-white" />
-          </div>
-          <button id="addSocialBtn" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm">Add Social</button>
-          <p id="socialMsg" class="text-sm text-red-500 mt-1"></p>
+        <div id="socialsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <p class="text-zinc-400 col-span-full">Loading socials...</p>
         </div>
       </div>
     </div>
@@ -83,11 +64,6 @@ const API_URL = 'https://opslinkservers-backend.onrender.com/api';
 const profileContainer = document.getElementById('profileContainer');
 const serversContainer = document.getElementById('serversContainer');
 const socialsContainer = document.getElementById('socialsContainer');
-const addSocialsForm = document.getElementById('addSocialsForm');
-const socialPlatform = document.getElementById('socialPlatform');
-const socialHandle = document.getElementById('socialHandle');
-const addSocialBtn = document.getElementById('addSocialBtn');
-const socialMsg = document.getElementById('socialMsg');
 const loginBtn = document.getElementById('loginBtn');
 const copyLinkBtn = document.getElementById('copyLinkBtn');
 
@@ -100,6 +76,15 @@ const platformLogos = {
   linkedin: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/linkedin.svg',
 };
 
+const platformColors = {
+  discord: 'bg-[#5865F2]',
+  twitter: 'bg-[#1DA1F2]',
+  instagram: 'bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF]',
+  github: 'bg-[#333]',
+  tiktok: 'bg-[#69C9D0]',
+  linkedin: 'bg-[#0A66C2]',
+};
+
 // Auth
 const token = localStorage.getItem('token');
 const loggedInUser = JSON.parse(localStorage.getItem('user') || 'null');
@@ -108,7 +93,7 @@ loginBtn.textContent = token ? 'Logout' : 'Login';
 loginBtn.href = token ? '#' : '/auth/login/';
 loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
 
-// Fetch profile (always current user from JWT)
+// Fetch profile (current user from JWT)
 if (!token) {
   profileContainer.innerHTML = '<p class="text-zinc-400">Please login to view your profile.</p>';
 } else {
@@ -131,11 +116,6 @@ if (!token) {
       document.getElementById('profileVerified').textContent = data.isVerified !== undefined ? `Verified: ${data.isVerified ? 'Yes' : 'No'}` : '';
       document.getElementById('profileID').innerHTML = `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
 
-      // Show add socials if logged-in user is viewing own profile
-      if (loggedInUser && loggedInUser._id === data._id) {
-        addSocialsForm.classList.remove('hidden');
-      }
-
       // Render socials
       renderSocials(data.socials || []);
 
@@ -148,23 +128,30 @@ if (!token) {
     });
 }
 
-// Render socials
+// Render socials (read-only)
 function renderSocials(socials) {
   socialsContainer.innerHTML = '';
   if (!socials.length) {
-    socialsContainer.innerHTML = '<p class="text-zinc-400">No socials added.</p>';
+    socialsContainer.innerHTML = '<p class="text-zinc-400 col-span-full">No socials added.</p>';
     return;
   }
+
   socials.forEach(s => {
-    const div = document.createElement('div');
-    div.className = 'flex items-center gap-2';
-    const logo = platformLogos[s.platform] || '';
-    div.innerHTML = `
-      <img src="${logo}" alt="${s.platform}" class="w-5 h-5" />
-      <a href="${s.url}" target="_blank" class="underline text-blue-400">${s.handle}</a>
-      ${loggedInUser && loggedInUser._id === s.user ? `<button class="ml-2 px-2 py-1 bg-red-600 rounded text-xs" onclick="deleteSocial('${s._id}')">Delete</button>` : ''}
+    const card = document.createElement('div');
+    card.className = `
+      flex items-center gap-3 p-3 border border-zinc-700 rounded-lg overflow-hidden
+      hover:scale-[1.02] transition-transform duration-150
     `;
-    socialsContainer.appendChild(div);
+    const logo = platformLogos[s.platform] || '';
+    const colorClass = platformColors[s.platform] || 'bg-zinc-600';
+
+    card.innerHTML = `
+      <div class="w-1 h-full ${colorClass} rounded-l-lg"></div>
+      <img src="${logo}" alt="${s.platform}" class="w-6 h-6" />
+      <a href="${s.url}" target="_blank" class="ml-2 text-white font-medium truncate max-w-[140px]" title="${s.handle}">${s.handle}</a>
+    `;
+
+    socialsContainer.appendChild(card);
   });
 }
 
@@ -197,50 +184,6 @@ function fetchServers() {
       console.error(err);
       serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
     });
-}
-
-// Add social
-addSocialBtn.onclick = () => {
-  socialMsg.textContent = '';
-  const platform = socialPlatform.value;
-  const handle = socialHandle.value.trim();
-  if (!platform || !handle) {
-    socialMsg.textContent = 'Please select a platform and enter a username or URL.';
-    return;
-  }
-
-  fetch(`${API_URL}/socials/add`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ platform, handle })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      socialHandle.value = '';
-      socialPlatform.value = '';
-      // Refresh profile to get updated socials
-      fetch(`${API_URL}/profile`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(res => res.json())
-        .then(updated => renderSocials(updated.socials || []));
-    } else {
-      socialMsg.textContent = data.message || 'Failed to add social.';
-    }
-  })
-  .catch(() => { socialMsg.textContent = 'Failed to add social.'; });
-};
-
-// Delete social
-function deleteSocial(id) {
-  fetch(`${API_URL}/socials/delete/${id}`, { method:'DELETE', headers:{ Authorization: `Bearer ${token}` } })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        fetch(`${API_URL}/profile`, { headers:{ Authorization: `Bearer ${token}` } })
-          .then(res => res.json()).then(updated => renderSocials(updated.socials || []));
-      } else alert('Failed to delete social.');
-    })
-    .catch(err => console.error(err));
 }
 
 // Copy profile link
