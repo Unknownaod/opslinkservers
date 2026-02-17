@@ -309,10 +309,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// handle back/forward cache restoration
+// Handle back/forward cache restoration
 window.addEventListener('pageshow', event => {
   if (event.persisted) {
-    // page was restored from bfcache, reset styles
     if (typeof t !== 'undefined') {
       t.style.opacity = 0;
       t.style.pointerEvents = 'none';
@@ -327,13 +326,29 @@ window.addEventListener('pageshow', event => {
 
 document.addEventListener('click', e => {
   const a = e.target.closest('a');
-  if(!a) return;
-  const h = a.getAttribute('href');
-  if(!h || h.startsWith('#') || h.startsWith('http') || a.target) return;
+  if (!a) return;
+
+  const href = a.getAttribute('href');
+
+  // 🚫 Ignore:
+  // - Empty links
+  // - Anchor links
+  // - External links
+  // - New tab links
+  // - Dropdown links (inside .relative container)
+  if (
+    !href ||
+    href.startsWith('#') ||
+    href.startsWith('http') ||
+    a.target === '_blank' ||
+    a.closest('.relative')
+  ) {
+    return;
+  }
 
   e.preventDefault();
 
-  // show overlay/animation
+  // Show overlay
   t.style.opacity = 1;
   t.style.pointerEvents = 'all';
 
@@ -346,7 +361,9 @@ document.addEventListener('click', e => {
     tl.style.filter = 'drop-shadow(0 0 40px rgba(80,200,255,1))';
   }, 300);
 
-  setTimeout(() => location.href = h, 1000);
+  setTimeout(() => {
+    window.location.href = href;
+  }, 1000);
 });
 </script>
 
