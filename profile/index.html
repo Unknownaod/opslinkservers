@@ -236,7 +236,6 @@ async function loadConnections() {
       return;
     }
 
-    // Loop through the array instead of using Object.entries
     data.socials.forEach(s => {
       if (!s.connected) return;
       const platform = s.platform;
@@ -245,16 +244,20 @@ async function loadConnections() {
       card.className = `flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform duration-150 gap-2`;
 
       let extraInfo = '';
+      // Special handling for Spotify
       if (platform === 'spotify' && s.currentlyPlaying) {
         extraInfo = `<p class="text-sm text-zinc-300 truncate">🎵 Now Playing: ${s.currentlyPlaying.name} by ${s.currentlyPlaying.artists.join(', ')}</p>`;
       }
+
+      // For GitHub or other platforms, show username and clickable profile URL
+      const profileLink = s.profileUrl ? `<a href="${s.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>` : s.username;
 
       card.innerHTML = `
         <div class="flex items-center gap-3">
           <img src="${platformLogos[platform] || ''}" alt="${platform}" class="w-6 h-6" />
           <span class="font-medium capitalize">${platform}</span>
         </div>
-        <p class="text-sm text-zinc-300 truncate">${s.username || ''}</p>
+        <p class="text-sm text-zinc-300 truncate">${profileLink}</p>
         ${extraInfo}
       `;
 
