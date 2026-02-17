@@ -219,24 +219,36 @@ copyLinkBtn.onclick = () => {
 
 // Socials
 function fetchSocials() {
-  fetch(`${API_URL}/profile/socials/${currentUserId}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
+  if (!currentUserId) return;
+
+  fetch(`${API_URL}/profile/${currentUserId}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
     .then(res => res.json())
     .then(data => {
       socialsContainer.innerHTML = '';
-      if (!data.length) { socialsContainer.innerHTML = '<p class="text-zinc-400">No socials added.</p>'; return; }
-      data.forEach(s => {
+      const socials = data.socials || [];
+      if (!socials.length) {
+        socialsContainer.innerHTML = '<p class="text-zinc-400">No socials added.</p>';
+        return;
+      }
+
+      socials.forEach(s => {
         const div = document.createElement('div');
         div.className = 'flex items-center gap-2';
+        const logo = platformLogos[s.platform] || '';
         div.innerHTML = `
-          <img src="${platformLogos[s.platform] || ''}" alt="${s.platform}" class="w-5 h-5" />
+          <img src="${logo}" alt="${s.platform}" class="w-5 h-5" />
           <a href="${s.url}" target="_blank" class="underline text-blue-400">${s.handle}</a>
           ${loggedInUser?._id === currentUserId ? `<button class="ml-2 px-2 py-1 bg-red-600 rounded text-xs" onclick="deleteSocial('${s._id}')">Delete</button>` : ''}
         `;
         socialsContainer.appendChild(div);
       });
     })
-    .catch(err => { console.error(err); socialsContainer.innerHTML = '<p class="text-red-500">Failed to load socials.</p>'; });
+    .catch(err => {
+      console.error(err);
+      socialsContainer.innerHTML = '<p class="text-red-500">Failed to load socials.</p>';
+    });
 }
+
 
 addSocialBtn.onclick = () => {
   socialMsg.textContent = '';
