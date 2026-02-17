@@ -239,7 +239,7 @@ function renderServers(){
         </div>
       </div>
     `;
-    card.onclick=e=>{if(e.target.tagName!=='A') window.location.href=`/serverprofile/?guildid=${s._id}`;};
+    card.onclick=e=>{if(e.target.tagName!=='A') window.location.href=`serverprofile/?guildid=${s._id}`;};
     grid.appendChild(card);
   });
 
