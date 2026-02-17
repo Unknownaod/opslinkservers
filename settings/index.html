@@ -192,6 +192,19 @@
 </section>
 
     
+<!-- Connections -->
+<section id="connections" class="glass rounded-2xl p-8 space-y-6">
+  <div>
+    <h3 class="text-xl font-semibold">Connections</h3>
+    <p class="text-sm text-zinc-400">Link external accounts like Spotify, Twitch, YouTube, GitHub, and more.</p>
+  </div>
+
+  <!-- Connections grid -->
+  <div id="connections-list" class="grid md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+  <p id="connections-empty" class="hidden text-sm text-zinc-400">No connections linked.</p>
+</section>
+
+    
   </main>
 
  <script>
@@ -512,7 +525,101 @@ async function deleteSocial(id) {
 // Initial load
 loadSocials();
 
+// Connect
    
+const connectionsList = document.getElementById('connections-list');
+const connectionsEmpty = document.getElementById('connections-empty');
+
+// Supported platforms & OAuth URLs (replace with your backend endpoints)
+const platforms = {
+  spotify: { logo: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/spotify.svg', oauth: `${API_URL}/auth/connect/spotify` },
+  youtube: { logo: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg', oauth: `${API_URL}/auth/connect/youtube` },
+  twitch: { logo: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitch.svg', oauth: `${API_URL}/auth/connect/twitch` },
+  github: { logo: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg', oauth: `${API_URL}/auth/connect/github` },
+  steam: { logo: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/steam.svg', oauth: `${API_URL}/auth/connect/steam` },
+};
+
+// Fetch user connections from API
+async function loadConnections() {
+  try {
+    const res = await fetch(`${API_URL}/profile/connections`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.status === 401) return redirectLogin();
+
+    const data = await res.json();
+    const connections = data.connections || [];
+
+    connectionsList.innerHTML = '';
+    if (!connections.length) {
+      connectionsEmpty.classList.remove('hidden');
+      return;
+    }
+    connectionsEmpty.classList.add('hidden');
+
+    connections.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex items-center justify-between';
+      card.innerHTML = `
+        <div class="flex items-center gap-3">
+          <img src="${platforms[c.platform]?.logo || ''}" class="w-6 h-6" />
+          <p class="font-medium">${c.username}</p>
+        </div>
+        <label class="inline-flex items-center gap-1 cursor-pointer">
+          <input type="checkbox" data-platform="${c.platform}" class="toggle-display" ${c.display ? 'checked' : ''}>
+          <span class="text-sm text-zinc-400">Display</span>
+        </label>
+      `;
+      connectionsList.appendChild(card);
+    });
+
+    // Add toggle listeners
+    document.querySelectorAll('.toggle-display').forEach(input => {
+      input.addEventListener('change', async (e) => {
+        const platform = e.target.dataset.platform;
+        const display = e.target.checked;
+
+        // Update display on backend
+        try {
+          await fetch(`${API_URL}/profile/connections/${platform}/display`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ display })
+          });
+          loadConnections(); // refresh
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    });
+
+  } catch (err) {
+    console.error('Failed to load connections', err);
+    connectionsList.innerHTML = `<p class="text-red-500">Failed to load connections.</p>`;
+  }
+}
+
+// Add new connection (OAuth)
+async function connectPlatform(platform) {
+  if (!platforms[platform]) return;
+  // Open OAuth URL in new window
+  window.open(platforms[platform].oauth, '_blank', 'width=600,height=700');
+}
+
+// Initial load
+loadConnections();
+
+const connectButtonsContainer = document.createElement('div');
+connectButtonsContainer.className = 'flex flex-wrap gap-3 mt-4';
+Object.keys(platforms).forEach(p => {
+  const btn = document.createElement('button');
+  btn.className = 'bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded text-white flex items-center gap-2';
+  btn.innerHTML = `<img src="${platforms[p].logo}" class="w-4 h-4"/> Connect ${p.charAt(0).toUpperCase() + p.slice(1)}`;
+  btn.onclick = () => connectPlatform(p);
+  connectButtonsContainer.appendChild(btn);
+});
+document.getElementById('connections-list').parentNode.insertBefore(connectButtonsContainer, connectionsList);
+
 </script>
 
 </body>
