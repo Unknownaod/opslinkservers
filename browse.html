@@ -96,11 +96,15 @@ const loginBtn = document.getElementById('loginBtn');
 const adminBtn = document.getElementById('adminBtn');
 const sponsorBtn = document.getElementById('sponsorBtn');
 
-if(currentUser){
-  loginBtn.textContent='Logout';
-  loginBtn.href='#';
-  loginBtn.onclick=()=>{localStorage.clear(); location.reload();};
-  if(currentUser.role==='admin'){
+if (currentUser) {
+  loginBtn.textContent = 'Logout';
+  loginBtn.href = '#';
+  loginBtn.onclick = () => {
+    localStorage.clear();
+    location.reload();
+  };
+
+  if (currentUser.role === 'admin' || currentUser.role === 'management') {
     adminBtn.classList.remove('hidden');
     sponsorBtn.classList.remove('hidden');
   }
