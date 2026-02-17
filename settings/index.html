@@ -563,11 +563,23 @@ const platforms = {
 // LOAD CONNECTIONS
 // ===============================
 async function loadConnections() {
-  if (!token) return redirectLogin();
+  const token = localStorage.getItem("token");
+  if (!token) {
+    console.log("No token found, redirecting to login");
+    return redirectLogin();
+  }
 
   try {
+    // Pass token in query string as the backend expects
     const res = await fetch(`${API_URL}/profile/connections?token=${encodeURIComponent(token)}`);
-    if (res.status === 401) return redirectLogin();
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        console.log("Unauthorized, redirecting to login");
+        return redirectLogin();
+      }
+      throw new Error(`HTTP ${res.status}`);
+    }
 
     const data = await res.json();
     const socials = data.socials || [];
@@ -600,7 +612,6 @@ async function loadConnections() {
             Connected
           </span>
         `;
-
         connectionsList.appendChild(card);
       });
     }
@@ -611,6 +622,7 @@ async function loadConnections() {
       `<p class="text-red-500">Failed to load connections.</p>`;
   }
 }
+
 
 // ===============================
 // CONNECT PLATFORM (OAuth Start)
