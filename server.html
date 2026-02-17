@@ -219,7 +219,7 @@ if (!reviews.length) {
     // Render reviews
     reviewsList.innerHTML = '';
     enhancedReviews.forEach(r => {
-      const isAdmin = r.role === 'admin';
+      const isAdmin = r.role === 'admin' || r.role === 'management';
 
       // SERVER OWNER check based on submitterDiscord username/tag
       const isOwner =
@@ -269,6 +269,7 @@ if (!reviews.length) {
 
   fetchReviewsWithRoles();
 }
+
 
 
 /* --- SHOW EDIT BUTTON IF OWNER --- */
