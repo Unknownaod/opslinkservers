@@ -621,6 +621,7 @@ async function loadConnections() {
   }
 }
 
+
 // =====================
 // Connect platform (OAuth)
 // =====================
@@ -650,7 +651,8 @@ async function disconnectPlatform(platform) {
     return window.location.href = "/auth/login/";
   }
 
-  if (!confirm(`Are you sure you want to disconnect ${platformLogos[platform] ? platform.charAt(0).toUpperCase() + platform.slice(1) : platform}?`)) {
+  // Corrected confirmation message
+  if (!confirm(`Are you sure you want to disconnect ${platforms[platform] ? platforms[platform].name : platform}?`)) {
     return;
   }
 
@@ -665,13 +667,14 @@ async function disconnectPlatform(platform) {
       throw new Error(errData.message || `HTTP ${res.status}`);
     }
 
-    alert(`${platform.charAt(0).toUpperCase() + platform.slice(1)} disconnected successfully!`);
+    alert(`${platforms[platform]?.name || platform} disconnected successfully!`);
     loadConnections(); // refresh the connections UI
   } catch (err) {
     console.error(`Failed to disconnect ${platform}`, err);
-    alert(`Failed to disconnect ${platform.charAt(0).toUpperCase() + platform.slice(1)}: ${err.message}`);
+    alert(`Failed to disconnect ${platforms[platform]?.name || platform}: ${err.message}`);
   }
 }
+
 
 
 // =====================
