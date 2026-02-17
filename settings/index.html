@@ -527,165 +527,84 @@ async function deleteSocial(id) {
 
 // Initial load
 loadSocials();
-// ===============================
-// SOCIAL CONNECTIONS FRONTEND
-// ===============================
-
+/* ========= SOCIAL CONNECTIONS ========= */
 const connectionsList = document.getElementById('connections-list');
 const connectionsEmpty = document.getElementById('connections-empty');
 
-// Supported platforms (must match backend OAUTH_CONFIG keys)
 const platforms = {
-  spotify: {
-    name: "Spotify",
-    logo: "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/spotify.svg",
-    oauth: `${API_URL}/auth/connect/spotify`
-  },
-  github: {
-    name: "GitHub",
-    logo: "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg",
-    oauth: `${API_URL}/auth/connect/github`
-  },
-  twitch: {
-    name: "Twitch",
-    logo: "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitch.svg",
-    oauth: `${API_URL}/auth/connect/twitch`
-  },
-  youtube: {
-    name: "YouTube",
-    logo: "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg",
-    oauth: `${API_URL}/auth/connect/youtube`
-  }
+  spotify: { name:"Spotify", logo:"https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/spotify.svg", oauth:`${API_URL}/auth/connect/spotify` },
+  github: { name:"GitHub", logo:"https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg", oauth:`${API_URL}/auth/connect/github` },
+  twitch: { name:"Twitch", logo:"https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitch.svg", oauth:`${API_URL}/auth/connect/twitch` },
+  youtube: { name:"YouTube", logo:"https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg", oauth:`${API_URL}/auth/connect/youtube` }
 };
 
-// ===============================
-// LOAD CONNECTIONS
-// ===============================
 async function loadConnections() {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    console.log("No token found, redirecting to login");
-    return redirectLogin();
-  }
-
+  if (!token) return redirectLogin();
   try {
-    // Send token in Authorization header
-    const res = await fetch(`${API_URL}/profile/connections`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
+    const res = await fetch(`${API_URL}/profile/connections?token=${encodeURIComponent(token)}`);
     if (!res.ok) {
-      if (res.status === 401) {
-        console.log("Unauthorized, redirecting to login");
-        return redirectLogin();
-      }
+      if (res.status === 401) return redirectLogin();
       throw new Error(`HTTP ${res.status}`);
     }
 
     const data = await res.json();
     const socials = data.socials || [];
+    connectionsList.innerHTML = '';
 
-    connectionsList.innerHTML = "";
     const connected = socials.filter(s => s.connected);
-
     if (!connected.length) {
-      connectionsEmpty.classList.remove("hidden");
+      connectionsEmpty.classList.remove('hidden');
     } else {
-      connectionsEmpty.classList.add("hidden");
-
+      connectionsEmpty.classList.add('hidden');
       connected.forEach(s => {
-        const card = document.createElement("div");
-        card.className =
-          "bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex items-center justify-between";
-
+        const card = document.createElement('div');
+        card.className = "bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex items-center justify-between";
         card.innerHTML = `
           <div class="flex items-center gap-3">
-            <img src="${platforms[s.platform]?.logo || ""}" class="w-6 h-6" />
+            <img src="${platforms[s.platform]?.logo || ''}" class="w-6 h-6" />
             <div>
               <p class="font-medium">${s.username}</p>
-              <a href="${s.profileUrl}" target="_blank"
-                 class="text-xs text-indigo-400 hover:underline">
-                 View Profile
-              </a>
+              <a href="${s.profileUrl}" target="_blank" class="text-xs text-indigo-400 hover:underline">View Profile</a>
             </div>
           </div>
-          <span class="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded">
-            Connected
-          </span>
+          <span class="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded">Connected</span>
         `;
         connectionsList.appendChild(card);
       });
     }
-
   } catch (err) {
-    console.error("Failed to load connections", err);
-    connectionsList.innerHTML =
-      `<p class="text-red-500">Failed to load connections.</p>`;
+    console.error('Failed to load connections', err);
+    connectionsList.innerHTML = `<p class="text-red-500">Failed to load connections.</p>`;
   }
 }
 
-
-// ===============================
-// CONNECT PLATFORM (OAuth Start)
-// ===============================
 function connectPlatform(platform) {
-  const token = localStorage.getItem("token");
   if (!platforms[platform] || !token) return redirectLogin();
-
-  // OAuth URL with JWT in query string (state is handled by backend)
-  const oauthUrl = `${platforms[platform].oauth}?token=${encodeURIComponent(token)}`;
-
-  const popup = window.open(
-    oauthUrl,
-    "_blank",
-    "width=600,height=700,noopener,noreferrer"
+  // Open in a new browser tab
+  window.open(
+    `${platforms[platform].oauth}?token=${encodeURIComponent(token)}`,
+    "_blank"
   );
-
-  if (!popup) return alert("Popup blocked. Please allow popups for this site.");
-
-  // Focus popup if possible
-  popup.focus();
-
-  // Poll popup to auto-refresh connections after OAuth
-  const timer = setInterval(() => {
-    if (popup.closed) {
-      clearInterval(timer);
-      loadConnections();
-    }
-  }, 1000);
+  alert("A new tab has opened for OAuth. After connecting, refresh this page to see your connected accounts.");
 }
 
-// ===============================
-// CONNECT BUTTONS
-// ===============================
+/* ========= CONNECTION BUTTONS ========= */
 const connectButtonsContainer = document.createElement("div");
 connectButtonsContainer.className = "flex flex-wrap gap-3 mt-4";
 
 Object.keys(platforms).forEach(p => {
   const btn = document.createElement("button");
-
-  btn.className =
-    "bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded text-white flex items-center gap-2";
-
-  btn.innerHTML = `
-    <img src="${platforms[p].logo}" class="w-4 h-4"/>
-    Connect ${platforms[p].name}
-  `;
-
+  btn.className = "bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded text-white flex items-center gap-2";
+  btn.innerHTML = `<img src="${platforms[p].logo}" class="w-4 h-4"/> Connect ${platforms[p].name}`;
   btn.onclick = () => connectPlatform(p);
-
   connectButtonsContainer.appendChild(btn);
 });
 
-connectionsList.parentNode.insertBefore(
-  connectButtonsContainer,
-  connectionsList
-);
+connectionsList.parentNode.insertBefore(connectButtonsContainer, connectionsList);
 
-// ===============================
-// INITIAL LOAD
-// ===============================
+/* ========= INITIAL LOAD ========= */
 loadConnections();
+
 
 </script>
 
