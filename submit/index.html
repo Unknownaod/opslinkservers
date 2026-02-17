@@ -164,6 +164,7 @@ const userStr = localStorage.getItem('user');
 const loginBtn = document.getElementById('loginBtn');
 const adminBtn = document.getElementById('adminBtn');
 const navLinks = document.getElementById('navLinks');
+const userId = localStorage.getItem('userId');
 
 if (token && userStr) {
   currentUser = JSON.parse(userStr);
