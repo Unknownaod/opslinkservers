@@ -210,29 +210,28 @@
     
   </main>
 
-<script>
+ <script>
 feather.replace();
 
 /* ===== FULL API URL ===== */
 const API_URL = 'https://opslinkservers-backend.onrender.com/api';
 
 /* ========= GET TOKEN & USER ========= */
-let token = localStorage.getItem('token');
-let user;
+const token = localStorage.getItem('token');
+const userStr = localStorage.getItem('user');
 
-try {
-  const userStr = localStorage.getItem('user');
-  if (!token || !userStr) throw new Error("No auth data");
-  user = JSON.parse(userStr);
-} catch {
-  console.log("No token or invalid user, redirecting to login");
-  redirectLogin();
-}
-
-/* ========= REDIRECT UTILITY ========= */
 function redirectLogin() {
   localStorage.clear();
   window.location.href = '/auth/login/';
+}
+
+if (!token || !userStr) redirectLogin();
+
+let user;
+try {
+  user = JSON.parse(userStr);
+} catch {
+  redirectLogin();
 }
 
 /* ========= POPULATE PROFILE ========= */
@@ -245,6 +244,7 @@ document.getElementById('avatar').textContent =
 
 /* ========= CUSTOM MODAL UTILS ========= */
 function createModal({ title = '', message = '', placeholder = '', confirmText = 'OK', onConfirm }) {
+  // Remove existing modal if present
   const existing = document.getElementById('custom-modal');
   if (existing) existing.remove();
 
@@ -267,7 +267,10 @@ function createModal({ title = '', message = '', placeholder = '', confirmText =
   document.body.appendChild(modal);
 
   return new Promise((resolve, reject) => {
-    modal.querySelector('#modal-cancel').onclick = () => { modal.remove(); reject('cancelled'); };
+    modal.querySelector('#modal-cancel').onclick = () => {
+      modal.remove();
+      reject('cancelled');
+    };
     modal.querySelector('#modal-confirm').onclick = () => {
       const value = modal.querySelector('#modal-input')?.value || null;
       modal.remove();
@@ -286,13 +289,14 @@ async function loadServers() {
     const res = await fetch(`${API_URL}/servers/mine`, {
       headers: { Authorization: `Bearer ${token}` }
     });
+
     if (res.status === 401) return redirectLogin();
 
     const servers = await res.json();
     const list = document.getElementById('servers-list');
     const empty = document.getElementById('servers-empty');
-    list.innerHTML = '';
 
+    list.innerHTML = '';
     if (!Array.isArray(servers) || servers.length === 0) {
       empty.classList.remove('hidden');
       return;
@@ -313,6 +317,7 @@ async function loadServers() {
       `;
       list.appendChild(card);
     });
+
   } catch (err) {
     console.error('Error fetching servers:', err);
     const list = document.getElementById('servers-list');
@@ -330,23 +335,30 @@ document.getElementById('change-email').onclick = async () => {
       placeholder: 'new-email@example.com',
       confirmText: 'Update'
     });
+
     if (!newEmail) return;
 
     const res = await fetch(`${API_URL}/auth/change-email`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
       body: JSON.stringify({ newEmail })
     });
 
     if (res.status === 401) return redirectLogin();
-    const data = await res.json();
 
+    const data = await res.json();
     showMessage({
       title: 'Email Update',
       message: res.ok ? 'Email updated successfully. Please verify it.' : data.error
     });
   } catch (err) {
-    if (err !== 'cancelled') showMessage({ title: 'Error', message: 'Something went wrong. Try again later.' });
+    if (err !== 'cancelled') {
+      console.error('Error changing email:', err);
+      showMessage({ title: 'Error', message: 'Something went wrong. Try again later.' });
+    }
   }
 };
 
@@ -358,12 +370,14 @@ document.getElementById('change-password').onclick = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: user.email })
     });
+
     const data = await res.json();
     showMessage({
       title: 'Password Reset',
       message: res.ok ? 'Password reset email sent.' : data.error
     });
   } catch (err) {
+    console.error('Error sending reset email:', err);
     showMessage({ title: 'Error', message: 'Something went wrong. Try again later.' });
   }
 };
@@ -377,39 +391,52 @@ document.getElementById('change-username').onclick = async () => {
       placeholder: 'NewUsername',
       confirmText: 'Update'
     });
+
     if (!newUsername) return;
 
+    // Send only the newDiscordUsername — JWT identifies the user
     const res = await fetch(`${API_URL}/auth/change-username`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
       body: JSON.stringify({ newDiscordUsername: newUsername })
     });
 
     if (res.status === 401) return redirectLogin();
-    const data = await res.json();
 
+    const data = await res.json();
     if (res.ok) {
+      showMessage({
+        title: 'Username Updated',
+        message: `Your Discord username is now ${newUsername}`
+      });
+
+      // Update local user object and page display
       user.discordUsername = newUsername;
       localStorage.setItem('user', JSON.stringify(user));
       document.getElementById('discord').textContent =
         user.discordUsername + (user.discordTag ? `#${user.discordTag}` : '');
       document.getElementById('avatar').textContent =
         user.discordUsername?.[0]?.toUpperCase() || '?';
-      showMessage({ title: 'Username Updated', message: `Your Discord username is now ${newUsername}` });
     } else {
       showMessage({ title: 'Error', message: data.error });
     }
   } catch (err) {
-    if (err !== 'cancelled') showMessage({ title: 'Error', message: 'Something went wrong. Try again later.' });
+    if (err !== 'cancelled') {
+      console.error('Error changing username:', err);
+      showMessage({ title: 'Error', message: 'Something went wrong. Try again later.' });
+    }
   }
 };
 
-/* ========= LOAD SOCIALS ========= */
 const socialsList = document.getElementById('socials-list');
 const socialsEmpty = document.getElementById('socials-empty');
-const addSocialBtn = document.getElementById('add-social-btn');
+const addSocialForm = document.getElementById('add-socials-form');
 const socialPlatform = document.getElementById('social-platform');
 const socialHandle = document.getElementById('social-handle');
+const addSocialBtn = document.getElementById('add-social-btn');
 const socialMsg = document.getElementById('social-msg');
 
 const platformLogos = {
@@ -421,6 +448,7 @@ const platformLogos = {
   linkedin: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/linkedin.svg',
 };
 
+// Fetch user socials
 async function loadSocials() {
   try {
     const res = await fetch(`${API_URL}/profile`, { headers: { Authorization: `Bearer ${token}` } });
@@ -453,9 +481,8 @@ async function loadSocials() {
     socialsList.innerHTML = `<p class="text-red-500">Failed to load socials.</p>`;
   }
 }
-loadSocials();
 
-/* ========= ADD/DELETE SOCIALS ========= */
+// Add a social
 addSocialBtn.onclick = async () => {
   socialMsg.textContent = '';
   const platform = socialPlatform.value;
@@ -472,8 +499,6 @@ addSocialBtn.onclick = async () => {
       body: JSON.stringify({ platform, handle })
     });
     const data = await res.json();
-    if (res.status === 401) return redirectLogin();
-
     if (data.success) {
       socialHandle.value = '';
       socialPlatform.value = '';
@@ -487,11 +512,11 @@ addSocialBtn.onclick = async () => {
   }
 };
 
+// Delete a social
 async function deleteSocial(id) {
   try {
     const res = await fetch(`${API_URL}/profile/socials/delete/${id}`, { method:'DELETE', headers:{ Authorization: `Bearer ${token}` } });
     const data = await res.json();
-    if (res.status === 401) return redirectLogin();
     if (data.success) loadSocials();
     else alert('Failed to delete social.');
   } catch (err) {
@@ -500,64 +525,128 @@ async function deleteSocial(id) {
   }
 }
 
-/* ========= SOCIAL CONNECTIONS ========= */
+// Initial load
+loadSocials();
+// ===============================
+// SOCIAL CONNECTIONS FRONTEND
+// ===============================
+
 const connectionsList = document.getElementById('connections-list');
 const connectionsEmpty = document.getElementById('connections-empty');
 
+// Supported platforms (must match backend OAUTH_CONFIG keys)
 const platforms = {
-  spotify: { name:"Spotify", logo:"https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/spotify.svg", oauth:`${API_URL}/auth/connect/spotify` },
-  github: { name:"GitHub", logo:"https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg", oauth:`${API_URL}/auth/connect/github` },
-  twitch: { name:"Twitch", logo:"https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitch.svg", oauth:`${API_URL}/auth/connect/twitch` },
-  youtube: { name:"YouTube", logo:"https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg", oauth:`${API_URL}/auth/connect/youtube` }
+  spotify: {
+    name: "Spotify",
+    logo: "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/spotify.svg",
+    oauth: `${API_URL}/auth/connect/spotify`
+  },
+  github: {
+    name: "GitHub",
+    logo: "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg",
+    oauth: `${API_URL}/auth/connect/github`
+  },
+  twitch: {
+    name: "Twitch",
+    logo: "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitch.svg",
+    oauth: `${API_URL}/auth/connect/twitch`
+  },
+  youtube: {
+    name: "YouTube",
+    logo: "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg",
+    oauth: `${API_URL}/auth/connect/youtube`
+  }
 };
 
+// ===============================
+// LOAD CONNECTIONS
+// ===============================
 async function loadConnections() {
-  if (!token) return redirectLogin();
+  const token = localStorage.getItem("token");
+  if (!token) {
+    console.log("No token found, redirecting to login");
+    return redirectLogin();
+  }
+
   try {
-    const res = await fetch(`${API_URL}/profile/connections?token=${encodeURIComponent(token)}`);
+    // Send token in Authorization header
+    const res = await fetch(`${API_URL}/profile/connections`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
     if (!res.ok) {
-      if (res.status === 401) return redirectLogin();
+      if (res.status === 401) {
+        console.log("Unauthorized, redirecting to login");
+        return redirectLogin();
+      }
       throw new Error(`HTTP ${res.status}`);
     }
 
     const data = await res.json();
     const socials = data.socials || [];
-    connectionsList.innerHTML = '';
 
+    connectionsList.innerHTML = "";
     const connected = socials.filter(s => s.connected);
+
     if (!connected.length) {
-      connectionsEmpty.classList.remove('hidden');
+      connectionsEmpty.classList.remove("hidden");
     } else {
-      connectionsEmpty.classList.add('hidden');
+      connectionsEmpty.classList.add("hidden");
+
       connected.forEach(s => {
-        const card = document.createElement('div');
-        card.className = "bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex items-center justify-between";
+        const card = document.createElement("div");
+        card.className =
+          "bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex items-center justify-between";
+
         card.innerHTML = `
           <div class="flex items-center gap-3">
-            <img src="${platforms[s.platform]?.logo || ''}" class="w-6 h-6" />
+            <img src="${platforms[s.platform]?.logo || ""}" class="w-6 h-6" />
             <div>
               <p class="font-medium">${s.username}</p>
-              <a href="${s.profileUrl}" target="_blank" class="text-xs text-indigo-400 hover:underline">View Profile</a>
+              <a href="${s.profileUrl}" target="_blank"
+                 class="text-xs text-indigo-400 hover:underline">
+                 View Profile
+              </a>
             </div>
           </div>
-          <span class="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded">Connected</span>
+          <span class="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded">
+            Connected
+          </span>
         `;
         connectionsList.appendChild(card);
       });
     }
+
   } catch (err) {
-    console.error('Failed to load connections', err);
-    connectionsList.innerHTML = `<p class="text-red-500">Failed to load connections.</p>`;
+    console.error("Failed to load connections", err);
+    connectionsList.innerHTML =
+      `<p class="text-red-500">Failed to load connections.</p>`;
   }
 }
 
+
+// ===============================
+// CONNECT PLATFORM (OAuth Start)
+// ===============================
 function connectPlatform(platform) {
+  const token = localStorage.getItem("token");
   if (!platforms[platform] || !token) return redirectLogin();
+
+  // OAuth URL with JWT in query string (state is handled by backend)
   const oauthUrl = `${platforms[platform].oauth}?token=${encodeURIComponent(token)}`;
-  const popup = window.open(oauthUrl, "_blank", "width=600,height=700,noopener,noreferrer");
+
+  const popup = window.open(
+    oauthUrl,
+    "_blank",
+    "width=600,height=700,noopener,noreferrer"
+  );
+
   if (!popup) return alert("Popup blocked. Please allow popups for this site.");
+
+  // Focus popup if possible
   popup.focus();
 
+  // Poll popup to auto-refresh connections after OAuth
   const timer = setInterval(() => {
     if (popup.closed) {
       clearInterval(timer);
@@ -566,20 +655,38 @@ function connectPlatform(platform) {
   }, 1000);
 }
 
-/* ========= CONNECTION BUTTONS ========= */
+// ===============================
+// CONNECT BUTTONS
+// ===============================
 const connectButtonsContainer = document.createElement("div");
 connectButtonsContainer.className = "flex flex-wrap gap-3 mt-4";
+
 Object.keys(platforms).forEach(p => {
   const btn = document.createElement("button");
-  btn.className = "bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded text-white flex items-center gap-2";
-  btn.innerHTML = `<img src="${platforms[p].logo}" class="w-4 h-4"/> Connect ${platforms[p].name}`;
+
+  btn.className =
+    "bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded text-white flex items-center gap-2";
+
+  btn.innerHTML = `
+    <img src="${platforms[p].logo}" class="w-4 h-4"/>
+    Connect ${platforms[p].name}
+  `;
+
   btn.onclick = () => connectPlatform(p);
+
   connectButtonsContainer.appendChild(btn);
 });
-connectionsList.parentNode.insertBefore(connectButtonsContainer, connectionsList);
 
-/* ========= INITIAL LOAD ========= */
+connectionsList.parentNode.insertBefore(
+  connectButtonsContainer,
+  connectionsList
+);
+
+// ===============================
+// INITIAL LOAD
+// ===============================
 loadConnections();
+
 </script>
 
 
