@@ -135,16 +135,21 @@ function updateURLWithUserID(id) {
 // Auth
 const token = localStorage.getItem('token');
 const loggedInUser = JSON.parse(localStorage.getItem('user') || 'null');
+
 loginBtn.textContent = token ? 'Logout' : 'Login';
 loginBtn.href = token ? '#' : '/auth/login/';
 loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
+
+// Show/hide Discord login button
 discordLoginBtn.style.display = token ? 'none' : 'block';
 
-// Determine profile
+// Determine profile ID
 let userId = getQueryParam('user') || loggedInUser?._id;
 if (!getQueryParam('user') && loggedInUser) updateURLWithUserID(userId);
 
 let currentUserId = null;
+
+// Fetch profile
 fetch(`${API_URL}/profile/${userId}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
   .then(res => res.json())
   .then(data => {
@@ -153,7 +158,8 @@ fetch(`${API_URL}/profile/${userId}`, token ? { headers: { Authorization: `Beare
       serversContainer.innerHTML = '';
       return;
     }
-    currentUserId = data._id;
+
+    currentUserId = data._id?.toString(); // <-- ensure string
 
     const roleColor = data.role === 'admin' ? 'text-red-500' :
                       data.role === 'management' ? 'text-orange-400' :
@@ -164,9 +170,12 @@ fetch(`${API_URL}/profile/${userId}`, token ? { headers: { Authorization: `Beare
     document.getElementById('profileRole').innerHTML = `Role: <span class="font-semibold ${roleColor}">${data.role}</span>`;
     document.getElementById('profileEmail').textContent = data.email ? `Email: ${data.email}` : '';
     document.getElementById('profileVerified').textContent = data.isVerified !== undefined ? `Verified: ${data.isVerified ? 'Yes' : 'No'}` : '';
-    document.getElementById('profileID').innerHTML = `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
+    document.getElementById('profileID').innerHTML = `User ID: <span class="font-semibold text-blue-400">${currentUserId}</span>`;
 
-    if (loggedInUser?._id === currentUserId) addSocialsForm.classList.remove('hidden');
+    if (loggedInUser && loggedInUser._id && currentUserId &&
+        loggedInUser._id.toString() === currentUserId.toString()) {
+      addSocialsForm.classList.remove('hidden'); // show Add Socials form
+    }
 
     fetchSocials();
     fetchDiscordWidget();
@@ -176,6 +185,7 @@ fetch(`${API_URL}/profile/${userId}`, token ? { headers: { Authorization: `Beare
     console.error(err);
     profileContainer.innerHTML = '<p class="text-red-500">Failed to load profile.</p>';
   });
+
 
 // Fetch servers
 function fetchServers() {
