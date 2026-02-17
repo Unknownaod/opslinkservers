@@ -213,13 +213,12 @@ document.addEventListener('click', (e) => {
 navLinks.insertBefore(dropdownContainer, loginBtn);
 
 
-      if (user.role === 'admin') {
-        adminBtn.classList.remove('hidden');
-        adminBtn.href = 'dashboard.html';
-        adminBtnHero.classList.remove('hidden');
-        adminBtnHero.href = 'dashboard.html';
-      }
-    }
+  if (user.role === 'admin' || user.role === 'management') {
+  adminBtn.classList.remove('hidden');
+  adminBtn.href = 'dashboard.html';
+  adminBtnHero.classList.remove('hidden');
+  adminBtnHero.href = 'dashboard.html';
+  }
 
     // Animate numbers from 0 → target
     function animateValue(el, start, end, duration = 1200) {
