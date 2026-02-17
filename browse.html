@@ -104,11 +104,17 @@ if (currentUser) {
     location.reload();
   };
 
-  if (currentUser.role === 'admin' || currentUser.role === 'management') {
-    adminBtn.classList.remove('hidden');
-    sponsorBtn.classList.remove('hidden');
-  }
+if (currentUser.role === 'admin') {
+  adminBtn.classList.remove('hidden');
+  adminBtn.href = 'dashboard.html';
 }
+
+if (currentUser.role === 'management') {
+  adminBtn.classList.remove('hidden');
+  adminBtn.href = 'dashboard.html';
+  sponsorBtn.classList.remove('hidden');
+}
+
 
 // --- LOAD SERVERS ---
 async function loadServers(){
