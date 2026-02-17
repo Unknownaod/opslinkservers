@@ -39,6 +39,9 @@
       <a href="#security" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-800">
         <i data-feather="shield"></i> Security
       </a>
+        <a href="#socials" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-800">
+        <i data-feather="instagram"></i> Socials
+      </a>
     </nav>
   </aside>
 
@@ -149,10 +152,46 @@
         </button>
       </div>
 
+
   
 
     </section>
 
+<!-- Socials -->
+<section id="socials" class="glass rounded-2xl p-8 space-y-6">
+  <div>
+    <h3 class="text-xl font-semibold">Socials</h3>
+    <p class="text-sm text-zinc-400">Manage your social accounts</p>
+  </div>
+
+  <!-- List of socials -->
+  <div id="socials-list" class="grid md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+  <p id="socials-empty" class="hidden text-sm text-zinc-400">
+    No socials added.
+  </p>
+
+  <!-- Add Social Form -->
+  <div id="add-socials-form" class="flex flex-col md:flex-row gap-3 mt-4">
+    <select id="social-platform" class="p-2 rounded border border-zinc-700 bg-zinc-800 text-white">
+      <option value="">Select Platform</option>
+      <option value="discord">Discord</option>
+      <option value="twitter">Twitter</option>
+      <option value="instagram">Instagram</option>
+      <option value="github">GitHub</option>
+      <option value="tiktok">TikTok</option>
+      <option value="linkedin">LinkedIn</option>
+    </select>
+
+    <input id="social-handle" type="text" placeholder="Username or URL" class="flex-1 p-2 rounded border border-zinc-700 bg-zinc-800 text-white" />
+
+    <button id="add-social-btn" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded text-white">
+      Add
+    </button>
+  </div>
+  <p id="social-msg" class="text-sm text-red-500 mt-1"></p>
+</section>
+
+    
   </main>
 
  <script>
@@ -376,6 +415,104 @@ document.getElementById('change-username').onclick = async () => {
   }
 };
 
+const socialsList = document.getElementById('socials-list');
+const socialsEmpty = document.getElementById('socials-empty');
+const addSocialForm = document.getElementById('add-socials-form');
+const socialPlatform = document.getElementById('social-platform');
+const socialHandle = document.getElementById('social-handle');
+const addSocialBtn = document.getElementById('add-social-btn');
+const socialMsg = document.getElementById('social-msg');
+
+const platformLogos = {
+  discord: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg',
+  twitter: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitter.svg',
+  instagram: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg',
+  github: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg',
+  tiktok: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg',
+  linkedin: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/linkedin.svg',
+};
+
+// Fetch user socials
+async function loadSocials() {
+  try {
+    const res = await fetch(`${API_URL}/profile`, { headers: { Authorization: `Bearer ${token}` } });
+    if (res.status === 401) return redirectLogin();
+
+    const data = await res.json();
+    const socials = data.socials || [];
+
+    socialsList.innerHTML = '';
+    if (!socials.length) {
+      socialsEmpty.classList.remove('hidden');
+      return;
+    }
+    socialsEmpty.classList.add('hidden');
+
+    socials.forEach(s => {
+      const card = document.createElement('div');
+      card.className = 'bg-zinc-900/60 border border-zinc-800 rounded-xl p-3 flex items-center justify-between gap-2';
+      card.innerHTML = `
+        <div class="flex items-center gap-2">
+          <img src="${platformLogos[s.platform] || ''}" class="w-5 h-5" />
+          <a href="${s.url}" target="_blank" class="underline text-blue-400">${s.handle}</a>
+        </div>
+        <button class="bg-red-600 hover:bg-red-500 text-xs px-2 py-1 rounded" onclick="deleteSocial('${s._id}')">Delete</button>
+      `;
+      socialsList.appendChild(card);
+    });
+  } catch (err) {
+    console.error('Failed to load socials', err);
+    socialsList.innerHTML = `<p class="text-red-500">Failed to load socials.</p>`;
+  }
+}
+
+// Add a social
+addSocialBtn.onclick = async () => {
+  socialMsg.textContent = '';
+  const platform = socialPlatform.value;
+  const handle = socialHandle.value.trim();
+  if (!platform || !handle) {
+    socialMsg.textContent = 'Select a platform and enter a username or URL.';
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/socials/add`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ platform, handle })
+    });
+    const data = await res.json();
+    if (data.success) {
+      socialHandle.value = '';
+      socialPlatform.value = '';
+      loadSocials();
+    } else {
+      socialMsg.textContent = data.message || 'Failed to add social.';
+    }
+  } catch (err) {
+    console.error(err);
+    socialMsg.textContent = 'Failed to add social.';
+  }
+};
+
+// Delete a social
+async function deleteSocial(id) {
+  try {
+    const res = await fetch(`${API_URL}/socials/delete/${id}`, { method:'DELETE', headers:{ Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    if (data.success) loadSocials();
+    else alert('Failed to delete social.');
+  } catch (err) {
+    console.error(err);
+    alert('Failed to delete social.');
+  }
+}
+
+// Initial load
+loadSocials();
+
+   
 </script>
 
 </body>
