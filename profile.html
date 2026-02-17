@@ -52,119 +52,127 @@
     <span>Not affiliated with Discord</span>
   </footer>
 
-  <script>
-    const API_URL = 'https://opslinkservers-backend.onrender.com/api';
-    const profileContainer = document.getElementById('profileContainer');
-    const serversContainer = document.getElementById('serversContainer');
-    const loginBtn = document.getElementById('loginBtn');
-    const copyLinkBtn = document.getElementById('copyLinkBtn');
+<script>
+const API_URL = 'https://opslinkservers-backend.onrender.com/api';
+const profileContainer = document.getElementById('profileContainer');
+const serversContainer = document.getElementById('serversContainer');
+const loginBtn = document.getElementById('loginBtn');
+const copyLinkBtn = document.getElementById('copyLinkBtn');
 
-    // Helpers
-    function getQueryParam(param) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(param);
+// Helpers
+function getQueryParam(param) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(param);
+}
+
+function updateURLWithUserID(id) {
+  const url = new URL(window.location);
+  url.searchParams.set('user', id);
+  window.history.replaceState({}, '', url);
+}
+
+// Check login
+const token = localStorage.getItem('token');
+const userStr = localStorage.getItem('user');
+let loggedInUser = null;
+
+if (userStr) loggedInUser = JSON.parse(userStr);
+
+loginBtn.textContent = token ? 'Logout' : 'Login';
+loginBtn.href = token ? '#' : 'login.html';
+loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
+
+// Determine which profile to fetch
+let userId = getQueryParam('user'); // ?user=USERID
+
+// If no ?user= and logged in, use own ID and update URL
+if (!userId && loggedInUser) {
+  userId = loggedInUser._id;
+  updateURLWithUserID(userId);
+}
+
+const profileEndpoint = `${API_URL}/profile${userId ? `/${userId}` : ''}`;
+
+// Store fetched user ID for shareable link
+let currentUserId = null;
+
+// Fetch profile
+fetch(profileEndpoint, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
+  .then(res => res.json())
+  .then(data => {
+    if (!data.discordUsername) {
+      profileContainer.innerHTML = '<p class="text-zinc-400">Profile not found.</p>';
+      serversContainer.innerHTML = '';
+      return;
     }
 
-    function updateURLWithUserID(id) {
-      const url = new URL(window.location);
-      url.searchParams.set('user', id);
-      window.history.replaceState({}, '', url);
+    currentUserId = data._id; // save for copy link
+
+    const roleColor = data.role === 'admin' ? 'text-red-500' :
+                      data.role === 'management' ? 'text-black' :
+                      'text-blue-400';
+
+    document.getElementById('profileUsername').textContent = data.discordUsername;
+    document.getElementById('profileTag').textContent = data.discordTag ? `#${data.discordTag}` : '';
+    document.getElementById('profileRole').innerHTML = `Role: <span class="font-semibold ${roleColor}">${data.role}</span>`;
+    document.getElementById('profileEmail').textContent = data.email ? `Email: ${data.email}` : '';
+    document.getElementById('profileVerified').textContent = data.isVerified !== undefined ? `Verified: ${data.isVerified ? 'Yes' : 'No'}` : '';
+    document.getElementById('profileID').innerHTML = `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
+  })
+  .catch(err => {
+    console.error(err);
+    profileContainer.innerHTML = '<p class="text-red-500">Failed to load profile.</p>';
+  });
+
+// Fetch servers owned
+const hasAdminPermissions = loggedInUser && (loggedInUser.role === 'admin' || loggedInUser.role === 'management');
+
+fetch(`${API_URL}/servers/mine${userId && hasAdminPermissions ? `?user=${userId}` : ''}`, 
+  token ? { headers: { Authorization: `Bearer ${token}` } } : {}
+)
+  .then(res => res.json())
+  .then(servers => {
+    serversContainer.innerHTML = '';
+    if (!servers.length) {
+      serversContainer.innerHTML = '<p class="text-zinc-400">No servers found for this user.</p>';
+      return;
     }
 
-    // Check login
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-    let loggedInUser = null;
+    servers.forEach(s => {
+      const div = document.createElement('div');
+      div.className = `p-4 rounded border ${
+        s.status === 'approved' ? 'border-green-500 bg-green-900/30' :
+        s.status === 'denied' ? 'border-red-500 bg-red-900/30' :
+        'border-zinc-700 bg-zinc-900/50'
+      }`;
 
-    if (userStr) loggedInUser = JSON.parse(userStr);
+      div.innerHTML = `
+        <h4 class="font-semibold text-lg">${s.name}</h4>
+        <p class="text-sm text-zinc-300 mb-1">Status: ${s.status}</p>
+        ${s.status === 'approved' ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>` : ''}
+      `;
+      serversContainer.appendChild(div);
+    });
+  })
+  .catch(err => {
+    console.error(err);
+    serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
+  });
 
-    loginBtn.textContent = token ? 'Logout' : 'Login';
-    loginBtn.href = token ? '#' : 'login.html';
-    loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
+// Copy profile link button
+copyLinkBtn.onclick = () => {
+  if (!currentUserId) return;
 
-    // Determine which profile to fetch
-    let userId = getQueryParam('user'); // ?user=USERID
+  const shareLink = `${window.location.origin}/profile.html?user=${currentUserId}`;
+  navigator.clipboard.writeText(shareLink).then(() => {
+    copyLinkBtn.textContent = 'Link Copied!';
+    setTimeout(() => { copyLinkBtn.textContent = 'Copy Profile Link'; }, 2000);
+  }).catch(err => {
+    console.error(err);
+    copyLinkBtn.textContent = 'Failed to copy';
+  });
+};
+</script>
 
-    // If no ?user= and logged in, use own ID and update URL
-    if (!userId && loggedInUser) {
-      userId = loggedInUser._id;
-      updateURLWithUserID(userId);
-    }
-
-    const profileEndpoint = `${API_URL}/profile${userId ? `/${userId}` : ''}`;
-
-    // Store fetched user ID for shareable link
-    let currentUserId = null;
-
-    // Fetch profile
-    fetch(profileEndpoint, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
-      .then(res => res.json())
-      .then(data => {
-        if (!data.discordUsername) {
-          profileContainer.innerHTML = '<p class="text-zinc-400">Profile not found.</p>';
-          serversContainer.innerHTML = '';
-          return;
-        }
-
-        currentUserId = data._id; // save for copy link
-        document.getElementById('profileUsername').textContent = data.discordUsername;
-        document.getElementById('profileTag').textContent = data.discordTag ? `#${data.discordTag}` : '';
-        document.getElementById('profileRole').innerHTML = `Role: <span class="font-semibold ${data.role === 'admin' ? 'text-red-500' : 'text-blue-400'}">${data.role}</span>`;
-        document.getElementById('profileEmail').textContent = data.email ? `Email: ${data.email}` : '';
-        document.getElementById('profileVerified').textContent = data.isVerified !== undefined ? `Verified: ${data.isVerified ? 'Yes' : 'No'}` : '';
-        document.getElementById('profileID').innerHTML = `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
-      })
-      .catch(err => {
-        console.error(err);
-        profileContainer.innerHTML = '<p class="text-red-500">Failed to load profile.</p>';
-      });
-
-    // Fetch servers owned
-    fetch(`${API_URL}/servers/mine${userId && loggedInUser && loggedInUser.role === 'admin' ? `?user=${userId}` : ''}`, 
-      token ? { headers: { Authorization: `Bearer ${token}` } } : {}
-    )
-      .then(res => res.json())
-      .then(servers => {
-        serversContainer.innerHTML = '';
-        if (!servers.length) {
-          serversContainer.innerHTML = '<p class="text-zinc-400">No servers found for this user.</p>';
-          return;
-        }
-
-        servers.forEach(s => {
-          const div = document.createElement('div');
-          div.className = `p-4 rounded border ${
-            s.status === 'approved' ? 'border-green-500 bg-green-900/30' :
-            s.status === 'denied' ? 'border-red-500 bg-red-900/30' :
-            'border-zinc-700 bg-zinc-900/50'
-          }`;
-
-          div.innerHTML = `
-            <h4 class="font-semibold text-lg">${s.name}</h4>
-            <p class="text-sm text-zinc-300 mb-1">Status: ${s.status}</p>
-            ${s.status === 'approved' ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>` : ''}
-          `;
-          serversContainer.appendChild(div);
-        });
-      })
-      .catch(err => {
-        console.error(err);
-        serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
-      });
-
-    // Copy profile link button
-    copyLinkBtn.onclick = () => {
-      if (!currentUserId) return;
-
-      const shareLink = `${window.location.origin}/profile.html?user=${currentUserId}`;
-      navigator.clipboard.writeText(shareLink).then(() => {
-        copyLinkBtn.textContent = 'Link Copied!';
-        setTimeout(() => { copyLinkBtn.textContent = 'Copy Profile Link'; }, 2000);
-      }).catch(err => {
-        console.error(err);
-        copyLinkBtn.textContent = 'Failed to copy';
-      });
-    };
-  </script>
 </body>
 </html>
