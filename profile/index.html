@@ -36,21 +36,14 @@
         <button id="copyLinkBtn" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm">Copy Profile Link</button>
       </div>
 
-      <!-- Servers and Socials -->
+      <!-- Socials -->
       <div class="flex-1 flex flex-col gap-4">
-        <!-- Servers Owned -->
-        <h3 class="text-2xl font-semibold mb-4">Servers Owned</h3>
-        <div id="serversContainer" class="flex flex-col gap-3">
-          <p class="text-zinc-400">Loading servers...</p>
-        </div>
-
-        <!-- Socials Section -->
         <h3 class="text-2xl font-semibold mb-4 mt-6">Socials</h3>
         <div id="socialsContainer" class="flex flex-col gap-2 text-zinc-300">
           <p>Loading socials...</p>
         </div>
 
-        <!-- Add Socials form -->
+        <!-- Add Socials Form -->
         <div id="addSocialsForm" class="hidden flex flex-col gap-2 mt-4 p-4 rounded border border-zinc-700 bg-zinc-900/50 w-full md:w-1/2">
           <h4 class="font-semibold text-lg text-white">Add a Social</h4>
           <div class="flex gap-2">
@@ -68,7 +61,6 @@
           <button id="addSocialBtn" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm">Add Social</button>
           <p id="socialMsg" class="text-sm text-red-500 mt-1"></p>
         </div>
-
       </div>
     </div>
   </section>
@@ -82,15 +74,14 @@
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com/api';
 const profileContainer = document.getElementById('profileContainer');
-const serversContainer = document.getElementById('serversContainer');
-const loginBtn = document.getElementById('loginBtn');
-const copyLinkBtn = document.getElementById('copyLinkBtn');
 const socialsContainer = document.getElementById('socialsContainer');
 const addSocialsForm = document.getElementById('addSocialsForm');
 const socialPlatform = document.getElementById('socialPlatform');
 const socialHandle = document.getElementById('socialHandle');
 const addSocialBtn = document.getElementById('addSocialBtn');
 const socialMsg = document.getElementById('socialMsg');
+const loginBtn = document.getElementById('loginBtn');
+const copyLinkBtn = document.getElementById('copyLinkBtn');
 
 const platformLogos = {
   discord: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg',
@@ -109,39 +100,40 @@ loginBtn.textContent = token ? 'Logout' : 'Login';
 loginBtn.href = token ? '#' : '/auth/login/';
 loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
 
-// Fetch profile using JWT
-fetch(`${API_URL}/profile`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
-  .then(res => res.json())
-  .then(data => {
-    if (!data?._id) {
-      profileContainer.innerHTML = '<p class="text-zinc-400">Profile not found.</p>';
-      return;
-    }
+// Fetch profile via JWT
+if (!token) {
+  profileContainer.innerHTML = '<p class="text-zinc-400">Please login to view your profile.</p>';
+} else {
+  fetch(`${API_URL}/profile`, { headers: { Authorization: `Bearer ${token}` } })
+    .then(res => res.json())
+    .then(data => {
+      if (!data?._id) {
+        profileContainer.innerHTML = '<p class="text-red-500">Failed to load profile.</p>';
+        return;
+      }
 
-    const currentUserId = data._id;
+      document.getElementById('profileUsername').textContent = data.discordUsername || '';
+      document.getElementById('profileTag').textContent = data.discordTag ? `#${data.discordTag}` : '';
+      const roleColor = data.role === 'admin' ? 'text-red-500' :
+                        data.role === 'management' ? 'text-orange-400' :
+                        'text-blue-400';
+      document.getElementById('profileRole').innerHTML = `Role: <span class="font-semibold ${roleColor}">${data.role}</span>`;
+      document.getElementById('profileEmail').textContent = data.email ? `Email: ${data.email}` : '';
+      document.getElementById('profileVerified').textContent = data.isVerified !== undefined ? `Verified: ${data.isVerified ? 'Yes' : 'No'}` : '';
+      document.getElementById('profileID').innerHTML = `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
 
-    document.getElementById('profileUsername').textContent = data.discordUsername || '';
-    document.getElementById('profileTag').textContent = data.discordTag ? `#${data.discordTag}` : '';
-    const roleColor = data.role === 'admin' ? 'text-red-500' :
-                      data.role === 'management' ? 'text-orange-400' :
-                      'text-blue-400';
-    document.getElementById('profileRole').innerHTML = `Role: <span class="font-semibold ${roleColor}">${data.role}</span>`;
-    document.getElementById('profileEmail').textContent = data.email ? `Email: ${data.email}` : '';
-    document.getElementById('profileVerified').textContent = data.isVerified !== undefined ? `Verified: ${data.isVerified ? 'Yes' : 'No'}` : '';
-    document.getElementById('profileID').innerHTML = `User ID: <span class="font-semibold text-blue-400">${currentUserId}</span>`;
+      // Show Add Socials only if viewing own profile
+      if (loggedInUser && loggedInUser._id === data._id) {
+        addSocialsForm.classList.remove('hidden');
+      }
 
-    // Show Add Socials only if viewing own profile
-    if (loggedInUser && loggedInUser._id === currentUserId) {
-      addSocialsForm.classList.remove('hidden');
-    }
-
-    renderSocials(data.socials || []);
-    fetchServers();
-  })
-  .catch(err => {
-    console.error(err);
-    profileContainer.innerHTML = '<p class="text-red-500">Failed to load profile.</p>';
-  });
+      renderSocials(data.socials || []);
+    })
+    .catch(err => {
+      console.error(err);
+      profileContainer.innerHTML = '<p class="text-red-500">Failed to load profile.</p>';
+    });
+}
 
 // Render socials
 function renderSocials(socials) {
@@ -150,7 +142,6 @@ function renderSocials(socials) {
     socialsContainer.innerHTML = '<p class="text-zinc-400">No socials added.</p>';
     return;
   }
-
   socials.forEach(s => {
     const div = document.createElement('div');
     div.className = 'flex items-center gap-2';
@@ -204,37 +195,6 @@ function deleteSocial(id) {
       } else alert('Failed to delete social.');
     })
     .catch(err => console.error(err));
-}
-
-// Fetch servers
-function fetchServers() {
-  fetch(`${API_URL}/servers/mine`, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
-    .then(res => res.json())
-    .then(servers => {
-      serversContainer.innerHTML = '';
-      if (!servers.length) {
-        serversContainer.innerHTML = '<p class="text-zinc-400">No servers found.</p>';
-        return;
-      }
-      servers.forEach(s => {
-        const div = document.createElement('div');
-        div.className = `p-4 rounded border ${
-          s.status === 'approved' ? 'border-green-500 bg-green-900/30' :
-          s.status === 'denied' ? 'border-red-500 bg-red-900/30' :
-          'border-zinc-700 bg-zinc-900/50'
-        }`;
-        div.innerHTML = `
-          <h4 class="font-semibold text-lg">${s.name}</h4>
-          <p class="text-sm text-zinc-300 mb-1">Status: ${s.status}</p>
-          ${s.status === 'approved' ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>` : ''}
-        `;
-        serversContainer.appendChild(div);
-      });
-    })
-    .catch(err => {
-      console.error(err);
-      serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
-    });
 }
 
 // Copy profile link
