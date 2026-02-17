@@ -227,15 +227,20 @@ async function loadConnections() {
       connectionsContainer.innerHTML = '<p class="text-red-500 col-span-full">Failed to load connections.</p>';
       return;
     }
+
     const data = await res.json();
     connectionsContainer.innerHTML = '';
-    if (!data.socials || !Object.keys(data.socials).length) {
+
+    if (!data.socials || !data.socials.length) {
       connectionsContainer.innerHTML = '<p class="text-zinc-400 col-span-full">No connections found.</p>';
       return;
     }
 
-    Object.entries(data.socials).forEach(([platform, s]) => {
+    // Loop through the array instead of using Object.entries
+    data.socials.forEach(s => {
       if (!s.connected) return;
+      const platform = s.platform;
+
       const card = document.createElement('div');
       card.className = `flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform duration-150 gap-2`;
 
@@ -246,10 +251,10 @@ async function loadConnections() {
 
       card.innerHTML = `
         <div class="flex items-center gap-3">
-          <img src="${platformLogos[platform]}" alt="${platform}" class="w-6 h-6" />
+          <img src="${platformLogos[platform] || ''}" alt="${platform}" class="w-6 h-6" />
           <span class="font-medium capitalize">${platform}</span>
         </div>
-        <p class="text-sm text-zinc-300 truncate">${s.username}</p>
+        <p class="text-sm text-zinc-300 truncate">${s.username || ''}</p>
         ${extraInfo}
       `;
 
@@ -261,6 +266,7 @@ async function loadConnections() {
     connectionsContainer.innerHTML = '<p class="text-red-500 col-span-full">Failed to load connections.</p>';
   }
 }
+
 
 // ---------------------
 // Copy Profile Link
