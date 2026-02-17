@@ -541,8 +541,7 @@ const platforms = {
 // =====================
 // Get JWT from localStorage or URL
 // =====================
-let token = localStorage.getItem("token");
-
+   
 // If OAuth just redirected back with token in query string, store it
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has("token")) {
