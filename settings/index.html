@@ -538,10 +538,28 @@ const platforms = {
   youtube: { name:"YouTube", logo:"https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg", oauth:`${API_URL}/auth/connect/youtube` }
 };
 
+// =====================
+// Get JWT from localStorage
+// =====================
+let token = localStorage.getItem("token");
+
+// If OAuth just redirected back and token is in query string, store it
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has("token")) {
+  token = urlParams.get("token");
+  localStorage.setItem("token", token);
+  // Clean the URL so ?token=XXX isn't visible
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
 async function loadConnections() {
   if (!token) return redirectLogin();
+
   try {
-    const res = await fetch(`${API_URL}/profile/connections?token=${encodeURIComponent(token)}`);
+    const res = await fetch(`${API_URL}/profile/connections`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
     if (!res.ok) {
       if (res.status === 401) return redirectLogin();
       throw new Error(`HTTP ${res.status}`);
@@ -580,12 +598,14 @@ async function loadConnections() {
 
 function connectPlatform(platform) {
   if (!platforms[platform] || !token) return redirectLogin();
-  // Open in a new browser tab
+
+  // Open OAuth in a new tab
   window.open(
     `${platforms[platform].oauth}?token=${encodeURIComponent(token)}`,
     "_blank"
   );
-  alert("A new tab has opened for OAuth. After connecting, refresh this page to see your connected accounts.");
+
+  alert("A new tab has opened for OAuth. After connecting, your session will refresh automatically.");
 }
 
 /* ========= CONNECTION BUTTONS ========= */
