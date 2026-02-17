@@ -645,9 +645,14 @@ function connectPlatform(platform) {
 // Disconnect platform
 // =====================
 async function disconnectPlatform(platform) {
-  if (!token) return redirectLogin();
+  if (!token) {
+    alert("You need to log in first.");
+    return window.location.href = "/auth/login/";
+  }
 
-  if (!confirm(`Are you sure you want to disconnect ${platforms[platform].name}?`)) return;
+  if (!confirm(`Are you sure you want to disconnect ${platformLogos[platform] ? platform.charAt(0).toUpperCase() + platform.slice(1) : platform}?`)) {
+    return;
+  }
 
   try {
     const res = await fetch(`${API_URL}/profile/connections/${platform}`, {
@@ -655,14 +660,19 @@ async function disconnectPlatform(platform) {
       headers: { Authorization: `Bearer ${token}` }
     });
 
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || `HTTP ${res.status}`);
+    }
 
-    loadConnections();
+    alert(`${platform.charAt(0).toUpperCase() + platform.slice(1)} disconnected successfully!`);
+    loadConnections(); // refresh the connections UI
   } catch (err) {
     console.error(`Failed to disconnect ${platform}`, err);
-    alert(`Failed to disconnect ${platforms[platform].name}.`);
+    alert(`Failed to disconnect ${platform.charAt(0).toUpperCase() + platform.slice(1)}: ${err.message}`);
   }
 }
+
 
 // =====================
 // Connection buttons (main panel)
