@@ -36,12 +36,18 @@
         <button id="copyLinkBtn" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm">Copy Profile Link</button>
       </div>
 
-      <!-- Servers & Socials -->
+      <!-- Servers, Connections & Socials -->
       <div class="flex-1 flex flex-col gap-4">
         <!-- Servers Owned -->
         <h3 class="text-2xl font-semibold mb-4">Servers Owned</h3>
         <div id="serversContainer" class="flex flex-col gap-3">
           <p class="text-zinc-400">Loading servers...</p>
+        </div>
+
+        <!-- Connections -->
+        <h3 class="text-2xl font-semibold mb-4 mt-6">Connections</h3>
+        <div id="connectionsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <p class="text-zinc-400 col-span-full">Loading connections...</p>
         </div>
 
         <!-- Socials Section -->
@@ -64,6 +70,7 @@ const API_URL = 'https://opslinkservers-backend.onrender.com/api';
 const profileContainer = document.getElementById('profileContainer');
 const serversContainer = document.getElementById('serversContainer');
 const socialsContainer = document.getElementById('socialsContainer');
+const connectionsContainer = document.getElementById('connectionsContainer');
 const loginBtn = document.getElementById('loginBtn');
 const copyLinkBtn = document.getElementById('copyLinkBtn');
 
@@ -74,6 +81,9 @@ const platformLogos = {
   github: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg',
   tiktok: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg',
   linkedin: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/linkedin.svg',
+  spotify: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/spotify.svg',
+  twitch: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitch.svg',
+  youtube: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg',
 };
 
 const platformColors = {
@@ -83,17 +93,30 @@ const platformColors = {
   github: 'bg-[#333]',
   tiktok: 'bg-[#69C9D0]',
   linkedin: 'bg-[#0A66C2]',
+  spotify: 'bg-[#1DB954]',
+  twitch: 'bg-[#9146FF]',
+  youtube: 'bg-[#FF0000]',
 };
 
 // Auth
-const token = localStorage.getItem('token');
+let token = localStorage.getItem('token');
 const loggedInUser = JSON.parse(localStorage.getItem('user') || 'null');
 
 loginBtn.textContent = token ? 'Logout' : 'Login';
 loginBtn.href = token ? '#' : '/auth/login/';
 loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
 
-// Fetch profile (current user from JWT)
+// Handle token in query string (OAuth redirect)
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has("token")) {
+  token = urlParams.get("token");
+  localStorage.setItem("token", token);
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+// ---------------------
+// Load Profile
+// ---------------------
 if (!token) {
   profileContainer.innerHTML = '<p class="text-zinc-400">Please login to view your profile.</p>';
 } else {
@@ -121,6 +144,9 @@ if (!token) {
 
       // Fetch servers
       fetchServers();
+
+      // Fetch connections
+      loadConnections();
     })
     .catch(err => {
       console.error(err);
@@ -128,7 +154,9 @@ if (!token) {
     });
 }
 
-// Render socials (read-only)
+// ---------------------
+// Render Socials
+// ---------------------
 function renderSocials(socials) {
   socialsContainer.innerHTML = '';
   if (!socials.length) {
@@ -155,7 +183,9 @@ function renderSocials(socials) {
   });
 }
 
-// Fetch servers owned
+// ---------------------
+// Fetch servers
+// ---------------------
 function fetchServers() {
   fetch(`${API_URL}/servers/mine`, { headers:{ Authorization: `Bearer ${token}` } })
     .then(res => res.json())
@@ -186,7 +216,55 @@ function fetchServers() {
     });
 }
 
-// Copy profile link
+// ---------------------
+// Fetch Connections
+// ---------------------
+async function loadConnections() {
+  connectionsContainer.innerHTML = '<p class="text-zinc-400 col-span-full">Loading connections...</p>';
+  try {
+    const res = await fetch(`${API_URL}/profile/connections`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) {
+      connectionsContainer.innerHTML = '<p class="text-red-500 col-span-full">Failed to load connections.</p>';
+      return;
+    }
+    const data = await res.json();
+    connectionsContainer.innerHTML = '';
+    if (!data.socials || !Object.keys(data.socials).length) {
+      connectionsContainer.innerHTML = '<p class="text-zinc-400 col-span-full">No connections found.</p>';
+      return;
+    }
+
+    Object.entries(data.socials).forEach(([platform, s]) => {
+      if (!s.connected) return;
+      const card = document.createElement('div');
+      card.className = `flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform duration-150 gap-2`;
+
+      let extraInfo = '';
+      if (platform === 'spotify' && s.currentlyPlaying) {
+        extraInfo = `<p class="text-sm text-zinc-300 truncate">🎵 Now Playing: ${s.currentlyPlaying.name} by ${s.currentlyPlaying.artists.join(', ')}</p>`;
+      }
+
+      card.innerHTML = `
+        <div class="flex items-center gap-3">
+          <img src="${platformLogos[platform]}" alt="${platform}" class="w-6 h-6" />
+          <span class="font-medium capitalize">${platform}</span>
+        </div>
+        <p class="text-sm text-zinc-300 truncate">${s.username}</p>
+        ${extraInfo}
+      `;
+
+      connectionsContainer.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error(err);
+    connectionsContainer.innerHTML = '<p class="text-red-500 col-span-full">Failed to load connections.</p>';
+  }
+}
+
+// ---------------------
+// Copy Profile Link
+// ---------------------
 copyLinkBtn.onclick = () => {
   if (!loggedInUser?._id) return;
   const shareLink = `${window.location.origin}/profile/`;
