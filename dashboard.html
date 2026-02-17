@@ -147,7 +147,11 @@ function renderServers() {
       ));
     }
 
-    btns.appendChild(actionBtn('Delete', 'bg-red-800', () => deleteServer(s._id)));
+if (currentUser?.role === 'management') {
+  btns.appendChild(
+    actionBtn('Delete', 'bg-red-800', () => deleteServer(s._id))
+  );
+}
 
     grid.appendChild(card);
   });
