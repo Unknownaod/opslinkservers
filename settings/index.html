@@ -535,6 +535,8 @@ loadSocials();
 const connectionsList = document.getElementById('connections-list');
 const connectionsEmpty = document.getElementById('connections-empty');
 
+const token = localStorage.getItem("token");
+
 // Supported platforms (must match backend OAUTH_CONFIG keys)
 const platforms = {
   spotify: {
@@ -618,13 +620,26 @@ async function loadConnections() {
 // CONNECT PLATFORM (OAuth Start)
 // ===============================
 function connectPlatform(platform) {
-  if (!platforms[platform]) return;
+  if (!platforms[platform] || !token) {
+    redirectLogin();
+    return;
+  }
 
-  window.open(
-    platforms[platform].oauth,
+  const oauthUrl = `${platforms[platform].oauth}?token=${token}`;
+
+  const popup = window.open(
+    oauthUrl,
     "_blank",
     "width=600,height=700"
   );
+
+  // Auto-refresh connections when popup closes
+  const timer = setInterval(() => {
+    if (popup.closed) {
+      clearInterval(timer);
+      loadConnections();
+    }
+  }, 1000);
 }
 
 // ===============================
