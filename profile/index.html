@@ -62,7 +62,6 @@
 const API_URL = 'https://opslinkservers-backend.onrender.com/api';
 const profileContainer = document.getElementById('profileContainer');
 const serversContainer = document.getElementById('serversContainer');
-const socialsContainer = document.getElementById('socialsContainer');
 const connectionsContainer = document.getElementById('connectionsContainer');
 const loginBtn = document.getElementById('loginBtn');
 const copyLinkBtn = document.getElementById('copyLinkBtn');
@@ -148,36 +147,6 @@ function renderProfile(data) {
     `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
 }
 
-// ---------------------
-// Render Socials
-// ---------------------
-function renderSocials(socials) {
-  socialsContainer.innerHTML = '';
-  if (!socials.length) {
-    socialsContainer.innerHTML = '<p class="text-zinc-400 col-span-full">No socials added.</p>';
-    return;
-  }
-
-  socials.forEach(s => {
-    const card = document.createElement('div');
-    card.className = `flex items-center gap-3 p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform duration-150`;
-
-    const logo = platformLogos[s.platform] || '';
-    const colorClass = platformColors[s.platform] || 'bg-zinc-600';
-
-    card.innerHTML = `
-      <div class="w-1 h-full ${colorClass} rounded-l-lg"></div>
-      <img src="${logo}" alt="${s.platform}" class="w-6 h-6" />
-      <a href="${s.profileUrl}" target="_blank"
-         class="ml-2 text-white font-medium truncate max-w-[140px]"
-         title="${s.username}">
-         ${s.username}
-      </a>
-    `;
-
-    socialsContainer.appendChild(card);
-  });
-}
 
 // ---------------------
 // Load Public OAuth Connections
