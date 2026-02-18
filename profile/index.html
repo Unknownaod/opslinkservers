@@ -131,11 +131,19 @@ const viewingOwnProfile = !profileIdFromUrl;
 // ---------------------
 async function loadProfile() {
   try {
-    let endpoint = profileIdFromUrl
-      ? `${API_URL}/profile/${profileIdFromUrl}`
-      : `${API_URL}/profile`;
+    let endpoint;
+    let headers = {};
 
-    const headers = token && !profileIdFromUrl ? { Authorization: `Bearer ${token}` } : {};
+    if (profileIdFromUrl) {
+      endpoint = `${API_URL}/profile/${profileIdFromUrl}`;
+    } else {
+      if (!token) {
+        profileContainer.innerHTML = '<p class="text-zinc-400">Please login to view your profile.</p>';
+        return;
+      }
+      endpoint = `${API_URL}/profile`;
+      headers.Authorization = `Bearer ${token}`;
+    }
 
     const res = await fetch(endpoint, { headers });
     if (!res.ok) throw new Error('Profile fetch failed');
@@ -145,8 +153,11 @@ async function loadProfile() {
 
     renderProfile(data);
 
-    // Render combined connections publicly
-    renderConnections(data);
+    // Render public socials
+    renderSocials(data.socials || []);
+
+    // Always load OAuth connections if token exists
+    if (token) await loadOAuthConnections();
 
     if (viewingOwnProfile && token) fetchServers();
     else serversContainer.innerHTML = '';
@@ -215,47 +226,54 @@ function renderSocials(socials) {
 }
 
 // ---------------------
-// Render Connections (OAuth + normal socials)
+// Load OAuth Connections
 // ---------------------
-function renderConnections(data) {
-  connectionsContainer.innerHTML = '';
+async function loadOAuthConnections() {
+  if (!token) return;
 
-  const connections = [];
-
-  // 1️⃣ OAuth connections from user.socials
-  if (data.socials && Array.isArray(data.socials)) {
-    data.socials.forEach(s => {
-      connections.push({
-        platform: s.platform,
-        username: s.username || s.handle || '',
-        profileUrl: s.profileUrl || s.url || ''
-      });
+  try {
+    const res = await fetch(`${API_URL}/profile/connections`, {
+      headers: { Authorization: `Bearer ${token}` }
     });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const data = await res.json();
+    const socials = data.socials || [];
+
+    connectionsContainer.innerHTML = '';
+
+    // Filter connected OAuth socials only
+    const connectedSocials = Object.values(socials).filter(s => s.connected && s.username);
+
+    if (!connectedSocials.length) {
+      connectionsContainer.innerHTML = '<p class="text-zinc-400">No connections found.</p>';
+      return;
+    }
+
+    connectedSocials.forEach(s => {
+      const card = document.createElement('div');
+      card.className = 'flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform gap-2';
+
+      const displayUsername = s.profileUrl
+        ? `<a href="${s.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>`
+        : s.username;
+
+      card.innerHTML = `
+        <div class="flex items-center gap-3">
+          <img src="${platformLogos[s.platform] || ''}" class="w-6 h-6" alt="${s.platform}" />
+          <span class="font-medium capitalize">${s.platform}</span>
+        </div>
+        <p class="text-sm text-zinc-300 truncate">${displayUsername}</p>
+      `;
+
+      connectionsContainer.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error('Failed to load OAuth connections:', err);
+    connectionsContainer.innerHTML = '<p class="text-red-500">Failed to load connections.</p>';
   }
-
-  if (!connections.length) {
-    connectionsContainer.innerHTML = '<p class="text-zinc-400">No connections found.</p>';
-    return;
-  }
-
-  connections.forEach(s => {
-    const card = document.createElement('div');
-    card.className = 'flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform gap-2';
-
-    const displayUsername = s.profileUrl
-      ? `<a href="${s.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>`
-      : s.username;
-
-    card.innerHTML = `
-      <div class="flex items-center gap-3">
-        <img src="${platformLogos[s.platform] || ''}" class="w-6 h-6" alt="${s.platform}" />
-        <span class="font-medium capitalize">${s.platform}</span>
-      </div>
-      <p class="text-sm text-zinc-300 truncate">${displayUsername}</p>
-    `;
-
-    connectionsContainer.appendChild(card);
-  });
 }
 
 // ---------------------
@@ -297,7 +315,7 @@ copyLinkBtn.onclick = async () => {
     let userId = profileIdFromUrl;
 
     if (!userId) {
-      const res = await fetch(`${API_URL}/profile`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      const res = await fetch(`${API_URL}/profile`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       userId = data._id;
     }
@@ -317,6 +335,7 @@ copyLinkBtn.onclick = async () => {
 // Init
 loadProfile();
 </script>
+
 
 
 </body>
