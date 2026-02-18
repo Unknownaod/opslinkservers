@@ -542,7 +542,6 @@ const platforms = {
 // Get JWT from localStorage or URL
 // =====================
 const urlParams = new URLSearchParams(window.location.search);
-let token = localStorage.getItem("token");
 
 if (urlParams.has("token")) {
   token = urlParams.get("token");
