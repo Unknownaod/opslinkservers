@@ -154,15 +154,14 @@ async function loadProfile() {
 
     renderProfile(data);
 
-    // Always render public socials as connections
+    // Render public socials
     renderConnections(data.socials || []);
 
-    if (viewingOwnProfile && token) {
-      fetchServers();
-      loadPrivateConnections(); // loads private OAuth connections
-    } else {
-      serversContainer.innerHTML = '';
-    }
+    // Always try to load OAuth connections if token exists
+    if (token) await loadOAuthConnections(data._id);
+
+    if (viewingOwnProfile && token) fetchServers();
+    else serversContainer.innerHTML = '';
 
   } catch (err) {
     console.error(err);
@@ -231,7 +230,7 @@ function renderSocials(socials) {
 }
 
 // ---------------------
-// Render Connections (Public)
+// Render Connections (Public + OAuth)
 // ---------------------
 function renderConnections(socials) {
   connectionsContainer.innerHTML = '';
@@ -305,21 +304,36 @@ function fetchServers() {
 }
 
 // ---------------------
-// Load Private OAuth Connections (Own Only)
+// Load OAuth Connections
 // ---------------------
-async function loadPrivateConnections() {
+async function loadOAuthConnections(userId) {
+  if (!token) return;
+
   try {
-    const res = await fetch(`${API_URL}/profile/connections`, {
+    const endpoint = viewingOwnProfile
+      ? `${API_URL}/profile/connections`
+      : `${API_URL}/profile/${userId}/connections-public`; // optional public endpoint if implemented
+
+    const res = await fetch(endpoint, {
       headers: { Authorization: `Bearer ${token}` }
     });
-
     if (!res.ok) return;
 
     const data = await res.json();
-    console.log("Private OAuth connections:", data);
-    // Optional: merge private connections if needed
+    if (!data.socials?.length) return;
+
+    // Merge with existing connections without duplicating
+    const existingConnections = Array.from(connectionsContainer.children)
+      .map(c => c.querySelector('p')?.textContent);
+
+    const newConnections = data.socials.filter(
+      s => s.connected && s.username && !existingConnections.includes(s.username)
+    );
+
+    if (newConnections.length) renderConnections(newConnections);
+
   } catch (err) {
-    console.error("Failed to load private connections:", err);
+    console.error('Failed to load OAuth connections:', err);
   }
 }
 
@@ -357,6 +371,7 @@ copyLinkBtn.onclick = async () => {
 // Init
 loadProfile();
 </script>
+
 
 
 </body>
