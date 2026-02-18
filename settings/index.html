@@ -541,18 +541,17 @@ const platforms = {
 // =====================
 // Get JWT from localStorage or URL
 // =====================
-   
-// If OAuth just redirected back with token in query string, store it
 const urlParams = new URLSearchParams(window.location.search);
+let token = localStorage.getItem("token");
+
 if (urlParams.has("token")) {
   token = urlParams.get("token");
   localStorage.setItem("token", token);
-  // Clean the URL so ?token=XXX isn't visible
   window.history.replaceState({}, document.title, window.location.pathname);
 }
 
 // =====================
-// Load connections
+// Load connections (OAuth ONLY)
 // =====================
 async function loadConnections() {
   if (!token) return redirectLogin();
@@ -569,71 +568,83 @@ async function loadConnections() {
 
     const data = await res.json();
     const socials = data.socials || [];
+
+    // 🔥 FILTER: only platforms that exist AND have OAuth
+    const oauthSocials = socials.filter(s =>
+      platforms[s.platform] && platforms[s.platform].oauth
+    );
+
     connectionsList.innerHTML = '';
 
-    if (!socials.length) {
+    if (!oauthSocials.length) {
       connectionsEmpty.classList.remove('hidden');
-    } else {
-      connectionsEmpty.classList.add('hidden');
-
-      socials.forEach(s => {
-        const card = document.createElement('div');
-        card.className = "bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex items-center justify-between";
-
-        // Connected or not
-        if (s.connected) {
-          card.innerHTML = `
-            <div class="flex items-center gap-3">
-              <img src="${platforms[s.platform]?.logo || ''}" class="w-6 h-6" />
-              <div>
-                <p class="font-medium">${s.username}</p>
-                <a href="${s.profileUrl}" target="_blank" class="text-xs text-indigo-400 hover:underline">View Profile</a>
-              </div>
-            </div>
-            <div class="flex gap-2 items-center">
-              <span class="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded">Connected</span>
-              <button class="text-xs px-2 py-1 rounded bg-red-600 hover:bg-red-500 text-white">Disconnect</button>
-            </div>
-          `;
-          const disconnectBtn = card.querySelector("button");
-          disconnectBtn.onclick = () => disconnectPlatform(s.platform);
-        } else {
-          // Show connect button if not connected
-          card.innerHTML = `
-            <div class="flex items-center gap-3">
-              <img src="${platforms[s.platform]?.logo || ''}" class="w-6 h-6" />
-              <div>
-                <p class="font-medium">${platforms[s.platform]?.name}</p>
-              </div>
-            </div>
-            <button class="text-xs px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white">Connect</button>
-          `;
-          const connectBtn = card.querySelector("button");
-          connectBtn.onclick = () => connectPlatform(s.platform);
-        }
-
-        connectionsList.appendChild(card);
-      });
+      return;
     }
+
+    connectionsEmpty.classList.add('hidden');
+
+    oauthSocials.forEach(s => {
+      const card = document.createElement('div');
+      card.className =
+        "bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex items-center justify-between";
+
+      if (s.connected) {
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <img src="${platforms[s.platform].logo}" class="w-6 h-6" />
+            <div>
+              <p class="font-medium">${s.username}</p>
+              <a href="${s.profileUrl}" target="_blank"
+                class="text-xs text-indigo-400 hover:underline">View Profile</a>
+            </div>
+          </div>
+          <div class="flex gap-2 items-center">
+            <span class="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded">Connected</span>
+            <button class="text-xs px-2 py-1 rounded bg-red-600 hover:bg-red-500 text-white">
+              Disconnect
+            </button>
+          </div>
+        `;
+
+        card.querySelector("button").onclick = () =>
+          disconnectPlatform(s.platform);
+
+      } else {
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <img src="${platforms[s.platform].logo}" class="w-6 h-6" />
+            <p class="font-medium">${platforms[s.platform].name}</p>
+          </div>
+          <button class="text-xs px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white">
+            Connect
+          </button>
+        `;
+
+        card.querySelector("button").onclick = () =>
+          connectPlatform(s.platform);
+      }
+
+      connectionsList.appendChild(card);
+    });
+
   } catch (err) {
     console.error('Failed to load connections', err);
-    connectionsList.innerHTML = `<p class="text-red-500">Failed to load connections.</p>`;
+    connectionsList.innerHTML =
+      `<p class="text-red-500">Failed to load connections.</p>`;
   }
 }
-
 
 // =====================
 // Connect platform (OAuth)
 // =====================
 function connectPlatform(platform) {
-  if (!platforms[platform] || !token) return redirectLogin();
+  if (!platforms[platform]?.oauth || !token) return redirectLogin();
 
   const oauthUrl = `${platforms[platform].oauth}?token=${encodeURIComponent(token)}`;
   const newTab = window.open(oauthUrl, "_blank");
 
-  if (!newTab) return alert("Popup blocked. Please allow popups for this site.");
+  if (!newTab) return alert("Popup blocked. Please allow popups.");
 
-  // Poll the new tab; when it closes, refresh connections automatically
   const timer = setInterval(() => {
     if (newTab.closed) {
       clearInterval(timer);
@@ -646,49 +657,28 @@ function connectPlatform(platform) {
 // Disconnect platform
 // =====================
 async function disconnectPlatform(platform) {
-  if (!token) {
-    // Redirect if the user is not logged in
-    alert("You need to log in first.");
-    return window.location.href = "/auth/login/";
-  }
+  if (!token) return redirectLogin();
 
-  // Show confirmation dialog to the user
-  const platformName = platforms[platform]?.name || platform.charAt(0).toUpperCase() + platform.slice(1);
-  if (!confirm(`Are you sure you want to disconnect ${platformName}?`)) {
-    return;
-  }
+  const name = platforms[platform]?.name || platform;
+  if (!confirm(`Disconnect ${name}?`)) return;
 
   try {
-    // Make the DELETE request to the backend API
     const res = await fetch(`${API_URL}/auth/connections/${platform}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` }
     });
 
-    if (!res.ok) {
-      // If the response isn't okay, try to parse the error message
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(errData.message || `HTTP ${res.status}`);
-    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    // Success message to inform the user that the platform was disconnected
-    alert(`${platformName} disconnected successfully!`);
-
-    // Refresh the list of connections in the UI
-    loadConnections(); 
+    loadConnections();
   } catch (err) {
-    // Log the error to the console for debugging
-    console.error(`Failed to disconnect ${platform}`, err);
-
-    // Show the error message to the user
-    alert(`Failed to disconnect ${platformName}: ${err.message}`);
+    console.error(err);
+    alert(`Failed to disconnect ${name}`);
   }
 }
 
-
-
 // =====================
-// Connection buttons (main panel)
+// OAuth connect buttons (main panel)
 // =====================
 const connectButtonsContainer = document.createElement("div");
 connectButtonsContainer.className = "flex flex-wrap gap-3 mt-4";
@@ -697,22 +687,25 @@ Object.keys(platforms).forEach(p => {
   if (!platforms[p].oauth) return;
 
   const btn = document.createElement("button");
-  btn.className = "bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded text-white flex items-center gap-2";
-  btn.innerHTML = `<img src="${platforms[p].logo}" class="w-4 h-4"/> Connect ${platforms[p].name}`;
+  btn.className =
+    "bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded text-white flex items-center gap-2";
+  btn.innerHTML = `
+    <img src="${platforms[p].logo}" class="w-4 h-4" />
+    Connect ${platforms[p].name}
+  `;
   btn.onclick = () => connectPlatform(p);
   connectButtonsContainer.appendChild(btn);
 });
 
-connectionsList.parentNode.insertBefore(connectButtonsContainer, connectionsList);
-
+connectionsList.parentNode.insertBefore(
+  connectButtonsContainer,
+  connectionsList
+);
 
 // =====================
 // Initial load
 // =====================
 loadConnections();
-
-
-
 
 </script>
 
