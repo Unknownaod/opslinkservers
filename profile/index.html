@@ -105,7 +105,7 @@ const profileIdFromUrl = getProfileId();
 function checkLogin() {
   const token = localStorage.getItem('token');
   if (token) {
-    loginBtn.textContent = 'Logged In';
+    loginBtn.textContent = 'Log Out';
     loginBtn.disabled = true;
   } else {
     loginBtn.textContent = 'Login';
