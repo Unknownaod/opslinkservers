@@ -123,6 +123,7 @@ function getProfileId() {
   const params = new URLSearchParams(window.location.search);
   return params.get('id');
 }
+
 const profileIdFromUrl = getProfileId();
 const viewingOwnProfile = !profileIdFromUrl;
 
@@ -153,7 +154,7 @@ async function loadProfile() {
 
     renderProfile(data);
 
-    // Render manual/social links
+    // Render public socials (non-OAuth)
     renderSocials(data.socials || []);
 
     // Render OAuth connections
@@ -193,13 +194,13 @@ function renderProfile(data) {
 }
 
 // ---------------------
-// Render Socials (manual/social links)
+// Render Socials (non-OAuth)
 // ---------------------
 function renderSocials(socials) {
   socialsContainer.innerHTML = '';
-  const manualPlatforms = ['discord', 'twitter', 'instagram', 'tiktok', 'linkedin'];
-  const filtered = (socials || []).filter(s => manualPlatforms.includes(s.platform));
+  const nonOAuthPlatforms = ['discord','twitter','instagram','tiktok','linkedin'];
 
+  const filtered = (socials || []).filter(s => nonOAuthPlatforms.includes(s.platform));
   if (!filtered.length) {
     socialsContainer.innerHTML = '<p class="text-zinc-400 col-span-full">No socials added.</p>';
     return;
@@ -211,18 +212,20 @@ function renderSocials(socials) {
       flex items-center gap-3 p-3 border border-zinc-700 rounded-lg
       hover:scale-[1.02] transition-transform duration-150
     `;
+
     const logo = platformLogos[s.platform] || '';
     const colorClass = platformColors[s.platform] || 'bg-zinc-600';
 
     card.innerHTML = `
       <div class="w-1 h-full ${colorClass} rounded-l-lg"></div>
       <img src="${logo}" alt="${s.platform}" class="w-6 h-6" />
-      <a href="${s.url || s.profileUrl || '#'}" target="_blank"
+      <a href="${s.url}" target="_blank"
          class="ml-2 text-white font-medium truncate max-w-[140px]"
-         title="${s.handle || s.username || ''}">
-         ${s.handle || s.username || ''}
+         title="${s.handle}">
+         ${s.handle}
       </a>
     `;
+
     socialsContainer.appendChild(card);
   });
 }
@@ -232,14 +235,15 @@ function renderSocials(socials) {
 // ---------------------
 function renderOAuthConnections(socialsObject) {
   connectionsContainer.innerHTML = '';
+
   const oauthPlatforms = ['spotify', 'github', 'twitch', 'youtube'];
 
   const connections = Object.entries(socialsObject || {})
     .filter(([platform, info]) => oauthPlatforms.includes(platform) && info.connected)
     .map(([platform, info]) => ({
       platform,
-      handle: info.username || info.handle || '',
-      profileUrl: info.profileUrl || ''
+      username: info.username || info.handle || '',
+      profileUrl: info.profileUrl || info.url || ''
     }));
 
   if (!connections.length) {
@@ -249,9 +253,9 @@ function renderOAuthConnections(socialsObject) {
   }
 
   connections.forEach(s => {
-    const displayHandle = s.profileUrl
-      ? `<a href="${s.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${s.handle}</a>`
-      : s.handle;
+    const displayName = s.profileUrl
+      ? `<a href="${s.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>`
+      : s.username;
 
     const card = document.createElement('div');
     card.className =
@@ -262,7 +266,7 @@ function renderOAuthConnections(socialsObject) {
         <img src="${platformLogos[s.platform] || ''}" class="w-6 h-6" alt="${s.platform}" />
         <span class="font-medium capitalize">${s.platform}</span>
       </div>
-      <p class="text-sm text-zinc-300 truncate">${displayHandle}</p>
+      <p class="text-sm text-zinc-300 truncate">${displayName}</p>
     `;
 
     connectionsContainer.appendChild(card);
@@ -273,7 +277,9 @@ function renderOAuthConnections(socialsObject) {
 // Fetch Servers (Own Only)
 // ---------------------
 function fetchServers() {
-  fetch(`${API_URL}/servers/mine`, { headers: { Authorization: `Bearer ${token}` } })
+  fetch(`${API_URL}/servers/mine`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
     .then(res => res.json())
     .then(servers => {
       serversContainer.innerHTML = '';
@@ -295,12 +301,15 @@ function fetchServers() {
           <p class="text-sm text-zinc-300 mb-1">Status: ${s.status}</p>
           ${s.status === 'approved'
             ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>`
-            : ''}
+            : '' }
         `;
+
         serversContainer.appendChild(div);
       });
     })
-    .catch(() => { serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>'; });
+    .catch(() => {
+      serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
+    });
 }
 
 // ---------------------
@@ -309,8 +318,11 @@ function fetchServers() {
 copyLinkBtn.onclick = async () => {
   try {
     let userId = profileIdFromUrl;
+
     if (!userId) {
-      const res = await fetch(`${API_URL}/profile`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const data = await res.json();
       userId = data._id;
     }
@@ -319,10 +331,11 @@ copyLinkBtn.onclick = async () => {
     await navigator.clipboard.writeText(shareLink);
 
     copyLinkBtn.textContent = 'Link Copied!';
-    setTimeout(() => copyLinkBtn.textContent = 'Copy Profile Link', 2000);
+    setTimeout(() => { copyLinkBtn.textContent = 'Copy Profile Link'; }, 2000);
+
   } catch {
     copyLinkBtn.textContent = 'Failed to copy';
-    setTimeout(() => copyLinkBtn.textContent = 'Copy Profile Link', 2000);
+    setTimeout(() => { copyLinkBtn.textContent = 'Copy Profile Link'; }, 2000);
   }
 };
 
