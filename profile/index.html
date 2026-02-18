@@ -167,11 +167,24 @@ async function loadPublicConnections(userId) {
 
     socials.forEach(s => {
       const card = document.createElement('div');
-      card.className = 'flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform gap-2';
+      card.className = 'flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform gap-2 relative group';
 
       const displayUsername = s.profileUrl
         ? `<a href="${s.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>`
         : s.username;
+
+      // Determine if verified
+      const verifiedPlatforms = ['spotify', 'twitch', 'youtube', 'github'];
+      const isVerified = verifiedPlatforms.includes(s.platform.toLowerCase());
+
+      // Tooltip HTML
+      const tooltip = `
+        <div class="absolute top-0 right-0 mt-1 mr-1 opacity-0 group-hover:opacity-100 transition-opacity text-xs bg-black/80 text-white px-2 py-1 rounded z-10 whitespace-nowrap">
+          ${isVerified
+            ? '⭐ Connected Verified'
+            : '⚠ Connection Not Verified'}
+        </div>
+      `;
 
       card.innerHTML = `
         <div class="flex items-center gap-3">
@@ -179,6 +192,7 @@ async function loadPublicConnections(userId) {
           <span class="font-medium capitalize">${s.platform}</span>
         </div>
         <p class="text-sm text-zinc-300 truncate">${displayUsername}</p>
+        ${tooltip}
       `;
 
       connectionsContainer.appendChild(card);
@@ -189,6 +203,7 @@ async function loadPublicConnections(userId) {
     connectionsContainer.innerHTML = '<p class="text-red-500">Failed to load connections.</p>';
   }
 }
+
 
 // ---------------------
 // Load Public Servers
