@@ -98,7 +98,9 @@ const platformColors = {
   youtube: 'bg-[#FF0000]',
 };
 
-// Auth
+// ---------------------
+// AUTH
+// ---------------------
 let token = localStorage.getItem('token');
 const loggedInUser = JSON.parse(localStorage.getItem('user') || 'null');
 
@@ -106,7 +108,7 @@ loginBtn.textContent = token ? 'Logout' : 'Login';
 loginBtn.href = token ? '#' : '/auth/login/';
 loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
 
-// Handle token in query string (OAuth redirect)
+// Handle OAuth token
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has("token")) {
   token = urlParams.get("token");
@@ -115,49 +117,85 @@ if (urlParams.has("token")) {
 }
 
 // ---------------------
-// Get profile ID from URL
+// Detect Profile ID From URL
 // ---------------------
-const pathParts = window.location.pathname.split('/');
-const profileId = pathParts[2] || null; // /profile/{id}
+function getProfileIdFromUrl() {
+  const pathParts = window.location.pathname.split('/').filter(Boolean);
+  // /profile/{id}
+  if (pathParts.length === 2 && pathParts[0] === 'profile') {
+    return pathParts[1];
+  }
+  return null;
+}
+
+const profileIdFromUrl = getProfileIdFromUrl();
+const viewingOwnProfile = !profileIdFromUrl;
 
 // ---------------------
 // Load Profile
 // ---------------------
-if (!profileId) {
-  profileContainer.innerHTML = '<p class="text-zinc-400">No profile selected.</p>';
-} else {
-  fetch(`${API_URL}/profile/${profileId}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
-    .then(res => res.json())
-    .then(data => {
-      if (!data?._id) {
-        profileContainer.innerHTML = '<p class="text-red-500">Failed to load profile.</p>';
+async function loadProfile() {
+  try {
+    let endpoint;
+    let headers = {};
+
+    if (profileIdFromUrl) {
+      // Public profile route
+      endpoint = `${API_URL}/profile/${profileIdFromUrl}`;
+    } else {
+      // Own profile
+      if (!token) {
+        profileContainer.innerHTML = '<p class="text-zinc-400">Please login to view your profile.</p>';
         return;
       }
+      endpoint = `${API_URL}/profile`;
+      headers.Authorization = `Bearer ${token}`;
+    }
 
-      // Fill profile info
-      document.getElementById('profileUsername').textContent = data.discordUsername || '';
-      document.getElementById('profileTag').textContent = data.discordTag ? `#${data.discordTag}` : '';
-      const roleColor = data.role === 'admin' ? 'text-red-500' :
-                        data.role === 'management' ? 'text-orange-400' :
-                        'text-blue-400';
-      document.getElementById('profileRole').innerHTML = `Role: <span class="font-semibold ${roleColor}">${data.role}</span>`;
-      document.getElementById('profileEmail').textContent = data.email ? `Email: ${data.email}` : '';
-      document.getElementById('profileVerified').textContent = data.isVerified !== undefined ? `Verified: ${data.isVerified ? 'Yes' : 'No'}` : '';
-      document.getElementById('profileID').innerHTML = `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
+    const res = await fetch(endpoint, { headers });
+    if (!res.ok) throw new Error('Profile fetch failed');
 
-      // Render socials
-      renderSocials(data.socials || []);
+    const data = await res.json();
+    if (!data?._id) throw new Error('Invalid profile');
 
-      // Fetch servers
+    renderProfile(data);
+
+    // Only load private data if viewing your own profile
+    if (viewingOwnProfile && token) {
       fetchServers();
-
-      // Fetch connections
       loadConnections();
-    })
-    .catch(err => {
-      console.error(err);
-      profileContainer.innerHTML = '<p class="text-red-500">Failed to load profile.</p>';
-    });
+    } else {
+      serversContainer.innerHTML = '';
+      connectionsContainer.innerHTML = '';
+    }
+
+  } catch (err) {
+    console.error(err);
+    profileContainer.innerHTML = '<p class="text-red-500">Failed to load profile.</p>';
+  }
+}
+
+function renderProfile(data) {
+  document.getElementById('profileUsername').textContent = data.discordUsername || '';
+  document.getElementById('profileTag').textContent = data.discordTag ? `#${data.discordTag}` : '';
+
+  const roleColor = data.role === 'admin' ? 'text-red-500' :
+                    data.role === 'management' ? 'text-orange-400' :
+                    'text-blue-400';
+
+  document.getElementById('profileRole').innerHTML =
+    `Role: <span class="font-semibold ${roleColor}">${data.role}</span>`;
+
+  document.getElementById('profileEmail').textContent =
+    viewingOwnProfile && data.email ? `Email: ${data.email}` : '';
+
+  document.getElementById('profileVerified').textContent =
+    data.isVerified !== undefined ? `Verified: ${data.isVerified ? 'Yes' : 'No'}` : '';
+
+  document.getElementById('profileID').innerHTML =
+    `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
+
+  renderSocials(data.socials || []);
 }
 
 // ---------------------
@@ -173,16 +211,21 @@ function renderSocials(socials) {
   socials.forEach(s => {
     const card = document.createElement('div');
     card.className = `
-      flex items-center gap-3 p-3 border border-zinc-700 rounded-lg overflow-hidden
+      flex items-center gap-3 p-3 border border-zinc-700 rounded-lg
       hover:scale-[1.02] transition-transform duration-150
     `;
+
     const logo = platformLogos[s.platform] || '';
     const colorClass = platformColors[s.platform] || 'bg-zinc-600';
 
     card.innerHTML = `
       <div class="w-1 h-full ${colorClass} rounded-l-lg"></div>
       <img src="${logo}" alt="${s.platform}" class="w-6 h-6" />
-      <a href="${s.url}" target="_blank" class="ml-2 text-white font-medium truncate max-w-[140px]" title="${s.handle}">${s.handle}</a>
+      <a href="${s.url}" target="_blank"
+         class="ml-2 text-white font-medium truncate max-w-[140px]"
+         title="${s.handle}">
+         ${s.handle}
+      </a>
     `;
 
     socialsContainer.appendChild(card);
@@ -190,10 +233,12 @@ function renderSocials(socials) {
 }
 
 // ---------------------
-// Fetch servers
+// Fetch Servers (Own Only)
 // ---------------------
 function fetchServers() {
-  fetch(`${API_URL}/servers/mine`, { headers:{ Authorization: `Bearer ${token}` } })
+  fetch(`${API_URL}/servers/mine`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
     .then(res => res.json())
     .then(servers => {
       serversContainer.innerHTML = '';
@@ -201,6 +246,7 @@ function fetchServers() {
         serversContainer.innerHTML = '<p class="text-zinc-400">No servers found.</p>';
         return;
       }
+
       servers.forEach(s => {
         const div = document.createElement('div');
         div.className = `p-4 rounded border ${
@@ -208,83 +254,65 @@ function fetchServers() {
           s.status === 'denied' ? 'border-red-500 bg-red-900/30' :
           'border-zinc-700 bg-zinc-900/50'
         }`;
+
         div.innerHTML = `
           <h4 class="font-semibold text-lg">${s.name}</h4>
           <p class="text-sm text-zinc-300 mb-1">Status: ${s.status}</p>
-          ${s.status === 'approved' ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>` : ''}
+          ${s.status === 'approved'
+            ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>`
+            : ''}
         `;
+
         serversContainer.appendChild(div);
       });
     })
-    .catch(err => {
-      console.error(err);
+    .catch(() => {
       serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
     });
 }
 
 // ---------------------
-// Fetch Connections
+// Fetch Connections (Own Only)
 // ---------------------
 async function loadConnections() {
   connectionsContainer.innerHTML = '<p class="text-zinc-400 col-span-full">Loading connections...</p>';
+
   try {
-    const res = await fetch(`${API_URL}/profile/connections`, { headers: { Authorization: `Bearer ${token}` } });
-    if (!res.ok) {
-      connectionsContainer.innerHTML = '<p class="text-red-500 col-span-full">Failed to load connections.</p>';
-      return;
-    }
+    const res = await fetch(`${API_URL}/profile/connections`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!res.ok) throw new Error();
 
     const data = await res.json();
     connectionsContainer.innerHTML = '';
 
-    if (!data.socials || !data.socials.length) {
+    if (!data.socials?.length) {
       connectionsContainer.innerHTML = '<p class="text-zinc-400 col-span-full">No connections found.</p>';
       return;
     }
 
     data.socials.forEach(s => {
-      if (!s.connected) return;
-      const platform = s.platform;
-      if (!s.username) return;
+      if (!s.connected || !s.username) return;
 
       const card = document.createElement('div');
-      card.className = `flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform duration-150 gap-2`;
-
-      let extraInfo = '';
-      if (platform === 'spotify' && s.currentlyPlaying) {
-        extraInfo = `<p class="text-sm text-zinc-300 truncate">🎵 Now Playing: ${s.currentlyPlaying.name} by ${s.currentlyPlaying.artists.join(', ')}</p>`;
-      }
-
-      let profileLink = s.profileUrl || '';
-      if (!profileLink) {
-        switch (platform) {
-          case 'github': profileLink = `https://github.com/${s.username}`; break;
-          case 'twitter': profileLink = `https://twitter.com/${s.username}`; break;
-          case 'linkedin': profileLink = `https://linkedin.com/in/${s.username}`; break;
-          case 'tiktok': profileLink = `https://www.tiktok.com/@${s.username}`; break;
-          default: profileLink = '';
-        }
-      }
-
-      const displayUsername = profileLink
-        ? `<a href="${profileLink}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>`
-        : s.username;
+      card.className =
+        `flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform gap-2`;
 
       card.innerHTML = `
         <div class="flex items-center gap-3">
-          <img src="${platformLogos[platform] || ''}" alt="${platform}" class="w-6 h-6" />
-          <span class="font-medium capitalize">${platform}</span>
+          <img src="${platformLogos[s.platform] || ''}" class="w-6 h-6" />
+          <span class="font-medium capitalize">${s.platform}</span>
         </div>
-        <p class="text-sm text-zinc-300 truncate">${displayUsername}</p>
-        ${extraInfo}
+        <p class="text-sm text-zinc-300 truncate">${s.username}</p>
       `;
 
       connectionsContainer.appendChild(card);
     });
 
-  } catch (err) {
-    console.error(err);
-    connectionsContainer.innerHTML = '<p class="text-red-500 col-span-full">Failed to load connections.</p>';
+  } catch {
+    connectionsContainer.innerHTML =
+      '<p class="text-red-500 col-span-full">Failed to load connections.</p>';
   }
 }
 
@@ -292,18 +320,20 @@ async function loadConnections() {
 // Copy Profile Link
 // ---------------------
 copyLinkBtn.onclick = async () => {
-  if (!token) return;
-
   try {
-    const res = await fetch(`${API_URL}/profile/${profileId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    let userId;
 
-    if (!res.ok) throw new Error('Failed to fetch profile');
-    const data = await res.json();
-    if (!data?._id) throw new Error('No user ID returned');
+    if (profileIdFromUrl) {
+      userId = profileIdFromUrl;
+    } else {
+      const res = await fetch(`${API_URL}/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      userId = data._id;
+    }
 
-    const shareLink = `${window.location.origin}/profile/${data._id}`;
+    const shareLink = `${window.location.origin}/profile/${userId}`;
     await navigator.clipboard.writeText(shareLink);
 
     copyLinkBtn.textContent = 'Link Copied!';
@@ -311,15 +341,18 @@ copyLinkBtn.onclick = async () => {
       copyLinkBtn.textContent = 'Copy Profile Link';
     }, 2000);
 
-  } catch (err) {
-    console.error('Failed to copy profile link:', err);
+  } catch {
     copyLinkBtn.textContent = 'Failed to copy';
     setTimeout(() => {
       copyLinkBtn.textContent = 'Copy Profile Link';
     }, 2000);
   }
 };
+
+// Init
+loadProfile();
 </script>
+
 
 
 </body>
