@@ -100,6 +100,20 @@ function getProfileId() {
 const profileIdFromUrl = getProfileId();
 
 // ---------------------
+// Check if user is logged in
+// ---------------------
+function checkLogin() {
+  const token = localStorage.getItem('token');
+  if (token) {
+    loginBtn.textContent = 'Logged In';
+    loginBtn.disabled = true;
+  } else {
+    loginBtn.textContent = 'Login';
+    loginBtn.disabled = false;
+  }
+}
+
+// ---------------------
 // Load Profile
 // ---------------------
 async function loadProfile() {
@@ -146,7 +160,6 @@ function renderProfile(data) {
     `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
 }
 
-
 // ---------------------
 // Load Public OAuth Connections
 // ---------------------
@@ -173,19 +186,16 @@ async function loadPublicConnections(userId) {
         ? `<a href="${s.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>`
         : s.username;
 
-      // Determine if verified
       const verifiedPlatforms = ['spotify', 'twitch', 'youtube', 'github'];
       const isVerified = verifiedPlatforms.includes(s.platform.toLowerCase());
 
-const tooltip = `
-  <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity text-sm bg-black/90 text-white px-2 py-1 rounded whitespace-nowrap z-50 pointer-events-none flex items-center">
-    ${isVerified
-      ? `<img src="/assets/verified.gif" class="w-4 h-4 mr-1" style="display:inline-block; vertical-align:text-bottom;" />Verified`
-      : '<span>⚠ Connection Not Verified</span>'}
-  </div>
-`;
-
-
+      const tooltip = `
+        <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity text-sm bg-black/90 text-white px-2 py-1 rounded whitespace-nowrap z-50 pointer-events-none flex items-center">
+          ${isVerified
+            ? `<img src="/assets/verified.gif" class="w-4 h-4 mr-1" style="display:inline-block; vertical-align:text-bottom;" /> Connected Verified`
+            : '<span>⚠ Connection Not Verified</span>'}
+        </div>
+      `;
 
       card.innerHTML = `
         <div class="flex items-center gap-3">
@@ -204,7 +214,6 @@ const tooltip = `
     connectionsContainer.innerHTML = '<p class="text-red-500">Failed to load connections.</p>';
   }
 }
-
 
 // ---------------------
 // Load Public Servers
@@ -261,7 +270,10 @@ copyLinkBtn.onclick = async () => {
   }
 };
 
+// ---------------------
 // Init
+// ---------------------
+checkLogin();
 loadProfile();
 </script>
 
