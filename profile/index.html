@@ -126,6 +126,7 @@ async function loadProfile() {
     renderProfile(data);
     renderSocials(data.socials || []);
     await loadPublicConnections(profileIdFromUrl);
+    await loadPublicServers(profileIdFromUrl); // <-- Load servers publicly
 
   } catch (err) {
     console.error(err);
@@ -225,6 +226,46 @@ async function loadPublicConnections(userId) {
   } catch (err) {
     console.error('Failed to load connections:', err);
     connectionsContainer.innerHTML = '<p class="text-red-500">Failed to load connections.</p>';
+  }
+}
+
+// ---------------------
+// Load Public Servers
+// ---------------------
+async function loadPublicServers(userId) {
+  try {
+    const res = await fetch(`${API_URL}/servers/user/${userId}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const servers = await res.json();
+    serversContainer.innerHTML = '';
+
+    if (!servers.length) {
+      serversContainer.innerHTML = '<p class="text-zinc-400">No servers found.</p>';
+      return;
+    }
+
+    servers.forEach(s => {
+      const div = document.createElement('div');
+      div.className = `p-4 rounded border ${
+        s.status === 'approved' ? 'border-green-500 bg-green-900/30' :
+        s.status === 'denied' ? 'border-red-500 bg-red-900/30' :
+        'border-zinc-700 bg-zinc-900/50'
+      }`;
+
+      div.innerHTML = `
+        <h4 class="font-semibold text-lg">${s.name}</h4>
+        <p class="text-sm text-zinc-300 mb-1">Status: ${s.status}</p>
+        ${s.status === 'approved'
+          ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>`
+          : ''}
+      `;
+      serversContainer.appendChild(div);
+    });
+
+  } catch (err) {
+    console.error('Failed to load servers:', err);
+    serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
   }
 }
 
