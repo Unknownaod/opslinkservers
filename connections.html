@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connection Status</title>
+
+  <style>
+    :root {
+      --bg: #0b0f1a;
+      --card: #11162a;
+      --accent: #6c8cff;
+      --success: #4ade80;
+      --error: #f87171;
+      --text: #ffffff;
+      --muted: #9aa3c7;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at top, #141a33 0%, var(--bg) 60%);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+    }
+
+    .card {
+      background: linear-gradient(180deg, #141a33, var(--card));
+      padding: 42px 48px;
+      border-radius: 18px;
+      text-align: center;
+      max-width: 460px;
+      width: 90%;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      border: 1px solid rgba(108,140,255,0.15);
+    }
+
+    .icon {
+      font-size: 54px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .platform {
+      color: var(--accent);
+    }
+
+    p {
+      color: var(--muted);
+      margin-bottom: 26px;
+      font-size: 15px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 4px solid rgba(255,255,255,0.15);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .redirect {
+      margin-top: 18px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .error {
+      color: var(--error);
+    }
+
+    .success {
+      color: var(--success);
+    }
+  </style>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+
+    const platformRaw = params.get("platform") || "platform";
+    const error = params.get("error");
+    const message =
+      params.get("message") ||
+      "Something went wrong while connecting your account.";
+
+    const platform =
+      platformRaw.charAt(0).toUpperCase() + platformRaw.slice(1);
+
+    let seconds = 4;
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const title = document.getElementById("title");
+      const desc = document.getElementById("desc");
+      const icon = document.getElementById("icon");
+
+      document.getElementById("platformName").textContent = platform;
+
+      if (error) {
+        icon.textContent = "❌";
+        title.textContent = `${platform} Connection Failed`;
+        title.classList.add("error");
+        desc.textContent = message;
+        document.getElementById("spinner").style.display = "none";
+      } else {
+        icon.textContent = "✅";
+        title.textContent = `${platform} Connected`;
+        title.classList.add("success");
+        desc.textContent = "Your account was connected successfully.";
+      }
+
+      document.getElementById("countdown").textContent = seconds;
+
+      const interval = setInterval(() => {
+        seconds--;
+        document.getElementById("countdown").textContent = seconds;
+
+        if (seconds <= 0) {
+          clearInterval(interval);
+          // Prevent going back to OAuth callback
+          window.location.replace("index.html");
+        }
+      }, 1000);
+    });
+  </script>
+</head>
+<body>
+  <div class="card">
+    <div class="icon" id="icon">⏳</div>
+    <h1 id="title">
+      <span class="platform" id="platformName"></span>
+    </h1>
+    <p id="desc"></p>
+
+    <div class="spinner" id="spinner"></div>
+    <div class="redirect">
+      Redirecting you back in <span id="countdown">4</span>s…
+    </div>
+  </div>
+</body>
+</html>
