@@ -108,7 +108,7 @@ loginBtn.textContent = token ? 'Logout' : 'Login';
 loginBtn.href = token ? '#' : '/auth/login/';
 loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
 
-// Handle OAuth token in URL
+// Handle OAuth token
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has("token")) {
   token = urlParams.get("token");
@@ -154,11 +154,8 @@ async function loadProfile() {
 
     renderProfile(data);
 
-    // Render public socials (non-OAuth)
-    renderSocials(data.socials || []);
-
-    // Render OAuth connections
-    renderOAuthConnections(data.socials || {});
+    // Render all socials & connections
+    renderAllConnections(data);
 
     if (viewingOwnProfile && token) fetchServers();
     else serversContainer.innerHTML = '';
@@ -191,27 +188,23 @@ function renderProfile(data) {
 
   document.getElementById('profileID').innerHTML =
     `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
+
+  renderSocials(data.socials || []);
 }
 
 // ---------------------
-// Render Socials (non-OAuth)
+// Render Socials (Normal socials like Discord/TikTok/etc.)
 // ---------------------
 function renderSocials(socials) {
   socialsContainer.innerHTML = '';
-  const nonOAuthPlatforms = ['discord','twitter','instagram','tiktok','linkedin'];
-
-  const filtered = (socials || []).filter(s => nonOAuthPlatforms.includes(s.platform));
-  if (!filtered.length) {
+  if (!socials.length) {
     socialsContainer.innerHTML = '<p class="text-zinc-400 col-span-full">No socials added.</p>';
     return;
   }
 
-  filtered.forEach(s => {
+  socials.forEach(s => {
     const card = document.createElement('div');
-    card.className = `
-      flex items-center gap-3 p-3 border border-zinc-700 rounded-lg
-      hover:scale-[1.02] transition-transform duration-150
-    `;
+    card.className = `flex items-center gap-3 p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform duration-150`;
 
     const logo = platformLogos[s.platform] || '';
     const colorClass = platformColors[s.platform] || 'bg-zinc-600';
@@ -231,42 +224,49 @@ function renderSocials(socials) {
 }
 
 // ---------------------
-// Render OAuth Connections
+// Render All Connections (Merge OAuth + normal)
 // ---------------------
-function renderOAuthConnections(socialsObject) {
+function renderAllConnections(userData) {
   connectionsContainer.innerHTML = '';
 
-  const oauthPlatforms = ['spotify', 'github', 'twitch', 'youtube'];
+  const connections = [];
 
-  const connections = Object.entries(socialsObject || {})
-    .filter(([platform, info]) => oauthPlatforms.includes(platform) && info.connected)
-    .map(([platform, info]) => ({
-      platform,
-      username: info.username || info.handle || '',
-      profileUrl: info.profileUrl || info.url || ''
-    }));
+  // 1️⃣ Normal socials (e.g., TikTok, Twitter)
+  if (Array.isArray(userData.socialsArray)) {
+    connections.push(...userData.socialsArray);
+  }
+
+  // 2️⃣ OAuth socials (twitch, spotify, youtube, github)
+  if (userData.socials) {
+    Object.entries(userData.socials).forEach(([platform, info]) => {
+      if (!info.connected) return;
+      connections.push({
+        platform,
+        username: info.username,
+        profileUrl: info.profileUrl
+      });
+    });
+  }
 
   if (!connections.length) {
-    connectionsContainer.innerHTML =
-      '<p class="text-zinc-400 col-span-full">No connections found.</p>';
+    connectionsContainer.innerHTML = '<p class="text-zinc-400 col-span-full">No connections found.</p>';
     return;
   }
 
-  connections.forEach(s => {
-    const displayName = s.profileUrl
-      ? `<a href="${s.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>`
-      : s.username;
-
+  connections.forEach(c => {
     const card = document.createElement('div');
-    card.className =
-      'flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform gap-2';
+    card.className = 'flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform gap-2';
+
+    const displayUsername = c.profileUrl
+      ? `<a href="${c.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${c.username}</a>`
+      : c.username;
 
     card.innerHTML = `
       <div class="flex items-center gap-3">
-        <img src="${platformLogos[s.platform] || ''}" class="w-6 h-6" alt="${s.platform}" />
-        <span class="font-medium capitalize">${s.platform}</span>
+        <img src="${platformLogos[c.platform] || ''}" class="w-6 h-6" alt="${c.platform}" />
+        <span class="font-medium capitalize">${c.platform}</span>
       </div>
-      <p class="text-sm text-zinc-300 truncate">${displayName}</p>
+      <p class="text-sm text-zinc-300 truncate">${displayUsername}</p>
     `;
 
     connectionsContainer.appendChild(card);
@@ -301,9 +301,7 @@ function fetchServers() {
           <p class="text-sm text-zinc-300 mb-1">Status: ${s.status}</p>
           ${s.status === 'approved'
             ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>`
-            : '' }
-        `;
-
+            : ''}`;
         serversContainer.appendChild(div);
       });
     })
