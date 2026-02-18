@@ -154,12 +154,12 @@ async function loadProfile() {
 
     renderProfile(data);
 
-    // ✅ Always render public socials as connections
+    // Always render public socials as connections
     renderConnections(data.socials || []);
 
     if (viewingOwnProfile && token) {
       fetchServers();
-      loadConnections(); // loads private OAuth connections
+      loadPrivateConnections(); // loads private OAuth connections
     } else {
       serversContainer.innerHTML = '';
     }
@@ -170,6 +170,9 @@ async function loadProfile() {
   }
 }
 
+// ---------------------
+// Render Profile
+// ---------------------
 function renderProfile(data) {
   document.getElementById('profileUsername').textContent = data.discordUsername || '';
   document.getElementById('profileTag').textContent = data.discordTag ? `#${data.discordTag}` : '';
@@ -228,7 +231,7 @@ function renderSocials(socials) {
 }
 
 // ---------------------
-// Render Connections (Public Socials)
+// Render Connections (Public)
 // ---------------------
 function renderConnections(socials) {
   connectionsContainer.innerHTML = '';
@@ -240,16 +243,22 @@ function renderConnections(socials) {
   }
 
   socials.forEach(s => {
+    if (!s.connected || !s.username) return;
+
     const card = document.createElement('div');
     card.className =
       'flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform gap-2';
 
+    const displayUsername = s.profileUrl
+      ? `<a href="${s.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>`
+      : s.username;
+
     card.innerHTML = `
       <div class="flex items-center gap-3">
-        <img src="${platformLogos[s.platform] || ''}" class="w-6 h-6" />
+        <img src="${platformLogos[s.platform] || ''}" class="w-6 h-6" alt="${s.platform}" />
         <span class="font-medium capitalize">${s.platform}</span>
       </div>
-      <p class="text-sm text-zinc-300 truncate">${s.handle}</p>
+      <p class="text-sm text-zinc-300 truncate">${displayUsername}</p>
     `;
 
     connectionsContainer.appendChild(card);
@@ -296,9 +305,9 @@ function fetchServers() {
 }
 
 // ---------------------
-// Fetch Private OAuth Connections (Own Only)
+// Load Private OAuth Connections (Own Only)
 // ---------------------
-async function loadConnections() {
+async function loadPrivateConnections() {
   try {
     const res = await fetch(`${API_URL}/profile/connections`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -308,8 +317,10 @@ async function loadConnections() {
 
     const data = await res.json();
     console.log("Private OAuth connections:", data);
-
-  } catch {}
+    // Optional: merge private connections if needed
+  } catch (err) {
+    console.error("Failed to load private connections:", err);
+  }
 }
 
 // ---------------------
@@ -346,6 +357,7 @@ copyLinkBtn.onclick = async () => {
 // Init
 loadProfile();
 </script>
+
 
 </body>
 </html>
