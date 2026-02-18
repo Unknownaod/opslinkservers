@@ -5,12 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Profile - OpsLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.cdnfonts.com/css/satoshi" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Satoshi', sans-serif;
+      background: #000;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    /* Fullscreen video background */
+    #bgVideo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      filter: brightness(0.35) contrast(1.1);
+    }
+
+    /* Glassmorphism card style */
+    .glass {
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 1rem;
+    }
+
+    /* Smooth card hover */
+    .hover-scale:hover {
+      transform: scale(1.03);
+      transition: transform 0.3s ease;
+    }
+
+    /* Smooth link & button transition */
+    a, button {
+      transition: all 0.25s ease;
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
+<body>
+
+  <!-- VIDEO BACKGROUND -->
+  <video id="bgVideo" autoplay muted loop playsinline>
+    <source src="/assets/background.mp4" type="video/mp4">
+  </video>
 
   <!-- NAVBAR -->
-  <nav class="flex items-center justify-between px-10 py-6">
-    <div class="text-xl font-semibold tracking-wide">OpsLink Servers</div>
+  <nav class="flex items-center justify-between px-10 py-6 relative z-10">
+    <div class="text-2xl font-bold tracking-wide">OpsLink Servers</div>
     <div class="flex items-center gap-8 text-sm" id="navLinks">
       <a href="/" class="hover:opacity-80">Home</a>
       <a href="/servers/" class="hover:opacity-80">Browse</a>
@@ -20,264 +65,162 @@
   </nav>
 
   <!-- PROFILE SECTION -->
-  <section class="px-10 py-10 max-w-5xl mx-auto flex flex-col gap-6">
+  <section class="px-10 py-10 max-w-6xl mx-auto flex flex-col gap-10 relative z-10">
     <h1 class="text-5xl font-bold mb-6">Profile</h1>
 
-    <div id="profileContainer" class="flex flex-col md:flex-row gap-6 items-start">
+    <div id="profileContainer" class="flex flex-col md:flex-row gap-10 items-start">
+
       <!-- Profile Card -->
-      <div class="p-6 rounded border border-zinc-700 bg-zinc-900/50 w-full md:w-1/3 flex flex-col items-center gap-4">
-        <img id="profilePic" src="/assets/default.gif" alt="Profile Picture" class="w-32 h-32 rounded-full border border-zinc-600 object-cover" />
-        <h2 id="profileUsername" class="text-2xl font-semibold">Loading...</h2>
-        <p id="profileTag" class="text-zinc-400"></p>
-        <p id="profileRole" class="text-zinc-400"></p>
-        <p id="profileEmail" class="text-zinc-400"></p>
-        <p id="profileVerified" class="text-zinc-400"></p>
-        <p id="profileID" class="text-zinc-400 break-all"></p>
-        <button id="copyLinkBtn" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm">Copy Profile Link</button>
+      <div class="p-6 glass w-full md:w-1/3 flex flex-col items-center gap-4 text-center hover-scale">
+        <img id="profilePic" src="/assets/default.gif" alt="Profile Picture" class="w-36 h-36 rounded-full border-2 border-white object-cover shadow-lg" />
+        <h2 id="profileUsername" class="text-3xl font-semibold">Loading...</h2>
+        <p id="profileTag" class="text-zinc-300"></p>
+        <p id="profileRole" class="text-zinc-300"></p>
+        <p id="profileEmail" class="text-zinc-300"></p>
+        <p id="profileVerified" class="text-zinc-300"></p>
+        <p id="profileID" class="text-zinc-300 break-all"></p>
+        <button id="copyLinkBtn" class="mt-3 px-5 py-2 bg-blue-600 hover:bg-blue-700 rounded-full text-white text-sm">Copy Profile Link</button>
       </div>
 
       <!-- Servers, Connections & Socials -->
-      <div class="flex-1 flex flex-col gap-4">
+      <div class="flex-1 flex flex-col gap-6">
+
         <!-- Servers Owned -->
-        <h3 class="text-2xl font-semibold mb-4">Servers Owned</h3>
-        <div id="serversContainer" class="flex flex-col gap-3">
-          <p class="text-zinc-400">Loading servers...</p>
+        <div>
+          <h3 class="text-2xl font-semibold mb-4">Servers Owned</h3>
+          <div id="serversContainer" class="flex flex-col gap-4">
+            <p class="text-zinc-300">Loading servers...</p>
+          </div>
         </div>
 
         <!-- Connections -->
-        <h3 class="text-2xl font-semibold mb-4 mt-6">Connections</h3>
-        <div id="connectionsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <p class="text-zinc-400 col-span-full">Loading connections...</p>
+        <div>
+          <h3 class="text-2xl font-semibold mb-4">Connections</h3>
+          <div id="connectionsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <p class="text-zinc-300 col-span-full">Loading connections...</p>
+          </div>
         </div>
 
+      </div>
+    </div>
   </section>
 
   <!-- FOOTER -->
-  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
+  <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between relative z-10">
     <span>© 2026 OpsLink Servers</span>
     <span>Not affiliated with Discord</span>
   </footer>
-  
-<script>
-const API_URL = 'https://opslinkservers-backend.onrender.com/api';
-const profileContainer = document.getElementById('profileContainer');
-const serversContainer = document.getElementById('serversContainer');
-const connectionsContainer = document.getElementById('connectionsContainer');
-const loginBtn = document.getElementById('loginBtn');
-const copyLinkBtn = document.getElementById('copyLinkBtn');
 
-const platformLogos = {
-  discord: 'https://cdn.simpleicons.org/discord',
-  twitter: 'https://cdn.simpleicons.org/twitter',
-  instagram: 'https://cdn.simpleicons.org/instagram',
-  github: 'https://cdn.simpleicons.org/github',
-  tiktok: 'https://cdn.simpleicons.org/tiktok',
-  linkedin: 'https://cdn.simpleicons.org/linkedin',
-  spotify: 'https://cdn.simpleicons.org/spotify',
-  twitch: 'https://cdn.simpleicons.org/twitch',
-  youtube: 'https://cdn.simpleicons.org/youtube',
-};
+  <script>
+    const API_URL = 'https://opslinkservers-backend.onrender.com/api';
+    const profileContainer = document.getElementById('profileContainer');
+    const serversContainer = document.getElementById('serversContainer');
+    const connectionsContainer = document.getElementById('connectionsContainer');
+    const loginBtn = document.getElementById('loginBtn');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
 
-const platformColors = {
-  discord: 'bg-[#5865F2]',
-  twitter: 'bg-[#1DA1F2]',
-  instagram: 'bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF]',
-  github: 'bg-[#333]',
-  tiktok: 'bg-[#69C9D0]',
-  linkedin: 'bg-[#0A66C2]',
-  spotify: 'bg-[#1DB954]',
-  twitch: 'bg-[#9146FF]',
-  youtube: 'bg-[#FF0000]',
-};
+    const platformLogos = {
+      discord: 'https://cdn.simpleicons.org/discord',
+      twitter: 'https://cdn.simpleicons.org/twitter',
+      instagram: 'https://cdn.simpleicons.org/instagram',
+      github: 'https://cdn.simpleicons.org/github',
+      tiktok: 'https://cdn.simpleicons.org/tiktok',
+      linkedin: 'https://cdn.simpleicons.org/linkedin',
+      spotify: 'https://cdn.simpleicons.org/spotify',
+      twitch: 'https://cdn.simpleicons.org/twitch',
+      youtube: 'https://cdn.simpleicons.org/youtube',
+    };
 
-// ---------------------
-// Detect Profile ID
-// ---------------------
-function getProfileId() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('id');
-}
-const profileIdFromUrl = getProfileId();
+    // ---------------------
+    // Detect Profile ID
+    // ---------------------
+    function getProfileId() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('id');
+    }
+    const profileIdFromUrl = getProfileId();
 
-// ---------------------
-// Check if user is logged in
-// ---------------------
-function checkLogin() {
-  const token = localStorage.getItem('token');
-  if (token) {
-    loginBtn.textContent = 'Logout';
-    loginBtn.disabled = true;
-  } else {
-    loginBtn.textContent = 'Login';
-    loginBtn.disabled = false;
-  }
-}
-
-// ---------------------
-// Load Profile
-// ---------------------
-async function loadProfile() {
-  try {
-    if (!profileIdFromUrl) {
-      profileContainer.innerHTML = '<p class="text-zinc-400">No profile selected.</p>';
-      return;
+    // ---------------------
+    // Check if user is logged in
+    // ---------------------
+    function checkLogin() {
+      const token = localStorage.getItem('token');
+      if (token) {
+        loginBtn.textContent = 'Logout';
+        loginBtn.disabled = true;
+      } else {
+        loginBtn.textContent = 'Login';
+        loginBtn.disabled = false;
+      }
     }
 
-    const res = await fetch(`${API_URL}/profile/${profileIdFromUrl}`);
-    if (!res.ok) throw new Error('Profile fetch failed');
+    // ---------------------
+    // Load Profile
+    // ---------------------
+    async function loadProfile() {
+      try {
+        if (!profileIdFromUrl) {
+          profileContainer.innerHTML = '<p class="text-zinc-400">No profile selected.</p>';
+          return;
+        }
 
-    const data = await res.json();
-    if (!data?._id) throw new Error('Invalid profile');
+        const res = await fetch(`${API_URL}/profile/${profileIdFromUrl}`);
+        if (!res.ok) throw new Error('Profile fetch failed');
 
-    renderProfile(data);
-    await loadPublicConnections(profileIdFromUrl);
-    await loadPublicServers(profileIdFromUrl); // <-- Load servers publicly
+        const data = await res.json();
+        if (!data?._id) throw new Error('Invalid profile');
 
-  } catch (err) {
-    console.error(err);
-    profileContainer.innerHTML = '<p class="text-red-500">Failed to load profile.</p>';
-  }
-}
+        renderProfile(data);
+        await loadPublicConnections(profileIdFromUrl);
+        await loadPublicServers(profileIdFromUrl);
 
-// ---------------------
-// Render Profile
-// ---------------------
-function renderProfile(data) {
-  document.getElementById('profileUsername').textContent = data.discordUsername || '';
-  document.getElementById('profileTag').textContent = data.discordTag ? `#${data.discordTag}` : '';
-
-  const roleColor = data.role === 'admin' ? 'text-red-500' :
-                    data.role === 'management' ? 'text-orange-400' :
-                    'text-blue-400';
-
-  document.getElementById('profileRole').innerHTML =
-    `Role: <span class="font-semibold ${roleColor}">${data.role}</span>`;
-
-  document.getElementById('profileVerified').textContent =
-    data.isVerified !== undefined ? `Verified: ${data.isVerified ? 'Yes' : 'No'}` : '';
-
-  document.getElementById('profileID').innerHTML =
-    `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
-}
-
-// ---------------------
-// Load Public OAuth Connections
-// ---------------------
-async function loadPublicConnections(userId) {
-  try {
-    const res = await fetch(`${API_URL}/profile/${userId}/connections`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const data = await res.json();
-    const socials = data.socials || [];
-
-    connectionsContainer.innerHTML = '';
-
-    if (!socials.length) {
-      connectionsContainer.innerHTML = '<p class="text-zinc-400">No connections found.</p>';
-      return;
+      } catch (err) {
+        console.error(err);
+        profileContainer.innerHTML = '<p class="text-red-500">Failed to load profile.</p>';
+      }
     }
 
-    socials.forEach(s => {
-      const card = document.createElement('div');
-      card.className = 'flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform gap-2 relative group cursor-default';
+    // ---------------------
+    // Render Profile
+    // ---------------------
+    function renderProfile(data) {
+      document.getElementById('profileUsername').textContent = data.discordUsername || '';
+      document.getElementById('profileTag').textContent = data.discordTag ? `#${data.discordTag}` : '';
 
-      const displayUsername = s.profileUrl
-        ? `<a href="${s.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>`
-        : s.username;
+      const roleColor = data.role === 'admin' ? 'text-red-500' :
+                        data.role === 'management' ? 'text-orange-400' :
+                        'text-blue-400';
 
-      const verifiedPlatforms = ['spotify', 'twitch', 'youtube', 'github'];
-      const isVerified = verifiedPlatforms.includes(s.platform.toLowerCase());
+      document.getElementById('profileRole').innerHTML =
+        `Role: <span class="font-semibold ${roleColor}">${data.role}</span>`;
 
-      const tooltip = `
-        <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity text-sm bg-black/90 text-white px-2 py-1 rounded whitespace-nowrap z-50 pointer-events-none flex items-center">
-          ${isVerified
-            ? `<img src="/assets/verified.gif" class="w-4 h-4 mr-1" style="display:inline-block; vertical-align:text-bottom;" /> Connected Verified`
-            : '<span>⚠ Connection Not Verified</span>'}
-        </div>
-      `;
+      document.getElementById('profileVerified').textContent =
+        data.isVerified !== undefined ? `Verified: ${data.isVerified ? 'Yes' : 'No'}` : '';
 
-      card.innerHTML = `
-        <div class="flex items-center gap-3">
-          <img src="${platformLogos[s.platform] || ''}" class="w-6 h-6" alt="${s.platform}" />
-          <span class="font-medium capitalize">${s.platform}</span>
-        </div>
-        <p class="text-sm text-zinc-300 truncate">${displayUsername}</p>
-        ${tooltip}
-      `;
-
-      connectionsContainer.appendChild(card);
-    });
-
-  } catch (err) {
-    console.error('Failed to load connections:', err);
-    connectionsContainer.innerHTML = '<p class="text-red-500">Failed to load connections.</p>';
-  }
-}
-
-// ---------------------
-// Load Public Servers
-// ---------------------
-async function loadPublicServers(userId) {
-  try {
-    const res = await fetch(`${API_URL}/servers/user/${userId}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const servers = await res.json();
-    serversContainer.innerHTML = '';
-
-    if (!servers.length) {
-      serversContainer.innerHTML = '<p class="text-zinc-400">No servers found.</p>';
-      return;
+      document.getElementById('profileID').innerHTML =
+        `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
     }
 
-    servers.forEach(s => {
-      const div = document.createElement('div');
-      div.className = `p-4 rounded border ${
-        s.status === 'approved' ? 'border-green-500 bg-green-900/30' :
-        s.status === 'denied' ? 'border-red-500 bg-red-900/30' :
-        'border-zinc-700 bg-zinc-900/50'
-      }`;
+    // ---------------------
+    // Copy Profile Link
+    // ---------------------
+    copyLinkBtn.onclick = async () => {
+      try {
+        const shareLink = `${window.location.origin}/profile/?id=${profileIdFromUrl}`;
+        await navigator.clipboard.writeText(shareLink);
+        copyLinkBtn.textContent = 'Link Copied!';
+        setTimeout(() => { copyLinkBtn.textContent = 'Copy Profile Link'; }, 2000);
+      } catch {
+        copyLinkBtn.textContent = 'Failed to copy';
+        setTimeout(() => { copyLinkBtn.textContent = 'Copy Profile Link'; }, 2000);
+      }
+    };
 
-      div.innerHTML = `
-        <h4 class="font-semibold text-lg">${s.name}</h4>
-        <p class="text-sm text-zinc-300 mb-1">Status: ${s.status}</p>
-        ${s.status === 'approved'
-          ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>`
-          : ''}
-      `;
-      serversContainer.appendChild(div);
-    });
-
-  } catch (err) {
-    console.error('Failed to load servers:', err);
-    serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
-  }
-}
-
-// ---------------------
-// Copy Profile Link
-// ---------------------
-copyLinkBtn.onclick = async () => {
-  try {
-    const shareLink = `${window.location.origin}/profile/?id=${profileIdFromUrl}`;
-    await navigator.clipboard.writeText(shareLink);
-    copyLinkBtn.textContent = 'Link Copied!';
-    setTimeout(() => { copyLinkBtn.textContent = 'Copy Profile Link'; }, 2000);
-  } catch {
-    copyLinkBtn.textContent = 'Failed to copy';
-    setTimeout(() => { copyLinkBtn.textContent = 'Copy Profile Link'; }, 2000);
-  }
-};
-
-// ---------------------
-// Init
-// ---------------------
-checkLogin();
-loadProfile();
-</script>
-
-
-
+    // ---------------------
+    // Init
+    // ---------------------
+    checkLogin();
+    loadProfile();
+  </script>
 </body>
 </html>
