@@ -108,7 +108,7 @@ loginBtn.textContent = token ? 'Logout' : 'Login';
 loginBtn.href = token ? '#' : '/auth/login/';
 loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
 
-// Handle OAuth token
+// Handle OAuth token in URL
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has("token")) {
   token = urlParams.get("token");
@@ -123,7 +123,6 @@ function getProfileId() {
   const params = new URLSearchParams(window.location.search);
   return params.get('id');
 }
-
 const profileIdFromUrl = getProfileId();
 const viewingOwnProfile = !profileIdFromUrl;
 
@@ -154,11 +153,11 @@ async function loadProfile() {
 
     renderProfile(data);
 
-    // Render public socials
-    renderConnections(data.socials || []);
+    // Render manual/social links
+    renderSocials(data.socials || []);
 
-    // Always try to load OAuth connections if token exists
-    if (token) await loadOAuthConnections(data._id);
+    // Render OAuth connections
+    renderOAuthConnections(data.socials || {});
 
     if (viewingOwnProfile && token) fetchServers();
     else serversContainer.innerHTML = '';
@@ -191,73 +190,79 @@ function renderProfile(data) {
 
   document.getElementById('profileID').innerHTML =
     `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
-
-  renderSocials(data.socials || []);
 }
 
 // ---------------------
-// Render Socials
+// Render Socials (manual/social links)
 // ---------------------
 function renderSocials(socials) {
   socialsContainer.innerHTML = '';
-  if (!socials.length) {
+  const manualPlatforms = ['discord', 'twitter', 'instagram', 'tiktok', 'linkedin'];
+  const filtered = (socials || []).filter(s => manualPlatforms.includes(s.platform));
+
+  if (!filtered.length) {
     socialsContainer.innerHTML = '<p class="text-zinc-400 col-span-full">No socials added.</p>';
     return;
   }
 
-  socials.forEach(s => {
+  filtered.forEach(s => {
     const card = document.createElement('div');
     card.className = `
       flex items-center gap-3 p-3 border border-zinc-700 rounded-lg
       hover:scale-[1.02] transition-transform duration-150
     `;
-
     const logo = platformLogos[s.platform] || '';
     const colorClass = platformColors[s.platform] || 'bg-zinc-600';
 
     card.innerHTML = `
       <div class="w-1 h-full ${colorClass} rounded-l-lg"></div>
       <img src="${logo}" alt="${s.platform}" class="w-6 h-6" />
-      <a href="${s.url}" target="_blank"
+      <a href="${s.url || s.profileUrl || '#'}" target="_blank"
          class="ml-2 text-white font-medium truncate max-w-[140px]"
-         title="${s.handle}">
-         ${s.handle}
+         title="${s.handle || s.username || ''}">
+         ${s.handle || s.username || ''}
       </a>
     `;
-
     socialsContainer.appendChild(card);
   });
 }
 
 // ---------------------
-// Render Connections (Public + OAuth)
+// Render OAuth Connections
 // ---------------------
-function renderConnections(socials) {
+function renderOAuthConnections(socialsObject) {
   connectionsContainer.innerHTML = '';
+  const oauthPlatforms = ['spotify', 'github', 'twitch', 'youtube'];
 
-  if (!socials.length) {
+  const connections = Object.entries(socialsObject || {})
+    .filter(([platform, info]) => oauthPlatforms.includes(platform) && info.connected)
+    .map(([platform, info]) => ({
+      platform,
+      handle: info.username || info.handle || '',
+      profileUrl: info.profileUrl || ''
+    }));
+
+  if (!connections.length) {
     connectionsContainer.innerHTML =
       '<p class="text-zinc-400 col-span-full">No connections found.</p>';
     return;
   }
 
-  socials.forEach(s => {
-    if (!s.connected || !s.username) return;
+  connections.forEach(s => {
+    const displayHandle = s.profileUrl
+      ? `<a href="${s.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${s.handle}</a>`
+      : s.handle;
 
     const card = document.createElement('div');
     card.className =
       'flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform gap-2';
-
-    const displayUsername = s.profileUrl
-      ? `<a href="${s.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>`
-      : s.username;
 
     card.innerHTML = `
       <div class="flex items-center gap-3">
         <img src="${platformLogos[s.platform] || ''}" class="w-6 h-6" alt="${s.platform}" />
         <span class="font-medium capitalize">${s.platform}</span>
       </div>
-      <p class="text-sm text-zinc-300 truncate">${displayUsername}</p>
+      <p class="text-sm text-zinc-300 truncate">${displayHandle}</p>
     `;
 
     connectionsContainer.appendChild(card);
@@ -268,9 +273,7 @@ function renderConnections(socials) {
 // Fetch Servers (Own Only)
 // ---------------------
 function fetchServers() {
-  fetch(`${API_URL}/servers/mine`, {
-    headers: { Authorization: `Bearer ${token}` }
-  })
+  fetch(`${API_URL}/servers/mine`, { headers: { Authorization: `Bearer ${token}` } })
     .then(res => res.json())
     .then(servers => {
       serversContainer.innerHTML = '';
@@ -294,47 +297,10 @@ function fetchServers() {
             ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>`
             : ''}
         `;
-
         serversContainer.appendChild(div);
       });
     })
-    .catch(() => {
-      serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
-    });
-}
-
-// ---------------------
-// Load OAuth Connections
-// ---------------------
-async function loadOAuthConnections(userId) {
-  if (!token) return;
-
-  try {
-    const endpoint = viewingOwnProfile
-      ? `${API_URL}/profile/connections`
-      : `${API_URL}/profile/${userId}/connections-public`; // optional public endpoint if implemented
-
-    const res = await fetch(endpoint, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) return;
-
-    const data = await res.json();
-    if (!data.socials?.length) return;
-
-    // Merge with existing connections without duplicating
-    const existingConnections = Array.from(connectionsContainer.children)
-      .map(c => c.querySelector('p')?.textContent);
-
-    const newConnections = data.socials.filter(
-      s => s.connected && s.username && !existingConnections.includes(s.username)
-    );
-
-    if (newConnections.length) renderConnections(newConnections);
-
-  } catch (err) {
-    console.error('Failed to load OAuth connections:', err);
-  }
+    .catch(() => { serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>'; });
 }
 
 // ---------------------
@@ -343,11 +309,8 @@ async function loadOAuthConnections(userId) {
 copyLinkBtn.onclick = async () => {
   try {
     let userId = profileIdFromUrl;
-
     if (!userId) {
-      const res = await fetch(`${API_URL}/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await fetch(`${API_URL}/profile`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       userId = data._id;
     }
@@ -356,23 +319,16 @@ copyLinkBtn.onclick = async () => {
     await navigator.clipboard.writeText(shareLink);
 
     copyLinkBtn.textContent = 'Link Copied!';
-    setTimeout(() => {
-      copyLinkBtn.textContent = 'Copy Profile Link';
-    }, 2000);
-
+    setTimeout(() => copyLinkBtn.textContent = 'Copy Profile Link', 2000);
   } catch {
     copyLinkBtn.textContent = 'Failed to copy';
-    setTimeout(() => {
-      copyLinkBtn.textContent = 'Copy Profile Link';
-    }, 2000);
+    setTimeout(() => copyLinkBtn.textContent = 'Copy Profile Link', 2000);
   }
 };
 
 // Init
 loadProfile();
 </script>
-
-
 
 </body>
 </html>
