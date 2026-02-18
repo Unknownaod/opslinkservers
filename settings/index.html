@@ -662,7 +662,7 @@ async function disconnectPlatform(platform) {
   if (!confirm(`Disconnect ${name}?`)) return;
 
   try {
-    const res = await fetch(`${API_URL}/auth/connections/${platform}`, {
+    const res = await fetch(`${API_URL}/api/auth/connections/${platform}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` }
     });
