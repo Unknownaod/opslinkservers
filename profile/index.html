@@ -117,18 +117,14 @@ if (urlParams.has("token")) {
 }
 
 // ---------------------
-// Detect Profile ID From URL
+// Detect Profile ID From Query Param
 // ---------------------
-function getProfileIdFromUrl() {
-  const pathParts = window.location.pathname.split('/').filter(Boolean);
-  // /profile/{id}
-  if (pathParts.length === 2 && pathParts[0] === 'profile') {
-    return pathParts[1];
-  }
-  return null;
+function getProfileId() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('id');
 }
 
-const profileIdFromUrl = getProfileIdFromUrl();
+const profileIdFromUrl = getProfileId();
 const viewingOwnProfile = !profileIdFromUrl;
 
 // ---------------------
@@ -140,10 +136,8 @@ async function loadProfile() {
     let headers = {};
 
     if (profileIdFromUrl) {
-      // Public profile route
       endpoint = `${API_URL}/profile/${profileIdFromUrl}`;
     } else {
-      // Own profile
       if (!token) {
         profileContainer.innerHTML = '<p class="text-zinc-400">Please login to view your profile.</p>';
         return;
@@ -160,7 +154,6 @@ async function loadProfile() {
 
     renderProfile(data);
 
-    // Only load private data if viewing your own profile
     if (viewingOwnProfile && token) {
       fetchServers();
       loadConnections();
@@ -333,7 +326,7 @@ copyLinkBtn.onclick = async () => {
       userId = data._id;
     }
 
-    const shareLink = `${window.location.origin}/profile/${userId}`;
+    const shareLink = `${window.location.origin}/profile/?id=${userId}`;
     await navigator.clipboard.writeText(shareLink);
 
     copyLinkBtn.textContent = 'Link Copied!';
@@ -352,8 +345,6 @@ copyLinkBtn.onclick = async () => {
 // Init
 loadProfile();
 </script>
-
-
 
 </body>
 </html>
