@@ -108,7 +108,7 @@ loginBtn.textContent = token ? 'Logout' : 'Login';
 loginBtn.href = token ? '#' : '/auth/login/';
 loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
 
-// Handle OAuth token
+// Handle OAuth token in URL
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has("token")) {
   token = urlParams.get("token");
@@ -123,7 +123,6 @@ function getProfileId() {
   const params = new URLSearchParams(window.location.search);
   return params.get('id');
 }
-
 const profileIdFromUrl = getProfileId();
 const viewingOwnProfile = !profileIdFromUrl;
 
@@ -154,8 +153,11 @@ async function loadProfile() {
 
     renderProfile(data);
 
-    // Render all socials & connections
-    renderAllConnections(data);
+    // Render public socials
+    renderSocials(data.socials || []);
+
+    // Always load OAuth connections if token exists
+    if (token) await loadOAuthConnections();
 
     if (viewingOwnProfile && token) fetchServers();
     else serversContainer.innerHTML = '';
@@ -193,7 +195,7 @@ function renderProfile(data) {
 }
 
 // ---------------------
-// Render Socials (Normal socials like Discord/TikTok/etc.)
+// Render Socials
 // ---------------------
 function renderSocials(socials) {
   socialsContainer.innerHTML = '';
@@ -212,10 +214,10 @@ function renderSocials(socials) {
     card.innerHTML = `
       <div class="w-1 h-full ${colorClass} rounded-l-lg"></div>
       <img src="${logo}" alt="${s.platform}" class="w-6 h-6" />
-      <a href="${s.url}" target="_blank"
+      <a href="${s.profileUrl}" target="_blank"
          class="ml-2 text-white font-medium truncate max-w-[140px]"
-         title="${s.handle}">
-         ${s.handle}
+         title="${s.username}">
+         ${s.username}
       </a>
     `;
 
@@ -224,69 +226,65 @@ function renderSocials(socials) {
 }
 
 // ---------------------
-// Render All Connections (Merge OAuth + normal)
+// Load OAuth Connections
 // ---------------------
-function renderAllConnections(userData) {
-  connectionsContainer.innerHTML = '';
+async function loadOAuthConnections() {
+  if (!token) return;
 
-  const connections = [];
-
-  // 1️⃣ Normal socials (e.g., TikTok, Twitter)
-  if (Array.isArray(userData.socialsArray)) {
-    connections.push(...userData.socialsArray);
-  }
-
-  // 2️⃣ OAuth socials (twitch, spotify, youtube, github)
-  if (userData.socials) {
-    Object.entries(userData.socials).forEach(([platform, info]) => {
-      if (!info.connected) return;
-      connections.push({
-        platform,
-        username: info.username,
-        profileUrl: info.profileUrl
-      });
+  try {
+    const res = await fetch(`${API_URL}/profile/connections`, {
+      headers: { Authorization: `Bearer ${token}` }
     });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const data = await res.json();
+    const socials = data.socials || [];
+
+    connectionsContainer.innerHTML = '';
+
+    // Filter connected OAuth socials only
+    const connectedSocials = Object.values(socials).filter(s => s.connected && s.username);
+
+    if (!connectedSocials.length) {
+      connectionsContainer.innerHTML = '<p class="text-zinc-400">No connections found.</p>';
+      return;
+    }
+
+    connectedSocials.forEach(s => {
+      const card = document.createElement('div');
+      card.className = 'flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform gap-2';
+
+      const displayUsername = s.profileUrl
+        ? `<a href="${s.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>`
+        : s.username;
+
+      card.innerHTML = `
+        <div class="flex items-center gap-3">
+          <img src="${platformLogos[s.platform] || ''}" class="w-6 h-6" alt="${s.platform}" />
+          <span class="font-medium capitalize">${s.platform}</span>
+        </div>
+        <p class="text-sm text-zinc-300 truncate">${displayUsername}</p>
+      `;
+
+      connectionsContainer.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error('Failed to load OAuth connections:', err);
+    connectionsContainer.innerHTML = '<p class="text-red-500">Failed to load connections.</p>';
   }
-
-  if (!connections.length) {
-    connectionsContainer.innerHTML = '<p class="text-zinc-400 col-span-full">No connections found.</p>';
-    return;
-  }
-
-  connections.forEach(c => {
-    const card = document.createElement('div');
-    card.className = 'flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform gap-2';
-
-    const displayUsername = c.profileUrl
-      ? `<a href="${c.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${c.username}</a>`
-      : c.username;
-
-    card.innerHTML = `
-      <div class="flex items-center gap-3">
-        <img src="${platformLogos[c.platform] || ''}" class="w-6 h-6" alt="${c.platform}" />
-        <span class="font-medium capitalize">${c.platform}</span>
-      </div>
-      <p class="text-sm text-zinc-300 truncate">${displayUsername}</p>
-    `;
-
-    connectionsContainer.appendChild(card);
-  });
 }
 
 // ---------------------
 // Fetch Servers (Own Only)
 // ---------------------
 function fetchServers() {
-  fetch(`${API_URL}/servers/mine`, {
-    headers: { Authorization: `Bearer ${token}` }
-  })
+  fetch(`${API_URL}/servers/mine`, { headers: { Authorization: `Bearer ${token}` } })
     .then(res => res.json())
     .then(servers => {
       serversContainer.innerHTML = '';
-      if (!servers.length) {
-        serversContainer.innerHTML = '<p class="text-zinc-400">No servers found.</p>';
-        return;
-      }
+      if (!servers.length) return serversContainer.innerHTML = '<p class="text-zinc-400">No servers found.</p>';
 
       servers.forEach(s => {
         const div = document.createElement('div');
@@ -301,13 +299,12 @@ function fetchServers() {
           <p class="text-sm text-zinc-300 mb-1">Status: ${s.status}</p>
           ${s.status === 'approved'
             ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>`
-            : ''}`;
+            : ''}
+        `;
         serversContainer.appendChild(div);
       });
     })
-    .catch(() => {
-      serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
-    });
+    .catch(() => serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>');
 }
 
 // ---------------------
@@ -318,9 +315,7 @@ copyLinkBtn.onclick = async () => {
     let userId = profileIdFromUrl;
 
     if (!userId) {
-      const res = await fetch(`${API_URL}/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await fetch(`${API_URL}/profile`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       userId = data._id;
     }
@@ -340,6 +335,7 @@ copyLinkBtn.onclick = async () => {
 // Init
 loadProfile();
 </script>
+
 
 </body>
 </html>
