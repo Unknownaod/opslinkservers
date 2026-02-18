@@ -116,7 +116,6 @@ async function loadProfile() {
     if (!data?._id) throw new Error('Invalid profile');
 
     renderProfile(data);
-    renderSocials(data.socials || []);
     await loadPublicConnections(profileIdFromUrl);
     await loadPublicServers(profileIdFromUrl); // <-- Load servers publicly
 
