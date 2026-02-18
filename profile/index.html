@@ -48,8 +48,13 @@
 </head>
 <body>
 <!-- Background Music -->
-<audio id="bgMusic" src="/assets/music.mp3" autoplay loop hidden></audio>
+<audio id="bgMusic" src="/assets/music.mp3" loop></audio>
 
+<!-- Optional overlay -->
+<div id="audioOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 text-white text-lg cursor-pointer">
+  Click anywhere to enable background music
+</div>
+  
   <!-- VIDEO BACKGROUND -->
   <video id="bgVideo" autoplay muted loop playsinline>
     <source src="/assets/background.mp4" type="video/mp4">
@@ -325,6 +330,19 @@
       }
     };
 
+  const bgMusic = document.getElementById('bgMusic');
+  const overlay = document.getElementById('audioOverlay');
+
+  function enableMusic() {
+    bgMusic.volume = 0.3; // optional lower volume
+    bgMusic.play().catch(console.log);
+    overlay.style.display = 'none'; // hide overlay
+    window.removeEventListener('click', enableMusic);
+  }
+
+  // Listen for first click anywhere
+  window.addEventListener('click', enableMusic);
+    
     // ---------------------
     // Init
     // ---------------------
