@@ -99,24 +99,6 @@ const platformColors = {
 };
 
 // ---------------------
-// AUTH
-// ---------------------
-let token = localStorage.getItem('token');
-const loggedInUser = JSON.parse(localStorage.getItem('user') || 'null');
-
-loginBtn.textContent = token ? 'Logout' : 'Login';
-loginBtn.href = token ? '#' : '/auth/login/';
-loginBtn.onclick = token ? () => { localStorage.clear(); location.reload(); } : null;
-
-// Handle OAuth token in URL
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.has("token")) {
-  token = urlParams.get("token");
-  localStorage.setItem("token", token);
-  window.history.replaceState({}, document.title, window.location.pathname);
-}
-
-// ---------------------
 // Detect Profile ID
 // ---------------------
 function getProfileId() {
@@ -124,43 +106,26 @@ function getProfileId() {
   return params.get('id');
 }
 const profileIdFromUrl = getProfileId();
-const viewingOwnProfile = !profileIdFromUrl;
 
 // ---------------------
 // Load Profile
 // ---------------------
 async function loadProfile() {
   try {
-    let endpoint;
-    let headers = {};
-
-    if (profileIdFromUrl) {
-      endpoint = `${API_URL}/profile/${profileIdFromUrl}`;
-    } else {
-      if (!token) {
-        profileContainer.innerHTML = '<p class="text-zinc-400">Please login to view your profile.</p>';
-        return;
-      }
-      endpoint = `${API_URL}/profile`;
-      headers.Authorization = `Bearer ${token}`;
+    if (!profileIdFromUrl) {
+      profileContainer.innerHTML = '<p class="text-zinc-400">No profile selected.</p>';
+      return;
     }
 
-    const res = await fetch(endpoint, { headers });
+    const res = await fetch(`${API_URL}/profile/${profileIdFromUrl}`);
     if (!res.ok) throw new Error('Profile fetch failed');
 
     const data = await res.json();
     if (!data?._id) throw new Error('Invalid profile');
 
     renderProfile(data);
-
-    // Render public socials
     renderSocials(data.socials || []);
-
-    // Always load OAuth connections if token exists
-    if (token) await loadOAuthConnections();
-
-    if (viewingOwnProfile && token) fetchServers();
-    else serversContainer.innerHTML = '';
+    await loadPublicConnections(profileIdFromUrl);
 
   } catch (err) {
     console.error(err);
@@ -182,16 +147,11 @@ function renderProfile(data) {
   document.getElementById('profileRole').innerHTML =
     `Role: <span class="font-semibold ${roleColor}">${data.role}</span>`;
 
-  document.getElementById('profileEmail').textContent =
-    viewingOwnProfile && data.email ? `Email: ${data.email}` : '';
-
   document.getElementById('profileVerified').textContent =
     data.isVerified !== undefined ? `Verified: ${data.isVerified ? 'Yes' : 'No'}` : '';
 
   document.getElementById('profileID').innerHTML =
     `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
-
-  renderSocials(data.socials || []);
 }
 
 // ---------------------
@@ -226,16 +186,11 @@ function renderSocials(socials) {
 }
 
 // ---------------------
-// Load OAuth Connections
+// Load Public OAuth Connections
 // ---------------------
-async function loadOAuthConnections() {
-  if (!token) return;
-
+async function loadPublicConnections(userId) {
   try {
-    const res = await fetch(`${API_URL}/profile/connections`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
+    const res = await fetch(`${API_URL}/profile/${userId}/connections`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const data = await res.json();
@@ -243,15 +198,12 @@ async function loadOAuthConnections() {
 
     connectionsContainer.innerHTML = '';
 
-    // Filter connected OAuth socials only
-    const connectedSocials = Object.values(socials).filter(s => s.connected && s.username);
-
-    if (!connectedSocials.length) {
+    if (!socials.length) {
       connectionsContainer.innerHTML = '<p class="text-zinc-400">No connections found.</p>';
       return;
     }
 
-    connectedSocials.forEach(s => {
+    socials.forEach(s => {
       const card = document.createElement('div');
       card.className = 'flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform gap-2';
 
@@ -271,40 +223,9 @@ async function loadOAuthConnections() {
     });
 
   } catch (err) {
-    console.error('Failed to load OAuth connections:', err);
+    console.error('Failed to load connections:', err);
     connectionsContainer.innerHTML = '<p class="text-red-500">Failed to load connections.</p>';
   }
-}
-
-// ---------------------
-// Fetch Servers (Own Only)
-// ---------------------
-function fetchServers() {
-  fetch(`${API_URL}/servers/mine`, { headers: { Authorization: `Bearer ${token}` } })
-    .then(res => res.json())
-    .then(servers => {
-      serversContainer.innerHTML = '';
-      if (!servers.length) return serversContainer.innerHTML = '<p class="text-zinc-400">No servers found.</p>';
-
-      servers.forEach(s => {
-        const div = document.createElement('div');
-        div.className = `p-4 rounded border ${
-          s.status === 'approved' ? 'border-green-500 bg-green-900/30' :
-          s.status === 'denied' ? 'border-red-500 bg-red-900/30' :
-          'border-zinc-700 bg-zinc-900/50'
-        }`;
-
-        div.innerHTML = `
-          <h4 class="font-semibold text-lg">${s.name}</h4>
-          <p class="text-sm text-zinc-300 mb-1">Status: ${s.status}</p>
-          ${s.status === 'approved'
-            ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>`
-            : ''}
-        `;
-        serversContainer.appendChild(div);
-      });
-    })
-    .catch(() => serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>');
 }
 
 // ---------------------
@@ -312,20 +233,10 @@ function fetchServers() {
 // ---------------------
 copyLinkBtn.onclick = async () => {
   try {
-    let userId = profileIdFromUrl;
-
-    if (!userId) {
-      const res = await fetch(`${API_URL}/profile`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
-      userId = data._id;
-    }
-
-    const shareLink = `${window.location.origin}/profile/?id=${userId}`;
+    const shareLink = `${window.location.origin}/profile/?id=${profileIdFromUrl}`;
     await navigator.clipboard.writeText(shareLink);
-
     copyLinkBtn.textContent = 'Link Copied!';
     setTimeout(() => { copyLinkBtn.textContent = 'Copy Profile Link'; }, 2000);
-
   } catch {
     copyLinkBtn.textContent = 'Failed to copy';
     setTimeout(() => { copyLinkBtn.textContent = 'Copy Profile Link'; }, 2000);
