@@ -694,6 +694,8 @@ const connectButtonsContainer = document.createElement("div");
 connectButtonsContainer.className = "flex flex-wrap gap-3 mt-4";
 
 Object.keys(platforms).forEach(p => {
+  if (!platforms[p].oauth) return;
+
   const btn = document.createElement("button");
   btn.className = "bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded text-white flex items-center gap-2";
   btn.innerHTML = `<img src="${platforms[p].logo}" class="w-4 h-4"/> Connect ${platforms[p].name}`;
@@ -702,6 +704,7 @@ Object.keys(platforms).forEach(p => {
 });
 
 connectionsList.parentNode.insertBefore(connectButtonsContainer, connectionsList);
+
 
 // =====================
 // Initial load
