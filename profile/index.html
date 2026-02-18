@@ -117,7 +117,7 @@ if (urlParams.has("token")) {
 }
 
 // ---------------------
-// Detect Profile ID From Query Param
+// Detect Profile ID
 // ---------------------
 function getProfileId() {
   const params = new URLSearchParams(window.location.search);
@@ -154,12 +154,14 @@ async function loadProfile() {
 
     renderProfile(data);
 
+    // ✅ Always render public socials as connections
+    renderConnections(data.socials || []);
+
     if (viewingOwnProfile && token) {
       fetchServers();
-      loadConnections();
+      loadConnections(); // loads private OAuth connections
     } else {
       serversContainer.innerHTML = '';
-      connectionsContainer.innerHTML = '';
     }
 
   } catch (err) {
@@ -226,6 +228,35 @@ function renderSocials(socials) {
 }
 
 // ---------------------
+// Render Connections (Public Socials)
+// ---------------------
+function renderConnections(socials) {
+  connectionsContainer.innerHTML = '';
+
+  if (!socials.length) {
+    connectionsContainer.innerHTML =
+      '<p class="text-zinc-400 col-span-full">No connections found.</p>';
+    return;
+  }
+
+  socials.forEach(s => {
+    const card = document.createElement('div');
+    card.className =
+      'flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform gap-2';
+
+    card.innerHTML = `
+      <div class="flex items-center gap-3">
+        <img src="${platformLogos[s.platform] || ''}" class="w-6 h-6" />
+        <span class="font-medium capitalize">${s.platform}</span>
+      </div>
+      <p class="text-sm text-zinc-300 truncate">${s.handle}</p>
+    `;
+
+    connectionsContainer.appendChild(card);
+  });
+}
+
+// ---------------------
 // Fetch Servers (Own Only)
 // ---------------------
 function fetchServers() {
@@ -265,99 +296,30 @@ function fetchServers() {
 }
 
 // ---------------------
-// Load Connections
+// Fetch Private OAuth Connections (Own Only)
 // ---------------------
-function loadConnections() {
-  connectionsContainer.innerHTML = '<p class="text-zinc-400 col-span-full">Loading connections...</p>';
+async function loadConnections() {
+  try {
+    const res = await fetch(`${API_URL}/profile/connections`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
-  // If viewing your own profile and logged in, fetch /connections
-  if (token && (!profileId || profileId === loggedInUser?._id)) {
-    fetch(`${API_URL}/profile/connections`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => res.json())
-      .then(renderConnections)
-      .catch(err => {
-        console.error(err);
-        connectionsContainer.innerHTML = '<p class="text-red-500 col-span-full">Failed to load connections.</p>';
-      });
-  } else {
-    // Viewing another user’s profile → use their socials from profile API
-    fetch(profileEndpoint, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
-      .then(res => res.json())
-      .then(data => {
-        if (!data?.socials || !data.socials.length) {
-          connectionsContainer.innerHTML = '<p class="text-zinc-400 col-span-full">No connections found.</p>';
-          return;
-        }
-        renderConnections(data);
-      })
-      .catch(err => {
-        console.error(err);
-        connectionsContainer.innerHTML = '<p class="text-red-500 col-span-full">Failed to load connections.</p>';
-      });
-  }
+    if (!res.ok) return;
+
+    const data = await res.json();
+    console.log("Private OAuth connections:", data);
+
+  } catch {}
 }
-
-// ---------------------
-// Render Connections
-// ---------------------
-function renderConnections(data) {
-  const socials = data.socials || [];
-  connectionsContainer.innerHTML = '';
-
-  if (!socials.length) {
-    connectionsContainer.innerHTML = '<p class="text-zinc-400 col-span-full">No connections found.</p>';
-    return;
-  }
-
-  socials.forEach(s => {
-    if (!s.connected || !s.username) return;
-
-    const card = document.createElement('div');
-    card.className = `flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform duration-150 gap-2`;
-
-    let extraInfo = '';
-    if (s.platform === 'spotify' && s.currentlyPlaying) {
-      extraInfo = `<p class="text-sm text-zinc-300 truncate">🎵 Now Playing: ${s.currentlyPlaying.name} by ${s.currentlyPlaying.artists.join(', ')}</p>`;
-    }
-
-    let profileLink = s.profileUrl || '';
-    if (!profileLink) {
-      switch (s.platform) {
-        case 'github': profileLink = `https://github.com/${s.username}`; break;
-        case 'twitter': profileLink = `https://twitter.com/${s.username}`; break;
-        case 'linkedin': profileLink = `https://linkedin.com/in/${s.username}`; break;
-        case 'tiktok': profileLink = `https://www.tiktok.com/@${s.username}`; break;
-        default: profileLink = '';
-      }
-    }
-
-    const displayUsername = profileLink
-      ? `<a href="${profileLink}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>`
-      : s.username;
-
-    card.innerHTML = `
-      <div class="flex items-center gap-3">
-        <img src="${platformLogos[s.platform] || ''}" alt="${s.platform}" class="w-6 h-6" />
-        <span class="font-medium capitalize">${s.platform}</span>
-      </div>
-      <p class="text-sm text-zinc-300 truncate">${displayUsername}</p>
-      ${extraInfo}
-    `;
-    connectionsContainer.appendChild(card);
-  });
-}
-
 
 // ---------------------
 // Copy Profile Link
 // ---------------------
 copyLinkBtn.onclick = async () => {
   try {
-    let userId;
+    let userId = profileIdFromUrl;
 
-    if (profileIdFromUrl) {
-      userId = profileIdFromUrl;
-    } else {
+    if (!userId) {
       const res = await fetch(`${API_URL}/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
