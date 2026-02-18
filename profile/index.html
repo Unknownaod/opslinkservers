@@ -178,12 +178,13 @@ async function loadPublicConnections(userId) {
       const isVerified = verifiedPlatforms.includes(s.platform.toLowerCase());
 
 const tooltip = `
-  <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity text-sm bg-black/90 text-white px-3 py-1.5 rounded whitespace-nowrap z-50 pointer-events-none flex items-center gap-1">
+  <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity text-sm bg-black/90 text-white px-2 py-1 rounded whitespace-nowrap z-50 pointer-events-none flex items-center">
     ${isVerified
-      ? `<img src="/assets/verified.gif" class="w-4 h-4 inline-block" style="vertical-align:middle;" /> <span>Connected Verified</span>`
+      ? `<img src="/assets/verified.gif" class="w-4 h-4 mr-1" style="display:inline-block; vertical-align:text-bottom;" /> Connected Verified`
       : '<span>⚠ Connection Not Verified</span>'}
   </div>
 `;
+
 
 
       card.innerHTML = `
