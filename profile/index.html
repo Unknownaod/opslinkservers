@@ -177,11 +177,11 @@ async function loadPublicConnections(userId) {
       const verifiedPlatforms = ['spotify', 'twitch', 'youtube', 'github'];
       const isVerified = verifiedPlatforms.includes(s.platform.toLowerCase());
 
-      // Tooltip HTML (floating outside the card, smaller)
+      // Tooltip HTML (floating outside the card, slightly bigger and wider)
       const tooltip = `
-        <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity text-sm bg-black/90 text-white px-3 py-1.5 rounded whitespace-nowrap z-50 pointer-events-none flex items-center gap-2">
+        <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity text-sm bg-black/90 text-white px-4 py-2 rounded whitespace-nowrap z-50 pointer-events-none flex items-center gap-2">
           ${isVerified
-            ? `<img src="/assets/verified.gif" class="w-4 h-4" /> Connected Verified`
+            ? `<img src="/assets/verified.gif" class="w-5 h-5" /> Connected Verified`
             : '⚠ Connection Not Verified'}
         </div>
       `;
