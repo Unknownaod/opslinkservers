@@ -115,12 +115,18 @@ if (urlParams.has("token")) {
 }
 
 // ---------------------
+// Get profile ID from URL
+// ---------------------
+const pathParts = window.location.pathname.split('/');
+const profileId = pathParts[2] || null; // /profile/{id}
+
+// ---------------------
 // Load Profile
 // ---------------------
-if (!token) {
-  profileContainer.innerHTML = '<p class="text-zinc-400">Please login to view your profile.</p>';
+if (!profileId) {
+  profileContainer.innerHTML = '<p class="text-zinc-400">No profile selected.</p>';
 } else {
-  fetch(`${API_URL}/profile`, { headers: { Authorization: `Bearer ${token}` } })
+  fetch(`${API_URL}/profile/${profileId}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
     .then(res => res.json())
     .then(data => {
       if (!data?._id) {
@@ -239,7 +245,7 @@ async function loadConnections() {
     data.socials.forEach(s => {
       if (!s.connected) return;
       const platform = s.platform;
-      if (!s.username) return; // skip if username missing
+      if (!s.username) return;
 
       const card = document.createElement('div');
       card.className = `flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform duration-150 gap-2`;
@@ -249,7 +255,6 @@ async function loadConnections() {
         extraInfo = `<p class="text-sm text-zinc-300 truncate">🎵 Now Playing: ${s.currentlyPlaying.name} by ${s.currentlyPlaying.artists.join(', ')}</p>`;
       }
 
-      // Generate profile link
       let profileLink = s.profileUrl || '';
       if (!profileLink) {
         switch (platform) {
@@ -261,7 +266,6 @@ async function loadConnections() {
         }
       }
 
-      // Make it clickable if URL exists
       const displayUsername = profileLink
         ? `<a href="${profileLink}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>`
         : s.username;
@@ -284,7 +288,6 @@ async function loadConnections() {
   }
 }
 
-
 // ---------------------
 // Copy Profile Link
 // ---------------------
@@ -292,18 +295,15 @@ copyLinkBtn.onclick = async () => {
   if (!token) return;
 
   try {
-    // Hit your existing route: GET /api/profile
-    const res = await fetch(`${API_URL}/profile`, {
+    const res = await fetch(`${API_URL}/profile/${profileId}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
 
     if (!res.ok) throw new Error('Failed to fetch profile');
-
     const data = await res.json();
     if (!data?._id) throw new Error('No user ID returned');
 
     const shareLink = `${window.location.origin}/profile/${data._id}`;
-
     await navigator.clipboard.writeText(shareLink);
 
     copyLinkBtn.textContent = 'Link Copied!';
@@ -319,9 +319,8 @@ copyLinkBtn.onclick = async () => {
     }, 2000);
   }
 };
-
-
 </script>
+
 
 </body>
 </html>
