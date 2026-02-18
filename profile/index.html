@@ -26,7 +26,7 @@
       filter: brightness(0.35) contrast(1.1);
     }
 
-    /* Glassmorphism card style */
+    /* Glassmorphism cards */
     .glass {
       background: rgba(0,0,0,0.55);
       backdrop-filter: blur(12px);
@@ -34,7 +34,7 @@
       border-radius: 1rem;
     }
 
-    /* Smooth card hover */
+    /* Hover scaling effect */
     .hover-scale:hover {
       transform: scale(1.03);
       transition: transform 0.3s ease;
@@ -131,6 +131,18 @@
       youtube: 'https://cdn.simpleicons.org/youtube',
     };
 
+    const platformColors = {
+      discord: 'bg-[#5865F2]',
+      twitter: 'bg-[#1DA1F2]',
+      instagram: 'bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF]',
+      github: 'bg-[#333]',
+      tiktok: 'bg-[#69C9D0]',
+      linkedin: 'bg-[#0A66C2]',
+      spotify: 'bg-[#1DB954]',
+      twitch: 'bg-[#9146FF]',
+      youtube: 'bg-[#FF0000]',
+    };
+
     // ---------------------
     // Detect Profile ID
     // ---------------------
@@ -199,6 +211,101 @@
 
       document.getElementById('profileID').innerHTML =
         `User ID: <span class="font-semibold text-blue-400">${data._id}</span>`;
+    }
+
+    // ---------------------
+    // Load Public OAuth Connections
+    // ---------------------
+    async function loadPublicConnections(userId) {
+      try {
+        const res = await fetch(`${API_URL}/profile/${userId}/connections`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+        const socials = data.socials || [];
+
+        connectionsContainer.innerHTML = '';
+
+        if (!socials.length) {
+          connectionsContainer.innerHTML = '<p class="text-zinc-400">No connections found.</p>';
+          return;
+        }
+
+        socials.forEach(s => {
+          const card = document.createElement('div');
+          card.className = 'flex flex-col p-3 border border-zinc-700 rounded-lg hover:scale-[1.02] transition-transform gap-2 relative group cursor-default glass';
+
+          const displayUsername = s.profileUrl
+            ? `<a href="${s.profileUrl}" target="_blank" class="text-blue-400 underline text-sm">${s.username}</a>`
+            : s.username;
+
+          const verifiedPlatforms = ['spotify', 'twitch', 'youtube', 'github'];
+          const isVerified = verifiedPlatforms.includes(s.platform.toLowerCase());
+
+          const tooltip = `
+            <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity text-sm bg-black/90 text-white px-2 py-1 rounded whitespace-nowrap z-50 pointer-events-none flex items-center">
+              ${isVerified
+                ? `<img src="/assets/verified.gif" class="w-4 h-4 mr-1" style="display:inline-block; vertical-align:text-bottom;" /> Connected Verified`
+                : '<span>⚠ Connection Not Verified</span>'}
+            </div>
+          `;
+
+          card.innerHTML = `
+            <div class="flex items-center gap-3">
+              <img src="${platformLogos[s.platform] || ''}" class="w-6 h-6" alt="${s.platform}" />
+              <span class="font-medium capitalize">${s.platform}</span>
+            </div>
+            <p class="text-sm text-zinc-300 truncate">${displayUsername}</p>
+            ${tooltip}
+          `;
+
+          connectionsContainer.appendChild(card);
+        });
+
+      } catch (err) {
+        console.error('Failed to load connections:', err);
+        connectionsContainer.innerHTML = '<p class="text-red-500">Failed to load connections.</p>';
+      }
+    }
+
+    // ---------------------
+    // Load Public Servers
+    // ---------------------
+    async function loadPublicServers(userId) {
+      try {
+        const res = await fetch(`${API_URL}/servers/user/${userId}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const servers = await res.json();
+        serversContainer.innerHTML = '';
+
+        if (!servers.length) {
+          serversContainer.innerHTML = '<p class="text-zinc-400">No servers found.</p>';
+          return;
+        }
+
+        servers.forEach(s => {
+          const div = document.createElement('div');
+          div.className = `p-4 rounded border ${
+            s.status === 'approved' ? 'border-green-500 bg-green-900/30' :
+            s.status === 'denied' ? 'border-red-500 bg-red-900/30' :
+            'border-zinc-700 bg-zinc-900/50'
+          } glass hover-scale`;
+
+          div.innerHTML = `
+            <h4 class="font-semibold text-lg">${s.name}</h4>
+            <p class="text-sm text-zinc-300 mb-1">Status: ${s.status}</p>
+            ${s.status === 'approved'
+              ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>`
+              : ''}
+          `;
+          serversContainer.appendChild(div);
+        });
+
+      } catch (err) {
+        console.error('Failed to load servers:', err);
+        serversContainer.innerHTML = '<p class="text-red-500">Failed to load servers.</p>';
+      }
     }
 
     // ---------------------
