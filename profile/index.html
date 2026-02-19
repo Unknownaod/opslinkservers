@@ -382,18 +382,46 @@
       }
     };
 
-  const bgMusic = document.getElementById('bgMusic');
-  const overlay = document.getElementById('audioOverlay');
+const bgMusic = document.getElementById('bgMusic');
+const overlay = document.getElementById('audioOverlay');
 
-  function enableMusic() {
-    bgMusic.volume = 0.3; // optional lower volume
-    bgMusic.play().catch(console.log);
-    overlay.style.display = 'none'; // hide overlay
-    window.removeEventListener('click', enableMusic);
+function enableMusic() {
+  if (!bgMusic) return;
+
+  bgMusic.volume = 0.3;
+  bgMusic.muted = false;
+
+  const playPromise = bgMusic.play();
+
+  if (playPromise !== undefined) {
+    playPromise
+      .then(() => {
+        overlay.style.display = 'none';
+        removeListeners();
+      })
+      .catch(err => {
+        console.log('Autoplay blocked:', err);
+      });
   }
+}
 
-  // Listen for first click anywhere
-  window.addEventListener('click', enableMusic);
+function removeListeners() {
+  window.removeEventListener('click', enableMusic);
+  window.removeEventListener('touchstart', enableMusic);
+  window.removeEventListener('keydown', enableMusic);
+}
+
+// Desktop + mobile support
+window.addEventListener('click', enableMusic, { once: true });
+window.addEventListener('touchstart', enableMusic, { once: true });
+window.addEventListener('keydown', enableMusic, { once: true });
+
+// Extra safety: tapping the overlay itself
+if (overlay) {
+  overlay.addEventListener('click', enableMusic);
+  overlay.addEventListener('touchstart', enableMusic);
+}
+
 
 const music = document.getElementById('bgMusic');
 const slider = document.getElementById('volumeSlider');
