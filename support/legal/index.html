@@ -118,76 +118,114 @@
         </ul>
     </section>
 
-    <!-- Section 9 -->
-  <!-- Section 9 -->
+<!-- Section 9 -->
 <section id="privacy">
-  <h2 class="text-2xl font-semibold mb-4">9. Privacy Policy & Google User Data</h2>
+  <h2 class="text-2xl font-semibold mb-4">9. Privacy Policy & Verified Connections</h2>
 
   <p class="mb-4">
-    OpsLink Inc. is committed to protecting user privacy and handling data transparently,
-    in compliance with the Google API Services User Data Policy.
+    OpsLink Inc. provides an optional “Verified Connections” feature that allows users
+    to link third-party accounts (such as Google, Twitch, or GitHub) to their OpsLink
+    profile for display purposes only, similar to connection features offered by
+    platforms like Discord.
   </p>
 
-  <h3 class="text-xl font-semibold mt-6 mb-2">9.1 Data We Access</h3>
+  <p class="mb-4">
+    Connecting a third-party account is <strong>entirely optional</strong> and is not
+    required to create or use an OpsLink account.
+  </p>
+
+  <!-- PURPOSE -->
+  <h3 class="text-xl font-semibold mt-6 mb-2">9.1 Purpose of OAuth Connections</h3>
   <ul class="list-disc list-inside space-y-1">
-    <li>Basic Google Account information (name, email address, profile picture)</li>
-    <li>Google Account unique identifier (User ID)</li>
-    <li>OAuth access tokens required for authentication</li>
+    <li>Verify ownership of a third-party account</li>
+    <li>Display a verified connection badge on a user’s public profile</li>
+    <li>Allow users to showcase linked platforms at their discretion</li>
+  </ul>
+
+  <!-- GOOGLE -->
+  <h3 class="text-xl font-semibold mt-6 mb-2">9.2 Google Connection Data</h3>
+  <p class="mb-2"><strong>Data Accessed:</strong></p>
+  <ul class="list-disc list-inside space-y-1">
+    <li>Basic Google profile information (name, email address, profile image)</li>
+    <li>Google account unique identifier</li>
   </ul>
 
   <p class="mt-2 text-gray-300">
-    OpsLink does <strong>not</strong> access Google Drive files, Gmail content, calendar data,
-    contacts, or any sensitive Google data unless explicitly stated and authorized by the user.
+    OpsLink does not access Gmail, Google Drive, contacts, calendars, or any sensitive
+    Google user data.
   </p>
 
-  <h3 class="text-xl font-semibold mt-6 mb-2">9.2 How We Use Google User Data</h3>
+  <!-- TWITCH -->
+  <h3 class="text-xl font-semibold mt-6 mb-2">9.3 Twitch Connection Data</h3>
+  <p class="mb-2"><strong>Data Accessed:</strong></p>
   <ul class="list-disc list-inside space-y-1">
-    <li>Authenticate users securely via Google Sign-In</li>
-    <li>Create and manage user accounts on the OpsLink Platform</li>
-    <li>Prevent fraud and unauthorized access</li>
-    <li>Provide core platform functionality requested by the user</li>
+    <li>Twitch username and display name</li>
+    <li>Twitch user ID</li>
+    <li>Profile image</li>
+    <li>Email address (only if authorized)</li>
   </ul>
 
-  <p class="mt-2 text-gray-300">
-    Google user data is <strong>never</strong> used for advertising, data resale,
-    or unrelated tracking purposes.
-  </p>
-
-  <h3 class="text-xl font-semibold mt-6 mb-2">9.3 Data Sharing</h3>
+  <!-- GITHUB -->
+  <h3 class="text-xl font-semibold mt-6 mb-2">9.4 GitHub Connection Data</h3>
+  <p class="mb-2"><strong>Data Accessed:</strong></p>
   <ul class="list-disc list-inside space-y-1">
-    <li>Google user data is <strong>not sold</strong> to third parties</li>
-    <li>Data is shared only with trusted infrastructure providers (hosting, security, database)</li>
-    <li>Data may be disclosed if legally required by law enforcement or court order</li>
+    <li>GitHub username</li>
+    <li>GitHub user ID</li>
+    <li>Public profile information (avatar, bio)</li>
+    <li>Email address (only if provided and authorized)</li>
   </ul>
 
-  <h3 class="text-xl font-semibold mt-6 mb-2">9.4 Data Storage & Security</h3>
+  <!-- LIMITATIONS -->
+  <h3 class="text-xl font-semibold mt-6 mb-2">9.5 Data Usage Limitations</h3>
   <ul class="list-disc list-inside space-y-1">
-    <li>Data is stored on secured servers with access controls</li>
-    <li>OAuth tokens are encrypted at rest</li>
-    <li>HTTPS encryption is enforced in transit</li>
-    <li>Access is restricted to authorized personnel only</li>
+    <li>OAuth data is used solely to verify and display connected accounts</li>
+    <li>No background access after verification</li>
+    <li>No automated posting or activity tracking</li>
+    <li>No advertising, analytics, or profiling use</li>
+    <li>No sale or resale of OAuth data</li>
   </ul>
 
-  <h3 class="text-xl font-semibold mt-6 mb-2">9.5 Data Retention & Deletion</h3>
+  <!-- SHARING -->
+  <h3 class="text-xl font-semibold mt-6 mb-2">9.6 Data Sharing</h3>
   <ul class="list-disc list-inside space-y-1">
-    <li>User data is retained only while an account remains active</li>
-    <li>Users may request account and data deletion at any time</li>
-    <li>Upon deletion, all associated Google user data is permanently removed within 30 days</li>
+    <li>Verified connection data is visible only according to user profile settings</li>
+    <li>Data is not shared with third parties beyond required infrastructure services</li>
+    <li>Legal disclosure may occur if required by law</li>
+  </ul>
+
+  <!-- STORAGE -->
+  <h3 class="text-xl font-semibold mt-6 mb-2">9.7 Data Storage & Security</h3>
+  <ul class="list-disc list-inside space-y-1">
+    <li>Data is stored securely with access controls</li>
+    <li>Tokens are used only during the verification process</li>
+    <li>No long-term OAuth access tokens are retained unnecessarily</li>
+  </ul>
+
+  <!-- RETENTION -->
+  <h3 class="text-xl font-semibold mt-6 mb-2">9.8 Data Retention & Deletion</h3>
+  <ul class="list-disc list-inside space-y-1">
+    <li>Users may disconnect any verified connection at any time</li>
+    <li>Disconnecting removes the association and display immediately</li>
+    <li>All associated OAuth data is deleted within 30 days</li>
   </ul>
 
   <p class="mt-2">
-    Data deletion requests can be submitted by contacting:
+    Requests regarding data access or deletion may be submitted to:
     <a href="mailto:opslinksystems@gmail.com" class="text-pink-500 hover:underline">
       opslinksystems@gmail.com
     </a>
   </p>
 
-  <h3 class="text-xl font-semibold mt-6 mb-2">9.6 Compliance Statement</h3>
+  <!-- COMPLIANCE -->
+  <h3 class="text-xl font-semibold mt-6 mb-2">9.9 Compliance Statement</h3>
   <p class="text-gray-300">
-    OpsLink’s use and transfer of information received from Google APIs adheres to
-    the Google API Services User Data Policy, including the Limited Use requirements.
+    OpsLink’s use of information received from Google APIs complies with the Google
+    API Services User Data Policy, including the Limited Use requirements. OAuth data
+    from Twitch and GitHub is handled in accordance with their respective developer
+    and privacy policies.
   </p>
 </section>
+
 
     <!-- Section 10 -->
     <section id="cookies">
