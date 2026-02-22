@@ -164,10 +164,17 @@ const userStr = localStorage.getItem('user');
 const loginBtn = document.getElementById('loginBtn');
 const adminBtn = document.getElementById('adminBtn');
 const navLinks = document.getElementById('navLinks');
-const userId = localStorage.getItem('userId');
 
 if (token && userStr) {
   currentUser = JSON.parse(userStr);
+  let userId;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    userId = payload.id || payload._id;
+  } catch {
+    userId = currentUser._id;
+  }
+
   loginBtn.textContent = 'Logout';
   loginBtn.href = '#';
   loginBtn.onclick = () => {
