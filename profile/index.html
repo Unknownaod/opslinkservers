@@ -354,9 +354,9 @@
           div.innerHTML = `
             <h4 class="font-semibold text-lg">${s.name}</h4>
             <p class="text-sm text-zinc-300 mb-1">Status: ${s.status}</p>
-            ${s.status === 'approved'
-              ? `<a href="${s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>`
-              : ''}
+            ${s.status === 'approved' 
+             ? `<a href="${s.invite.startsWith('https://') ? s.invite : 'https://' + s.invite}" target="_blank" class="text-blue-400 underline text-sm">Join Server</a>` 
+            : ''}
           `;
           serversContainer.appendChild(div);
         });
