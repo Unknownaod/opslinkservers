@@ -43,8 +43,8 @@
 </head>
 
 <body class="min-h-screen text-white overflow-x-hidden animated-bg">
-
-  <style>
+  
+<style>
 .animated-bg {
   background: linear-gradient(
     270deg,
@@ -54,18 +54,23 @@
     #000000
   );
   background-size: 400% 400%;
-  animation: gradientMove 12s ease infinite;
+  animation:
+    gradientMove 18s ease infinite,
+    pulseGlow 6s ease-in-out infinite;
 }
 
 @keyframes gradientMove {
-  0% {
-    background-position: 0% 50%;
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    filter: brightness(1);
   }
   50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
+    filter: brightness(1.08);
   }
 }
 </style>
