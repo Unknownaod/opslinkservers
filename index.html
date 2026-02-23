@@ -42,7 +42,33 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="min-h-screen bg-gradient-to-br from-black via-red-700 to-black text-white overflow-x-hidden">
+<body class="min-h-screen text-white overflow-x-hidden animated-bg">
+
+  <style>
+.animated-bg {
+  background: linear-gradient(
+    270deg,
+    #000000,
+    #7f1d1d,
+    #dc2626,
+    #000000
+  );
+  background-size: 400% 400%;
+  animation: gradientMove 12s ease infinite;
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+</style>
   
   <!-- Navbar above hero, centered -->
   <nav class="flex flex-col items-center px-10 py-6">
