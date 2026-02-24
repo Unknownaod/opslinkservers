@@ -129,7 +129,7 @@ if (currentUser.role === 'management') {
 
 // --- LOAD SERVERS ---
 async function loadServers(){
-  const res = await fetch(${API_URL}/api/servers);
+  const res = await fetch(`${API_URL}/api/servers`);
   servers = await res.json();
   generateTags();
   populateSponsorDropdown();
@@ -165,8 +165,8 @@ function generateTags(){
 }
 
 function tagButtonClass(tag){
-  if(tag==='all') return px-4 py-1 rounded-full text-sm font-semibold ${activeTags.length===0?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'};
-  return px-4 py-1 rounded-full text-sm font-semibold ${activeTags.includes(tag)?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'};
+  if(tag==='all') return `px-4 py-1 rounded-full text-sm font-semibold ${activeTags.length===0?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
+  return `px-4 py-1 rounded-full text-sm font-semibold ${activeTags.includes(tag)?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
 }
 
 function updateTagHighlight(){
@@ -228,7 +228,7 @@ function renderServers(){
 
     const card=document.createElement('div');
     card.className=cardClass;
-    card.innerHTML=
+    card.innerHTML=`
       <div class="relative px-6 pt-6 flex items-start justify-between">
         <div class="flex items-center gap-4">
           <img src="${s.logo}" alt="${s.name}" class="w-14 h-14 rounded-2xl object-cover shadow-xl bg-black" />
@@ -241,7 +241,7 @@ function renderServers(){
         </div>
       </div>
       <div class="px-6 pb-6 pt-4 flex flex-col gap-4">
-        <div class="flex flex-wrap gap-2">${(s.tags||[]).map(t=><span class="px-3 py-1 text-xs font-semibold rounded-full bg-[#2a2d3d] text-white">${t.toUpperCase()}</span>).join('')}</div>
+        <div class="flex flex-wrap gap-2">${(s.tags||[]).map(t=>`<span class="px-3 py-1 text-xs font-semibold rounded-full bg-[#2a2d3d] text-white">${t.toUpperCase()}</span>`).join('')}</div>
         <p class="text-sm text-zinc-300 leading-relaxed line-clamp-3">${s.description}</p>
         <div class="border-t border-[#2a2d3d]"></div>
         <div class="flex items-center justify-between">
@@ -249,8 +249,8 @@ function renderServers(){
           <a href="${invite}" target="_blank" class="px-6 py-2 rounded-full bg-[#2b2f42] hover:bg-[#3a3f5c] font-bold tracking-wide transition">JOIN ➜</a>
         </div>
       </div>
-    ;
-    card.onclick=e=>{if(e.target.tagName!=='A') window.location.href=serverprofile/?guildid=${s._id};};
+    `;
+    card.onclick=e=>{if(e.target.tagName!=='A') window.location.href=`serverprofile/?guildid=${s._id}`;};
     grid.appendChild(card);
   });
 
@@ -267,14 +267,14 @@ function renderPagination(){
   const prev=document.createElement('button');
   prev.textContent='Prev';
   prev.disabled=currentPage===1;
-  prev.className=px-4 py-2 rounded-full font-semibold ${prev.disabled?'bg-zinc-700 text-white/50':'bg-zinc-800 text-white/80 hover:bg-zinc-700'};
+  prev.className=`px-4 py-2 rounded-full font-semibold ${prev.disabled?'bg-zinc-700 text-white/50':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
   prev.onclick=()=>{if(currentPage>1){currentPage--;renderServers();}};
   pagination.appendChild(prev);
 
   for(let i=1;i<=totalPages;i++){
     const btn=document.createElement('button');
     btn.textContent=i;
-    btn.className=px-4 py-2 rounded-full font-semibold ${i===currentPage?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'};
+    btn.className=`px-4 py-2 rounded-full font-semibold ${i===currentPage?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
     btn.onclick=()=>{currentPage=i; renderServers();};
     pagination.appendChild(btn);
   }
@@ -282,7 +282,7 @@ function renderPagination(){
   const next=document.createElement('button');
   next.textContent='Next';
   next.disabled=currentPage===totalPages;
-  next.className=px-4 py-2 rounded-full font-semibold ${next.disabled?'bg-zinc-700 text-white/50':'bg-zinc-800 text-white/80 hover:bg-zinc-700'};
+  next.className=`px-4 py-2 rounded-full font-semibold ${next.disabled?'bg-zinc-700 text-white/50':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
   next.onclick=()=>{if(currentPage<totalPages){currentPage++;renderServers();}};
   pagination.appendChild(next);
 }
@@ -310,18 +310,18 @@ document.getElementById('confirmSponsor').onclick = async () => {
   const server = servers.find(s => s._id === id);
   if (server) {
     // Send POST request to update sponsorship status
-    const res = await fetch(${API_URL}/api/servers/sponsor/${id}, {
+    const res = await fetch(`${API_URL}/api/servers/sponsor/${id}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': Bearer ${token}, // Assuming you have a token for auth
+        'Authorization': `Bearer ${token}`, // Assuming you have a token for auth
       },
     });
 
     if (res.ok) {
       const data = await res.json();
       server.sponsored = data.sponsored;
-      alert(${server.name} is now ${server.sponsored ? 'sponsored' : 'not sponsored'});
+      alert(`${server.name} is now ${server.sponsored ? 'sponsored' : 'not sponsored'}`);
       populateSponsorDropdown();
       applyFilters();
       sponsorModal.classList.add('hidden');
@@ -339,6 +339,5 @@ document.getElementById('nsfwToggle')?.addEventListener('change',()=>{currentPag
 
 loadServers();
 </script>
-  
 </body>
 </html>
