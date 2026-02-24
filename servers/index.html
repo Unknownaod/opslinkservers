@@ -107,6 +107,7 @@ const loginBtn = document.getElementById('loginBtn');
 const adminBtn = document.getElementById('adminBtn');
 const sponsorBtn = document.getElementById('sponsorBtn');
 
+/* ================= AUTH ================= */
 if (currentUser) {
   loginBtn.textContent = 'Logout';
   loginBtn.href = '#';
@@ -115,19 +116,49 @@ if (currentUser) {
     location.reload();
   };
 
-if (currentUser.role === 'admin') {
-  adminBtn.classList.remove('hidden');
-  adminBtn.href = '../dashboard.html';
+  if (currentUser.role === 'admin') {
+    adminBtn.classList.remove('hidden');
+    adminBtn.href = '../dashboard.html';
+  }
+
+  if (currentUser.role === 'management') {
+    adminBtn.classList.remove('hidden');
+    adminBtn.href = '../dashboard.html';
+    sponsorBtn.classList.remove('hidden');
+  }
 }
 
-if (currentUser.role === 'management') {
-  adminBtn.classList.remove('hidden');
-  adminBtn.href = '../dashboard.html';
-  sponsorBtn.classList.remove('hidden');
-}
+/* ================= REVIEW / RATING LOGIC ================= */
+async function loadServerRating(serverId) {
+  try {
+    const res = await fetch(`${API_URL}/api/servers/${serverId}`);
+    const s = await res.json();
+
+    const reviews = s.reviews || [];
+    if (!reviews.length) {
+      return {
+        stars: '☆☆☆☆☆',
+        text: 'No reviews'
+      };
+    }
+
+    const total = reviews.reduce((sum, r) => sum + r.rating, 0);
+    const avg = total / reviews.length;
+    const rounded = Math.round(avg);
+
+    return {
+      stars: '★'.repeat(rounded) + '☆'.repeat(5 - rounded),
+      text: `${avg.toFixed(1)} / 5 (${reviews.length})`
+    };
+  } catch {
+    return {
+      stars: '☆☆☆☆☆',
+      text: 'No reviews'
+    };
+  }
 }
 
-// --- LOAD SERVERS ---
+/* ================= LOAD SERVERS ================= */
 async function loadServers(){
   const res = await fetch(`${API_URL}/api/servers`);
   servers = await res.json();
@@ -136,7 +167,7 @@ async function loadServers(){
   applyFilters();
 }
 
-// --- TAGS ---
+/* ================= TAGS ================= */
 function generateTags(){
   const tagContainer = document.getElementById('tagContainer');
   tagContainer.innerHTML='';
@@ -144,7 +175,6 @@ function generateTags(){
   servers.forEach(s=> (s.tags||[]).forEach(t=>tagsSet.add(t)));
   const tags = Array.from(tagsSet).sort();
 
-  // "All Servers"
   const allBtn = document.createElement('button');
   allBtn.textContent='All Servers';
   allBtn.className=tagButtonClass('all');
@@ -165,7 +195,8 @@ function generateTags(){
 }
 
 function tagButtonClass(tag){
-  if(tag==='all') return `px-4 py-1 rounded-full text-sm font-semibold ${activeTags.length===0?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
+  if(tag==='all')
+    return `px-4 py-1 rounded-full text-sm font-semibold ${activeTags.length===0?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
   return `px-4 py-1 rounded-full text-sm font-semibold ${activeTags.includes(tag)?'bg-indigo-600 text-white':'bg-zinc-800 text-white/80 hover:bg-zinc-700'}`;
 }
 
@@ -177,7 +208,7 @@ function updateTagHighlight(){
   });
 }
 
-// --- FILTER ---
+/* ================= FILTER ================= */
 function applyFilters(){
   const search = document.getElementById('searchInput')?.value.toLowerCase()||'';
   const nsfwToggle = document.getElementById('nsfwToggle')?.checked||false;
@@ -206,11 +237,15 @@ function applyFilters(){
   renderServers();
 }
 
-// --- RENDER SERVERS ---
+/* ================= RENDER SERVERS ================= */
 function renderServers(){
   const grid = document.getElementById('serversGrid');
   grid.innerHTML='';
-  if(!filteredServers.length){document.getElementById('pagination').innerHTML=''; grid.innerHTML='<div class="col-span-full text-center text-zinc-400 mt-10">No servers found</div>'; return;}
+  if(!filteredServers.length){
+    document.getElementById('pagination').innerHTML='';
+    grid.innerHTML='<div class="col-span-full text-center text-zinc-400 mt-10">No servers found</div>';
+    return;
+  }
 
   const start=(currentPage-1)*serversPerPage;
   const end=start+serversPerPage;
@@ -218,16 +253,19 @@ function renderServers(){
 
   pageServers.forEach(s=>{
     let invite = s.invite||'';
-    if(!invite.startsWith('http')) invite='https://discord.gg/'+invite.replace(/^discord\.gg\/?/i,'');
+    if(!invite.startsWith('http'))
+      invite='https://discord.gg/'+invite.replace(/^discord\.gg\/?/i,'');
 
     const premiumLabel = s.submitterDiscord?.ispremium?' <span class="text-indigo-400 font-bold">[PREMIUM]</span>':'';
     const sponsoredLabel = s.sponsored?'<span class="text-yellow-400 text-xs font-semibold ml-2">[Sponsored Post]</span>':'';
+
     const cardClass = s.sponsored
       ? 'group border-2 border-yellow-400 bg-gradient-to-br from-yellow-800 via-yellow-700 to-yellow-600 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-[1.03] cursor-pointer flex flex-col'
       : 'group bg-gradient-to-br from-black via-zinc-900 to-black border border-zinc-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-[1.02] cursor-pointer flex flex-col';
 
     const card=document.createElement('div');
     card.className=cardClass;
+
     card.innerHTML=`
       <div class="relative px-6 pt-6 flex items-start justify-between">
         <div class="flex items-center gap-4">
@@ -240,24 +278,49 @@ function renderServers(){
           </div>
         </div>
       </div>
+
       <div class="px-6 pb-6 pt-4 flex flex-col gap-4">
-        <div class="flex flex-wrap gap-2">${(s.tags||[]).map(t=>`<span class="px-3 py-1 text-xs font-semibold rounded-full bg-[#2a2d3d] text-white">${t.toUpperCase()}</span>`).join('')}</div>
+        <div class="flex flex-wrap gap-2">
+          ${(s.tags||[]).map(t=>`<span class="px-3 py-1 text-xs font-semibold rounded-full bg-[#2a2d3d] text-white">${t.toUpperCase()}</span>`).join('')}
+        </div>
+
         <p class="text-sm text-zinc-300 leading-relaxed line-clamp-3">${s.description}</p>
+
         <div class="border-t border-[#2a2d3d]"></div>
+
         <div class="flex items-center justify-between">
-          <span class="text-xs text-zinc-400">${s.members!=null?s.members.toLocaleString():'N/A'} members</span>
-          <a href="${invite}" target="_blank" class="px-6 py-2 rounded-full bg-[#2b2f42] hover:bg-[#3a3f5c] font-bold tracking-wide transition">JOIN ➜</a>
+          <div class="rating" data-id="${s._id}">
+            <span class="stars text-xs text-yellow-400">☆☆☆☆☆</span>
+            <span class="text-[11px] text-zinc-400 block">Loading…</span>
+          </div>
+
+          <a href="${invite}" target="_blank"
+             class="px-6 py-2 rounded-full bg-[#2b2f42] hover:bg-[#3a3f5c] font-bold tracking-wide transition">
+            JOIN ➜
+          </a>
         </div>
       </div>
     `;
-    card.onclick=e=>{if(e.target.tagName!=='A') window.location.href=`serverprofile/?guildid=${s._id}`;};
+
+    card.onclick=e=>{
+      if(e.target.tagName!=='A')
+        window.location.href=`serverprofile/?guildid=${s._id}`;
+    };
+
     grid.appendChild(card);
+
+    loadServerRating(s._id).then(r=>{
+      const el = card.querySelector('.rating');
+      if(!el) return;
+      el.querySelector('.stars').textContent = r.stars;
+      el.querySelector('.text-[11px]').textContent = r.text;
+    });
   });
 
   renderPagination();
 }
 
-// --- PAGINATION ---
+/* ================= PAGINATION ================= */
 function renderPagination(){
   const pagination = document.getElementById('pagination');
   pagination.innerHTML='';
@@ -287,7 +350,7 @@ function renderPagination(){
   pagination.appendChild(next);
 }
 
-// --- SPONSOR MODAL ---
+/* ================= SPONSOR MODAL ================= */
 const sponsorModal=document.getElementById('sponsorModal');
 sponsorBtn.onclick=()=>sponsorModal.classList.remove('hidden');
 document.getElementById('closeSponsorModal').onclick=()=>sponsorModal.classList.add('hidden');
@@ -308,31 +371,28 @@ document.getElementById('confirmSponsor').onclick = async () => {
   if (!id) return alert('Select a server');
 
   const server = servers.find(s => s._id === id);
-  if (server) {
-    // Send POST request to update sponsorship status
-    const res = await fetch(`${API_URL}/api/servers/sponsor/${id}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`, // Assuming you have a token for auth
-      },
-    });
+  if (!server) return;
 
-    if (res.ok) {
-      const data = await res.json();
-      server.sponsored = data.sponsored;
-      alert(`${server.name} is now ${server.sponsored ? 'sponsored' : 'not sponsored'}`);
-      populateSponsorDropdown();
-      applyFilters();
-      sponsorModal.classList.add('hidden');
-    } else {
-      console.error("Failed to toggle sponsorship:", res.statusText);
-      alert('Failed to update sponsorship.');
-    }
+  const res = await fetch(`${API_URL}/api/servers/sponsor/${id}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (res.ok) {
+    const data = await res.json();
+    server.sponsored = data.sponsored;
+    populateSponsorDropdown();
+    applyFilters();
+    sponsorModal.classList.add('hidden');
+  } else {
+    alert('Failed to update sponsorship.');
   }
 };
 
-// --- SEARCH / NSFW / SORT ---
+/* ================= SEARCH / SORT ================= */
 document.getElementById('sortSelect').onchange=()=>{currentPage=1; applyFilters();};
 document.getElementById('searchInput')?.addEventListener('input',()=>{currentPage=1;applyFilters();});
 document.getElementById('nsfwToggle')?.addEventListener('change',()=>{currentPage=1;applyFilters();});
