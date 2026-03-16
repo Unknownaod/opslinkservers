@@ -170,15 +170,16 @@
     }
   });
 
-  // DISCORD REGISTER (ADDED)
-  document.getElementById("discordRegister").onclick = () => {
-    const clientID = "1466430352238055587";
-    const redirectURI = encodeURIComponent("https://opslinkservers-backend.onrender.com/api/auth/discord/callback");
-    const scope = "identify email";
+// =======================
+// DISCORD REGISTER
+// =======================
 
-    window.location.href =
-      `https://discord.com/oauth2/authorize?client_id=${clientID}&response_type=code&redirect_uri=${redirectURI}&scope=${scope}`;
-  };
+document.getElementById("discordRegister").onclick = () => {
+
+  // Redirect to backend OAuth start
+  window.location.href = `${API_URL}/api/auth/discord`;
+
+};
 </script>
 </body>
 </html>
