@@ -83,6 +83,52 @@
     </div>
   </section>
 
+
+<!-- Discord Password Modal -->
+<div id="discordModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+
+  <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6 max-w-md w-full text-center shadow-xl">
+
+    <h2 class="text-2xl font-bold mb-3">Discord Account Created</h2>
+
+    <p class="text-zinc-300 text-sm mb-4">
+      Your account was successfully created using Discord.
+      <br><br>
+      Below is your <b>temporary password</b> required to log into your account.
+      <br>
+      After logging in, please go to the <b>Settings page</b> to change it.
+    </p>
+
+    <!-- Email Display -->
+    <div class="bg-zinc-800 rounded p-3 mb-3 text-sm text-zinc-300">
+      <b>Email:</b>
+      <span id="discordEmail" class="text-white"></span>
+    </div>
+
+    <!-- Password Box -->
+    <div class="bg-zinc-800 rounded p-3 flex items-center justify-between mb-4">
+      <span id="discordPassword"
+        class="text-green-400 font-mono text-sm break-all tracking-wider"></span>
+
+      <button id="copyPassword"
+        class="ml-3 bg-white text-black text-xs px-3 py-1 rounded hover:bg-zinc-200 transition">
+        Copy
+      </button>
+    </div>
+
+    <p class="text-xs text-yellow-300 mb-4">
+      Save this password somewhere safe. You will need it to log in.
+    </p>
+
+    <button id="continueLogin"
+      class="w-full bg-white text-black px-4 py-2 rounded hover:bg-zinc-200 transition">
+      Continue to Login
+    </button>
+
+  </div>
+
+</div>
+  
   <!-- Footer -->
   <footer class="px-10 py-10 border-t border-zinc-800 text-sm text-zinc-400 flex justify-between">
     <span>© 2026 OpsLink Servers</span>
@@ -170,16 +216,82 @@
     }
   });
 
-// =======================
-// DISCORD REGISTER
-// =======================
+const discordBtn = document.getElementById("discordRegister");
 
-document.getElementById("discordRegister").onclick = () => {
+discordBtn.onclick = () => {
 
-  // Redirect to backend OAuth start
+  if (discordBtn.dataset.clicked) return;
+
+  discordBtn.dataset.clicked = "true";
+  discordBtn.style.opacity = "0.6";
+  discordBtn.style.pointerEvents = "none";
+
   window.location.href = `${API_URL}/api/auth/discord`;
 
 };
+
+// =======================
+// DISCORD SUCCESS MODAL
+// =======================
+
+(function () {
+
+  const params = new URLSearchParams(window.location.search);
+
+  const success = params.get("success");
+  const email = params.get("email");
+  const password = params.get("password");
+
+  if (success === "discord_created" && password) {
+
+    const modal = document.getElementById("discordModal");
+    const passwordField = document.getElementById("discordPassword");
+    const emailField = document.getElementById("discordEmail");
+    const copyBtn = document.getElementById("copyPassword");
+    const continueBtn = document.getElementById("continueLogin");
+
+    // Set password
+    passwordField.textContent = password;
+
+    // Set email
+    if (emailField && email) {
+      emailField.textContent = email;
+    }
+
+    // Show modal
+    modal.classList.remove("hidden");
+
+    // Copy button
+    copyBtn.onclick = async () => {
+
+      try {
+        await navigator.clipboard.writeText(password);
+
+        copyBtn.textContent = "Copied!";
+        copyBtn.classList.add("bg-green-500","text-white");
+
+        setTimeout(() => {
+          copyBtn.textContent = "Copy";
+          copyBtn.classList.remove("bg-green-500","text-white");
+        }, 2000);
+
+      } catch {
+        alert("Failed to copy password");
+      }
+
+    };
+
+    // Continue button
+    continueBtn.onclick = () => {
+      window.location.href = "/auth/login/";
+    };
+
+    // Remove query params so refresh doesn't reopen modal
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+})();
+  
 </script>
 </body>
 </html>
