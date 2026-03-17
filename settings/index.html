@@ -331,13 +331,18 @@ document.getElementById('change-email').onclick = async () => {
   try {
 const newEmail = await createModal({
   title: 'Change Email',
-  message: `Enter your new email address.
+  message: `
+Enter your new email address.
 
-Please note, the confirmation email may take a few minutes to arrive. Keep checking the provided email, and changes may take up to 10 minutes.`,
+Please note, the confirmation email may take a few minutes to arrive. Keep checking the provided email, and changes may take up to 10 minutes.
+
+<span style="display:block; margin-top:0.5rem; font-size:0.8rem; color:#aaa;">
+Once the changes have taken place, you must log out and manually log back in to see the updated email.
+</span>
+`,
   placeholder: 'new-email@example.com',
   confirmText: 'Update'
 });
-
     if (!newEmail) return;
 
     const res = await fetch(`${API_URL}/auth/change-email`, {
