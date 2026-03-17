@@ -344,9 +344,11 @@ document.getElementById('change-email').onclick = async () => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({ newEmail })
-    });
-
+body: JSON.stringify({
+  oldEmail: user.email,
+  newEmail
+})
+});
     if (res.status === 401) return redirectLogin();
 
     const data = await res.json();
