@@ -40,11 +40,11 @@
       OpsLink Servers
     </div>
     <div class="flex items-center gap-8 text-sm">
-      <a href="index.html" class="hover:opacity-80">Home</a>
-      <a href="browse.html" class="hover:opacity-80">Browse</a>
-      <a href="submit.html" class="hover:opacity-80">Submit</a>
-      <a href="login.html" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
-      <a href="signup.html" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Sign Up</a>
+      <a href="/" class="hover:opacity-80">Home</a>
+      <a href="/servers/" class="hover:opacity-80">Browse</a>
+      <a href="/submit/" class="hover:opacity-80">Submit</a>
+      <a href="/auth/login/" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Login</a>
+      <a href="/auth/register/" class="rounded-full border border-white px-4 py-2 hover:bg-white/10">Sign Up</a>
     </div>
   </nav>
 
@@ -127,7 +127,7 @@ document.getElementById('resetForm').addEventListener('submit', async e => {
     if (!res.ok) throw new Error(data.error || "Failed to reset password");
 
     showFeedback({ type: 'success', message: "✅ Password reset successfully! Redirecting..." });
-    setTimeout(() => window.location.href = 'login.html', 2500);
+    setTimeout(() => window.location.href = '/auth/login/', 2500);
 
   } catch (err) {
     showFeedback({ type: 'fail', message: `❌ ${err.message || "Something went wrong."}` });
