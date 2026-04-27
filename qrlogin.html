@@ -48,7 +48,7 @@ const spinner = document.getElementById('spinner');
 
 if (!jwt) {
   alert('You must be logged in to scan QR codes.');
-  window.location.href = '/login.html';
+  window.location.href = '/auth/login/';
 }
 
 // Request camera access
@@ -99,7 +99,7 @@ function scan() {
         statusEl.classList.remove('text-zinc-400', 'text-red-500');
         statusEl.classList.add('text-green-500');
 
-        setTimeout(() => window.location.href = 'index.html', 1500);
+        setTimeout(() => window.location.href = '/', 1500);
       } else {
         statusEl.textContent = '❌ ' + (data.message || 'Invalid or expired QR code');
         statusEl.classList.remove('text-zinc-400', 'text-green-500');
