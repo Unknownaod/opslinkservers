@@ -3,59 +3,80 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Support - OpsLink</title>
+<title>OpsLink Support</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
+* {
+  scroll-behavior: smooth;
+}
+
 body {
-  font-family: Inter, sans-serif;
-  background: #0b0f19;
+  font-family: 'Inter', sans-serif;
+  background: #050505;
   overflow-x: hidden;
+  color: white;
 }
 
 /* animated background */
-.bg-anim {
+.bg-wrap {
   position: fixed;
   inset: 0;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(99,102,241,0.25), transparent 40%),
-    radial-gradient(circle at 80% 30%, rgba(16,185,129,0.18), transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(59,130,246,0.15), transparent 40%);
-  animation: floatBg 12s ease-in-out infinite alternate;
-  z-index: -2;
+  z-index: -3;
+  overflow: hidden;
 }
 
-@keyframes floatBg {
-  0% { transform: scale(1) translateY(0px); }
-  100% { transform: scale(1.08) translateY(-20px); }
-}
-
-/* floating blobs */
-.blob {
+.grid-bg {
   position: absolute;
-  width: 320px;
-  height: 320px;
-  border-radius: 9999px;
-  filter: blur(90px);
-  opacity: 0.2;
-  animation: blobMove 10s ease-in-out infinite alternate;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at center, black 30%, transparent 90%);
 }
 
-@keyframes blobMove {
-  0% {
-    transform: translate(0,0) scale(1);
+/* glowing red orbs */
+.orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(120px);
+  opacity: 0.25;
+  animation: float 10s ease-in-out infinite alternate;
+}
+
+.orb1 {
+  width: 400px;
+  height: 400px;
+  background: #ff1f3d;
+  top: -100px;
+  left: -100px;
+}
+
+.orb2 {
+  width: 300px;
+  height: 300px;
+  background: #7f1d1d;
+  bottom: -100px;
+  right: -50px;
+  animation-delay: 2s;
+}
+
+@keyframes float {
+  from {
+    transform: translateY(0px) scale(1);
   }
-  100% {
-    transform: translate(50px,-30px) scale(1.15);
+  to {
+    transform: translateY(-40px) scale(1.1);
   }
 }
 
 /* glass */
 .glass {
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.03);
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255,255,255,0.06);
 }
@@ -63,93 +84,132 @@ body {
 /* fade in */
 .fade-in {
   opacity: 0;
-  animation: fadeIn .8s ease forwards;
+  transform: translateY(15px);
+  animation: fadeUp .9s ease forwards;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
+@keyframes fadeUp {
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* card */
-.card {
+/* button glow */
+.red-btn {
+  position: relative;
+  overflow: hidden;
   transition: all .3s ease;
+  box-shadow: 0 0 30px rgba(239,68,68,.25);
+}
+
+.red-btn:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 0 50px rgba(239,68,68,.45);
+}
+
+.red-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,.12),
+    transparent
+  );
+  transform: translateX(-120%);
+  transition: 0.6s;
+}
+
+.red-btn:hover::before {
+  transform: translateX(120%);
+}
+
+/* legal card */
+.card {
+  transition: .35s ease;
 }
 
 .card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  transform: translateY(-8px);
+  border-color: rgba(239,68,68,.35);
+  box-shadow: 0 0 40px rgba(239,68,68,.15);
 }
 </style>
 </head>
 
-<body class="text-white">
+<body>
 
-<div class="bg-anim"></div>
-
-<div class="blob bg-indigo-500 top-0 left-0"></div>
-<div class="blob bg-green-500 bottom-0 right-0"></div>
+<!-- background -->
+<div class="bg-wrap">
+  <div class="grid-bg"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+</div>
 
 <!-- NAV -->
-<header class="glass fixed top-0 w-full z-50">
-  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-    <h1 class="font-semibold tracking-tight text-lg">
-      OpsLink Support
-    </h1>
+<header class="glass fixed top-0 left-0 w-full z-50">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
-    <nav class="flex items-center gap-6 text-sm text-gray-300">
-      <a href="./legal/" class="hover:text-white transition">
+    <div class="flex items-center gap-3">
+      <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
+      <h1 class="font-semibold tracking-tight text-lg">
+        OpsLink Support
+      </h1>
+    </div>
+
+    <nav class="flex items-center gap-6 text-sm text-gray-400">
+      <a href="./legal/" class="hover:text-red-400 transition">
         Legal
       </a>
 
-      <a href="/" class="hover:text-indigo-300 transition">
+      <a href="/" class="hover:text-white transition">
         Home
       </a>
     </nav>
+
   </div>
 </header>
 
 <!-- HERO -->
 <section class="min-h-screen flex items-center justify-center px-6">
-  <div class="max-w-3xl mx-auto text-center fade-in">
 
-    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm text-gray-300 mb-6">
-      OpsLink Support Portal
+  <div class="max-w-4xl mx-auto text-center fade-in">
+
+    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm text-gray-300 mb-8">
+      <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+      OpsLink Help System
     </div>
 
-    <h2 class="text-5xl md:text-6xl font-bold leading-tight mb-6">
-      Need Help?
+    <h2 class="text-6xl md:text-7xl font-extrabold leading-[0.95] tracking-tight mb-6">
+      Need
+      <span class="text-red-500 drop-shadow-[0_0_25px_rgba(239,68,68,0.6)]">
+        Help?
+      </span>
     </h2>
 
-    <p class="text-gray-400 text-lg max-w-xl mx-auto mb-10">
-      Access the OpsLink Help Center for documentation, support articles, and assistance.
+    <p class="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed mb-10">
+      Access support articles, documentation, troubleshooting guides,
+      and direct assistance through the OpsLink Help Center.
     </p>
 
-    <div class="flex justify-center">
-      <a
-        href="https://help.opslinkservers.com"
-        class="group px-8 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 transition-all duration-300 font-semibold text-lg shadow-2xl shadow-indigo-500/20 hover:scale-105"
-      >
-        Help Center
-        <span class="inline-block transition-transform duration-300 group-hover:translate-x-1">
-          →
-        </span>
-      </a>
-    </div>
+    <a
+      href="https://help.opslinkservers.com"
+      class="red-btn inline-flex items-center gap-3 bg-red-600 hover:bg-red-500 px-8 py-4 rounded-2xl font-semibold text-lg transition"
+    >
+      Open Help Center
+      <span class="text-xl">→</span>
+    </a>
 
   </div>
+
 </section>
 
 <!-- LEGAL -->
-<section class="max-w-5xl mx-auto px-6 pb-24">
+<section class="max-w-5xl mx-auto px-6 pb-24 fade-in">
 
-  <div class="glass rounded-3xl p-8 md:p-10 fade-in">
+  <div class="glass card rounded-3xl p-8 md:p-10">
 
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
 
@@ -159,13 +219,13 @@ body {
         </h3>
 
         <p class="text-gray-400">
-          Review our Terms of Service and Privacy Policy.
+          View our Terms of Service and Privacy Policy.
         </p>
       </div>
 
       <a
         href="./legal/"
-        class="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition font-medium text-center"
+        class="px-6 py-3 rounded-xl bg-white/5 hover:bg-red-500/10 border border-white/10 hover:border-red-500/30 transition font-medium"
       >
         View Legal
       </a>
@@ -177,11 +237,11 @@ body {
 </section>
 
 <!-- FOOTER -->
-<footer class="text-center text-gray-500 text-sm pb-10">
+<footer class="text-center text-gray-600 text-sm pb-10">
   © 2026 OpsLink. All rights reserved.
 </footer>
 
-<!-- PAGE TRANSITION -->
+<!-- TRANSITION -->
 <div
   id="t"
   class="fixed inset-0 bg-black flex items-center justify-center opacity-0 pointer-events-none transition duration-300 z-[9999]"
@@ -189,7 +249,7 @@ body {
   <img
     id="tl"
     src="assets/opslinkservers.png"
-    class="w-32 opacity-0 scale-90 transition-all duration-500"
+    class="w-32 opacity-0 scale-75 transition-all duration-500"
   />
 </div>
 
@@ -216,8 +276,8 @@ document.addEventListener("click", (e) => {
   overlay.style.pointerEvents = "all";
 
   logo.style.opacity = "1";
-  logo.style.transform = "scale(1.08)";
-  logo.style.filter = "drop-shadow(0 0 40px rgba(99,102,241,.8))";
+  logo.style.transform = "scale(1)";
+  logo.style.filter = "drop-shadow(0 0 50px rgba(239,68,68,.9))";
 
   setTimeout(() => {
     window.location.href = href;
