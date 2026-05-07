@@ -1,328 +1,426 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
 <title>OpsLink Legal Hub</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+*{
+  scroll-behavior:smooth;
+}
+
+body{
+  font-family:'Inter',sans-serif;
+  background:#050505;
+  color:white;
+  overflow-x:hidden;
+}
+
+/* BACKGROUND */
+.bg-wrap{
+  position:fixed;
+  inset:0;
+  z-index:-5;
+  overflow:hidden;
+}
+
+.grid-bg{
+  position:absolute;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size:40px 40px;
+  mask-image:radial-gradient(circle at center, black 35%, transparent 90%);
+}
+
+.orb{
+  position:absolute;
+  border-radius:9999px;
+  filter:blur(120px);
+  opacity:.22;
+  animation:float 12s ease-in-out infinite alternate;
+}
+
+.orb1{
+  width:420px;
+  height:420px;
+  background:#dc2626;
+  top:-100px;
+  left:-100px;
+}
+
+.orb2{
+  width:340px;
+  height:340px;
+  background:#7f1d1d;
+  bottom:-120px;
+  right:-60px;
+  animation-delay:2s;
+}
+
+@keyframes float{
+  from{
+    transform:translateY(0px) scale(1);
+  }
+  to{
+    transform:translateY(-50px) scale(1.12);
+  }
+}
+
+/* GLASS */
+.glass{
+  background:rgba(255,255,255,0.03);
+  backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,0.06);
+}
+
+/* SECTION */
+.section-card{
+  transition:.35s ease;
+}
+
+.section-card:hover{
+  transform:translateY(-6px);
+  border-color:rgba(239,68,68,.3);
+  box-shadow:0 0 40px rgba(239,68,68,.12);
+}
+
+/* FADE */
+.fade-in{
+  opacity:0;
+  transform:translateY(15px);
+  animation:fadeUp .8s ease forwards;
+}
+
+@keyframes fadeUp{
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{
+  width:10px;
+}
+
+::-webkit-scrollbar-track{
+  background:#090909;
+}
+
+::-webkit-scrollbar-thumb{
+  background:#991b1b;
+  border-radius:999px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+  background:#dc2626;
+}
+
+main p,
+main li{
+  color:#b4b4b4;
+  line-height:1.8;
+}
+
+main h2{
+  color:white;
+}
+
+main h3{
+  color:#f3f4f6;
+}
+
+.nav-btn{
+  transition:.3s ease;
+}
+
+.nav-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 0 30px rgba(239,68,68,.25);
+}
+</style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
 
-<header class="bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden p-8 text-center">
-    <h1 class="text-2xl font-bold">OpsLink Legal Hub</h1>
-    <p class="mt-2 text-base">Effective Date: January 30, 2026</p>
+<body>
 
-    <!-- Back to Support Hub Button -->
-    <div class="mt-4">
-        <a href="/support/" class="inline-block bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded font-medium transition">
-            ← Back to Support Hub
-        </a>
+<!-- BACKGROUND -->
+<div class="bg-wrap">
+  <div class="grid-bg"></div>
+
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+</div>
+
+<!-- HEADER -->
+<header class="glass sticky top-0 z-50 border-b border-white/5">
+
+  <div class="max-w-7xl mx-auto px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+
+    <div>
+      <div class="flex items-center gap-3 mb-1">
+        <div class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></div>
+
+        <h1 class="text-2xl font-bold tracking-tight">
+          OpsLink Legal Hub
+        </h1>
+      </div>
+
+      <p class="text-gray-400 text-sm">
+        Effective Date: January 30, 2026
+      </p>
     </div>
+
+    <a
+      href="/support/"
+      class="nav-btn bg-red-600 hover:bg-red-500 px-6 py-3 rounded-2xl font-medium inline-flex items-center gap-2"
+    >
+      ← Back to Support
+    </a>
+
+  </div>
+
 </header>
 
-<main class="max-w-5xl mx-auto p-8 space-y-10">
-    <!-- Section 1 -->
-    <section id="definitions">
-        <h2 class="text-2xl font-semibold mb-4">1. Definitions & Interpretation</h2>
+<!-- HERO -->
+<section class="max-w-5xl mx-auto px-6 pt-20 pb-10 text-center fade-in">
 
+  <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm text-gray-300 mb-6">
+    <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+    Legal Documentation
+  </div>
 
-        <h3 class="text-xl font-semibold mb-2">1.1 Key Definitions</h3>
-        <ul class="list-disc list-inside space-y-1">
-            <li><strong>Account:</strong> Any registered user profile or login credentials used to access the OpsLink Platform.</li>
-            <li><strong>Agreement:</strong> These Terms of Service, including all referenced policies (Privacy Policy, Cookie Policy, DMCA Policy, etc.) and any updates or modifications.</li>
-            <li><strong>Content:</strong> Any text, images, videos, audio, software code, or other materials submitted or made available by a User via the Platform.</li>
-            <li><strong>DMCA:</strong> The Digital Millennium Copyright Act, 17 U.S.C. § 512, or any applicable copyright law in other jurisdictions.</li>
-            <li><strong>OpsLink Platform:</strong> All websites, applications, APIs, services, and tools operated by OpsLink Inc.</li>
-            <li><strong>Services:</strong> All functionality, features, tools, and interactions available on or through the Platform.</li>
-            <li><strong>Third-Party Services:</strong> External websites, APIs, or platforms that integrate with OpsLink or may be accessed through it.</li>
-            <li><strong>User:</strong> Any individual or entity using or accessing the OpsLink Platform.</li>
-            <li><strong>User Content:</strong> Content uploaded, submitted, or shared by Users via the Platform.</li>
-            <li><strong>Paid Features:</strong> Subscription-based or premium services offered by OpsLink for a fee.</li>
-        </ul>
+  <h2 class="text-5xl md:text-6xl font-extrabold tracking-tight leading-[1] mb-6">
+    Terms &
+    <span class="text-red-500 drop-shadow-[0_0_25px_rgba(239,68,68,.6)]">
+      Policies
+    </span>
+  </h2>
 
-        <h3 class="text-xl font-semibold mb-2 mt-4">1.2 Rules of Interpretation</h3>
-        <ul class="list-disc list-inside space-y-1">
-            <li>Headings are for convenience only and do not affect interpretation.</li>
-            <li>The singular includes the plural and vice versa.</li>
-            <li>References to persons include individuals, corporations, and other legal entities.</li>
-            <li>References to laws include all amendments or replacements.</li>
-            <li>Words importing a gender include all genders.</li>
-            <li>"Including" is illustrative, not limiting.</li>
-        </ul>
-    </section>
-
-    <!-- Section 2 -->
-    <section id="acceptance">
-        <h2 class="text-2xl font-semibold mb-4">2. Acceptance of Terms</h2>
-        <p>By using the OpsLink Platform, Users acknowledge they have read, understood, and agree to be bound by this Agreement. If you do not agree, you must immediately stop using the Platform.</p>
-        <p>Users confirm they have the legal capacity to enter this Agreement. Organizations must ensure the person accessing the Platform is authorized to bind the organization.</p>
-    </section>
-
-    <!-- Section 3 -->
-    <section id="eligibility">
-        <h2 class="text-2xl font-semibold mb-4">3. Eligibility & Age Requirements</h2>
-        <p>Users must be at least 13 years old. Minors under the age of majority must have parental or guardian consent. Parents remain responsible for the minor’s actions.</p>
-        <p>Access to the Platform may be restricted in jurisdictions where it violates local laws. Users are responsible for complying with local regulations.</p>
-    </section>
-
-    <!-- Section 4 -->
-    <section id="account">
-        <h2 class="text-2xl font-semibold mb-4">4. Account Registration & Security</h2>
-        <ul class="list-disc list-inside space-y-1">
-            <li>Users must provide accurate, current, and complete registration information. False information may lead to suspension or termination.</li>
-            <li>Users are responsible for maintaining the confidentiality of their credentials. Unauthorized access must be reported immediately.</li>
-            <li>Users must not attempt unauthorized access to the Platform or other Accounts.</li>
-        </ul>
-    </section>
-
-    <!-- Section 5 -->
-    <section id="user-content">
-        <h2 class="text-2xl font-semibold mb-4">5. User Content & Conduct</h2>
-        <ul class="list-disc list-inside space-y-1">
-            <li><strong>Ownership:</strong> Users retain rights to their Content but grant OpsLink a worldwide, non-exclusive, royalty-free license to use, reproduce, display, and distribute it.</li>
-            <li><strong>License:</strong> OpsLink may modify or create derivative works to operate and enhance Services, including for marketing or analytics.</li>
-            <li><strong>Content Standards:</strong> Content must comply with laws and respect others' rights. Prohibited content includes illegal, fraudulent, violent, hateful, or harmful material, as well as spam or malware.</li>
-            <li><strong>Moderation:</strong> OpsLink may remove, restrict, or refuse any Content that violates this Agreement or is deemed inappropriate. Accounts may be suspended for repeated violations.</li>
-        </ul>
-    </section>
-
-    <!-- Section 6 -->
-    <section id="community-guidelines">
-        <h2 class="text-2xl font-semibold mb-4">6. Community Guidelines</h2>
-        <ul class="list-disc list-inside space-y-1">
-            <li>Harassment, abuse, threats, or intimidation are prohibited.</li>
-            <li>Hate speech or discriminatory content is strictly prohibited.</li>
-            <li>NSFW content must be clearly marked and follow local laws.</li>
-            <li>Impersonation of others or official representatives is prohibited.</li>
-            <li>Spam, malware, and fraudulent activities are strictly prohibited.</li>
-        </ul>
-    </section>
-
-    <!-- Section 7 -->
-    <section id="intellectual-property">
-        <h2 class="text-2xl font-semibold mb-4">7. Intellectual Property Rights</h2>
-        <ul class="list-disc list-inside space-y-1">
-            <li>All OpsLink intellectual property (software, logos, trademarks) is owned by OpsLink Inc. or licensors. Users receive a limited license to access the Platform.</li>
-            <li>Third-party materials remain the property of their owners. Users must comply with all applicable terms.</li>
-            <li>Users represent that they have rights to submit Content and it does not infringe on third-party rights.</li>
-        </ul>
-    </section>
-
-    <!-- Section 8 -->
-    <section id="dmca">
-        <h2 class="text-2xl font-semibold mb-4">8. DMCA & Copyright Policy</h2>
-        <ul class="list-disc list-inside space-y-1">
-            <li>OpsLink responds to valid copyright claims under DMCA. Takedown notices must comply with 17 U.S.C. § 512(c).</li>
-            <li>Users may submit counter-notifications if Content was removed in error.</li>
-            <li>Repeat infringers may have their Accounts terminated.</li>
-        </ul>
-    </section>
-
-<!-- Section 9 -->
-<section id="privacy">
-  <h2 class="text-2xl font-semibold mb-4">9. Privacy Policy & Verified Connections</h2>
-
-  <p class="mb-4">
-    OpsLink Inc. provides an optional “Verified Connections” feature that allows users
-    to link third-party accounts (such as Google, Twitch, or GitHub) to their OpsLink
-    profile for display purposes only, similar to connection features offered by
-    platforms like Discord.
+  <p class="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed">
+    Transparency, compliance, and platform governance for all OpsLink services.
   </p>
 
-  <p class="mb-4">
-    Connecting a third-party account is <strong>entirely optional</strong> and is not
-    required to create or use an OpsLink account.
-  </p>
-
-  <!-- PURPOSE -->
-  <h3 class="text-xl font-semibold mt-6 mb-2">9.1 Purpose of OAuth Connections</h3>
-  <ul class="list-disc list-inside space-y-1">
-    <li>Verify ownership of a third-party account</li>
-    <li>Display a verified connection badge on a user’s public profile</li>
-    <li>Allow users to showcase linked platforms at their discretion</li>
-  </ul>
-
-  <!-- GOOGLE -->
-  <h3 class="text-xl font-semibold mt-6 mb-2">9.2 Google Connection Data</h3>
-  <p class="mb-2"><strong>Data Accessed:</strong></p>
-  <ul class="list-disc list-inside space-y-1">
-    <li>Basic Google profile information (name, email address, profile image)</li>
-    <li>Google account unique identifier</li>
-  </ul>
-
-  <p class="mt-2 text-gray-300">
-    OpsLink does not access Gmail, Google Drive, contacts, calendars, or any sensitive
-    Google user data.
-  </p>
-
-  <!-- TWITCH -->
-  <h3 class="text-xl font-semibold mt-6 mb-2">9.3 Twitch Connection Data</h3>
-  <p class="mb-2"><strong>Data Accessed:</strong></p>
-  <ul class="list-disc list-inside space-y-1">
-    <li>Twitch username and display name</li>
-    <li>Twitch user ID</li>
-    <li>Profile image</li>
-    <li>Email address (only if authorized)</li>
-  </ul>
-
-  <!-- GITHUB -->
-  <h3 class="text-xl font-semibold mt-6 mb-2">9.4 GitHub Connection Data</h3>
-  <p class="mb-2"><strong>Data Accessed:</strong></p>
-  <ul class="list-disc list-inside space-y-1">
-    <li>GitHub username</li>
-    <li>GitHub user ID</li>
-    <li>Public profile information (avatar, bio)</li>
-    <li>Email address (only if provided and authorized)</li>
-  </ul>
-
-  <!-- LIMITATIONS -->
-  <h3 class="text-xl font-semibold mt-6 mb-2">9.5 Data Usage Limitations</h3>
-  <ul class="list-disc list-inside space-y-1">
-    <li>OAuth data is used solely to verify and display connected accounts</li>
-    <li>No background access after verification</li>
-    <li>No automated posting or activity tracking</li>
-    <li>No advertising, analytics, or profiling use</li>
-    <li>No sale or resale of OAuth data</li>
-  </ul>
-
-  <!-- SHARING -->
-  <h3 class="text-xl font-semibold mt-6 mb-2">9.6 Data Sharing</h3>
-  <ul class="list-disc list-inside space-y-1">
-    <li>Verified connection data is visible only according to user profile settings</li>
-    <li>Data is not shared with third parties beyond required infrastructure services</li>
-    <li>Legal disclosure may occur if required by law</li>
-  </ul>
-
-  <!-- STORAGE -->
-  <h3 class="text-xl font-semibold mt-6 mb-2">9.7 Data Storage & Security</h3>
-  <ul class="list-disc list-inside space-y-1">
-    <li>Data is stored securely with access controls</li>
-    <li>Tokens are used only during the verification process</li>
-    <li>No long-term OAuth access tokens are retained unnecessarily</li>
-  </ul>
-
-  <!-- RETENTION -->
-  <h3 class="text-xl font-semibold mt-6 mb-2">9.8 Data Retention & Deletion</h3>
-  <ul class="list-disc list-inside space-y-1">
-    <li>Users may disconnect any verified connection at any time</li>
-    <li>Disconnecting removes the association and display immediately</li>
-    <li>All associated OAuth data is deleted within 30 days</li>
-  </ul>
-
-  <p class="mt-2">
-    Requests regarding data access or deletion may be submitted to:
-    <a href="mailto:opslinksystems@gmail.com" class="text-pink-500 hover:underline">
-      opslinksystems@gmail.com
-    </a>
-  </p>
-
-  <!-- COMPLIANCE -->
-  <h3 class="text-xl font-semibold mt-6 mb-2">9.9 Compliance Statement</h3>
-  <p class="text-gray-300">
-    OpsLink’s use of information received from Google APIs complies with the Google
-    API Services User Data Policy, including the Limited Use requirements. OAuth data
-    from Twitch and GitHub is handled in accordance with their respective developer
-    and privacy policies.
-  </p>
 </section>
 
+<!-- MAIN -->
+<main class="max-w-5xl mx-auto px-6 pb-24 space-y-8">
 
-    <!-- Section 10 -->
-    <section id="cookies">
-        <h2 class="text-2xl font-semibold mb-4">10. Cookies Policy</h2>
-        <ul class="list-disc list-inside space-y-1">
-            <li>Types: Essential, functional, analytical, advertising cookies.</li>
-            <li>Purpose: Authentication, preferences, usage analysis, marketing.</li>
-            <li>User Controls: Cookies can be managed or disabled, though some features may be limited.</li>
-        </ul>
-    </section>
+  <!-- SECTION -->
+  <section class="glass section-card rounded-3xl p-8 fade-in">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center font-bold text-red-400">1</div>
+      <h2 class="text-3xl font-bold">Definitions & Interpretation</h2>
+    </div>
 
-    <!-- Section 11 -->
-    <section id="payments">
-        <h2 class="text-2xl font-semibold mb-4">11. Payments, Billing & Subscriptions</h2>
-        <ul class="list-disc list-inside space-y-1">
-            <li>Fees are indicated prior to purchase. OpsLink may modify pricing with notice.</li>
-            <li>Refunds follow the terms at the time of purchase.</li>
-            <li>Users are responsible for charges, including taxes. Unauthorized chargebacks may lead to suspension or legal action.</li>
-        </ul>
-    </section>
+    <div class="space-y-4">
+      <p>
+        This Agreement governs all use of OpsLink services, websites,
+        APIs, software, and associated platforms.
+      </p>
 
-    <!-- Section 12 -->
-    <section id="third-party">
-        <h2 class="text-2xl font-semibold mb-4">12. Third-Party Services & Links</h2>
-        <ul class="list-disc list-inside space-y-1">
-            <li>Inclusion of third-party links does not imply endorsement.</li>
-            <li>Users access third-party services at their own risk and under their terms.</li>
-        </ul>
-    </section>
+      <ul class="space-y-3 list-disc list-inside">
+        <li><strong>Account:</strong> Any registered user profile used to access OpsLink services.</li>
+        <li><strong>Content:</strong> Text, media, files, or materials uploaded by users.</li>
+        <li><strong>User:</strong> Any individual or entity using OpsLink.</li>
+      </ul>
+    </div>
+  </section>
 
-    <!-- Section 13 -->
-    <section id="disclaimers">
-        <h2 class="text-2xl font-semibold mb-4">13. Disclaimers & No Warranties</h2>
-        <ul class="list-disc list-inside space-y-1">
-            <li>The Platform and Services are provided "as-is" and "as-available".</li>
-            <li>Availability is not guaranteed; maintenance or technical issues may occur.</li>
-            <li>Content accuracy is not guaranteed.</li>
-        </ul>
-    </section>
+  <!-- SECTION -->
+  <section class="glass section-card rounded-3xl p-8 fade-in">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center font-bold text-red-400">2</div>
+      <h2 class="text-3xl font-bold">Acceptance of Terms</h2>
+    </div>
 
-    <!-- Section 14 -->
-    <section id="liability">
-        <h2 class="text-2xl font-semibold mb-4">14. Limitation of Liability</h2>
-        <ul class="list-disc list-inside space-y-1">
-            <li>OpsLink is not liable for indirect, incidental, or consequential damages.</li>
-            <li>Aggregate liability is capped at total fees paid in the six months prior to a claim.</li>
-        </ul>
-    </section>
+    <div class="space-y-4">
+      <p>
+        By accessing or using OpsLink, you acknowledge and agree
+        to these Terms of Service and all related policies.
+      </p>
 
-    <!-- Section 15 -->
-    <section id="indemnification">
-        <h2 class="text-2xl font-semibold mb-4">15. Indemnification</h2>
-        <p>Users agree to indemnify and hold harmless OpsLink and its affiliates from claims arising from violations of this Agreement, submission of unlawful Content, or illegal use of the Platform.</p>
-    </section>
+      <p>
+        Continued use of the platform constitutes acceptance
+        of future updates and modifications.
+      </p>
+    </div>
+  </section>
 
-    <!-- Section 16 -->
-    <section id="termination">
-        <h2 class="text-2xl font-semibold mb-4">16. Termination & Suspension</h2>
-        <ul class="list-disc list-inside space-y-1">
-            <li>OpsLink may suspend or terminate Accounts for violations, illegal activity, or at its discretion.</li>
-            <li>Upon termination, access ceases. Content may be deleted or retained per data retention policies.</li>
-        </ul>
-    </section>
+  <!-- SECTION -->
+  <section class="glass section-card rounded-3xl p-8 fade-in">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center font-bold text-red-400">3</div>
+      <h2 class="text-3xl font-bold">Eligibility & Age Requirements</h2>
+    </div>
 
-    <!-- Section 17 -->
-    <section id="law">
-        <h2 class="text-2xl font-semibold mb-4">17. Governing Law & Jurisdiction</h2>
-        <p>This Agreement is governed by the laws of Ontario, Canada. Disputes will be resolved exclusively in courts in Toronto, Ontario, and Users consent to jurisdiction there.</p>
-    </section>
+    <div class="space-y-4">
+      <p>
+        Users must be at least 13 years old to use OpsLink services.
+      </p>
 
-    <!-- Section 18 -->
-    <section id="changes">
-        <h2 class="text-2xl font-semibold mb-4">18. Changes to the Agreement</h2>
-        <p>OpsLink may update this Agreement at any time by publishing the revised version. Continued use constitutes acceptance. Significant changes will be communicated reasonably.</p>
-    </section>
+      <p>
+        Users under the age of majority must obtain permission
+        from a parent or legal guardian.
+      </p>
+    </div>
+  </section>
 
-    <!-- Section 19 -->
-    <section id="general">
-        <h2 class="text-2xl font-semibold mb-4">19. Severability, Waiver & Entire Agreement</h2>
-        <ul class="list-disc list-inside space-y-1">
-            <li>If any provision is invalid or unenforceable, the rest remains in effect.</li>
-            <li>Failure to enforce any provision is not a waiver.</li>
-            <li>This Agreement and referenced policies constitute the full agreement between Users and OpsLink.</li>
-        </ul>
-    </section>
+  <!-- SECTION -->
+  <section class="glass section-card rounded-3xl p-8 fade-in">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center font-bold text-red-400">4</div>
+      <h2 class="text-3xl font-bold">Accounts & Security</h2>
+    </div>
 
-    <!-- Section 20 -->
-    <section id="contact">
-        <h2 class="text-2xl font-semibold mb-4">20. Contact Information</h2>
-        <p>For questions regarding this Agreement or other legal matters:</p>
-        <p><strong>OpsLink Inc.</strong><br>
-        Email: <a href="mailto:opslinksystems@gmail.com" class="text-pink-500 hover:underline">opslinksystems@gmail.com</a></p>
-    </section>
+    <ul class="space-y-3 list-disc list-inside">
+      <li>Users are responsible for maintaining account security.</li>
+      <li>False registration information may result in suspension.</li>
+      <li>Unauthorized access attempts are strictly prohibited.</li>
+    </ul>
+  </section>
+
+  <!-- SECTION -->
+  <section class="glass section-card rounded-3xl p-8 fade-in">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center font-bold text-red-400">5</div>
+      <h2 class="text-3xl font-bold">User Content & Conduct</h2>
+    </div>
+
+    <ul class="space-y-3 list-disc list-inside">
+      <li>Users retain ownership of submitted content.</li>
+      <li>OpsLink may remove content violating platform rules.</li>
+      <li>Spam, malware, harassment, and illegal content are prohibited.</li>
+    </ul>
+  </section>
+
+  <!-- SECTION -->
+  <section class="glass section-card rounded-3xl p-8 fade-in">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center font-bold text-red-400">6</div>
+      <h2 class="text-3xl font-bold">OAuth & Verified Connections</h2>
+    </div>
+
+    <div class="space-y-4">
+      <p>
+        OpsLink may allow users to connect third-party accounts
+        such as Google, GitHub, or Twitch for profile verification.
+      </p>
+
+      <ul class="space-y-3 list-disc list-inside">
+        <li>OAuth connections are optional.</li>
+        <li>Only limited profile data is accessed.</li>
+        <li>No private messages or sensitive data are collected.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SECTION -->
+  <section class="glass section-card rounded-3xl p-8 fade-in">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center font-bold text-red-400">7</div>
+      <h2 class="text-3xl font-bold">Payments & Billing</h2>
+    </div>
+
+    <ul class="space-y-3 list-disc list-inside">
+      <li>Pricing may change with reasonable notice.</li>
+      <li>Refund policies apply as stated at purchase.</li>
+      <li>Fraudulent chargebacks may result in account restrictions.</li>
+    </ul>
+  </section>
+
+  <!-- SECTION -->
+  <section class="glass section-card rounded-3xl p-8 fade-in">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center font-bold text-red-400">8</div>
+      <h2 class="text-3xl font-bold">Disclaimers</h2>
+    </div>
+
+    <div class="space-y-4">
+      <p>
+        OpsLink services are provided “as-is” and “as-available”
+        without warranties of any kind.
+      </p>
+
+      <p>
+        Availability, uptime, and uninterrupted service are not guaranteed.
+      </p>
+    </div>
+  </section>
+
+  <!-- SECTION -->
+  <section class="glass section-card rounded-3xl p-8 fade-in">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center font-bold text-red-400">9</div>
+      <h2 class="text-3xl font-bold">Limitation of Liability</h2>
+    </div>
+
+    <p>
+      OpsLink shall not be liable for indirect, incidental,
+      special, consequential, or punitive damages arising
+      from use of the platform.
+    </p>
+  </section>
+
+  <!-- SECTION -->
+  <section class="glass section-card rounded-3xl p-8 fade-in">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center font-bold text-red-400">10</div>
+      <h2 class="text-3xl font-bold">Termination</h2>
+    </div>
+
+    <div class="space-y-4">
+      <p>
+        OpsLink reserves the right to suspend or terminate
+        accounts violating these terms or applicable laws.
+      </p>
+
+      <p>
+        Upon termination, access to platform services may be revoked immediately.
+      </p>
+    </div>
+  </section>
+
+  <!-- SECTION -->
+  <section class="glass section-card rounded-3xl p-8 fade-in">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center font-bold text-red-400">11</div>
+      <h2 class="text-3xl font-bold">Contact Information</h2>
+    </div>
+
+    <div class="space-y-4">
+      <p>
+        For legal requests, copyright issues,
+        or compliance inquiries:
+      </p>
+
+      <div class="glass rounded-2xl p-5 border border-white/5">
+        <p class="text-white font-semibold mb-1">
+          OpsLink Inc.
+        </p>
+
+        <a
+          href="mailto:opslinksystems@gmail.com"
+          class="text-red-400 hover:text-red-300"
+        >
+          opslinksystems@gmail.com
+        </a>
+      </div>
+    </div>
+  </section>
+
 </main>
 
-<footer class="text-center py-6 text-gray-400">
-    &copy; 2026 OpsLink Inc. All rights reserved.
+<!-- FOOTER -->
+<footer class="border-t border-white/5 py-10 text-center text-gray-500 text-sm">
+  © 2026 OpsLink Inc. All rights reserved.
 </footer>
 
 </body>
