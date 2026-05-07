@@ -1,158 +1,229 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Support - OpsLink</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-    .card:hover {
-      transform: translateY(-5px);
-      transition: 0.3s;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Support - OpsLink</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+  font-family: Inter, sans-serif;
+  background: #0b0f19;
+  overflow-x: hidden;
+}
+
+/* animated background */
+.bg-anim {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(99,102,241,0.25), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(16,185,129,0.18), transparent 40%),
+    radial-gradient(circle at 50% 80%, rgba(59,130,246,0.15), transparent 40%);
+  animation: floatBg 12s ease-in-out infinite alternate;
+  z-index: -2;
+}
+
+@keyframes floatBg {
+  0% { transform: scale(1) translateY(0px); }
+  100% { transform: scale(1.08) translateY(-20px); }
+}
+
+/* floating blobs */
+.blob {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.2;
+  animation: blobMove 10s ease-in-out infinite alternate;
+}
+
+@keyframes blobMove {
+  0% {
+    transform: translate(0,0) scale(1);
+  }
+  100% {
+    transform: translate(50px,-30px) scale(1.15);
+  }
+}
+
+/* glass */
+.glass {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* fade in */
+.fade-in {
+  opacity: 0;
+  animation: fadeIn .8s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* card */
+.card {
+  transition: all .3s ease;
+}
+
+.card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(0,0,0,.45);
+}
+</style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
 
-  <!-- Header -->
-  <header class="bg-gray-800 shadow-md">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold">OpsLink Support</h1>
-      <nav class="space-x-4">
-        <a href="./docs/" class="hover:text-indigo-400 transition">Docs</a>
-        <a href="./tickets/" class="hover:text-indigo-400 transition">Submit a Ticket</a>
-        <a href="./legal/" class="hover:text-indigo-400 transition">Legal</a>
-        <a href="../index.html" class="hover:text-indigo-400 transition">Back Home</a>
-      </nav>
+<body class="text-white">
+
+<div class="bg-anim"></div>
+
+<div class="blob bg-indigo-500 top-0 left-0"></div>
+<div class="blob bg-green-500 bottom-0 right-0"></div>
+
+<!-- NAV -->
+<header class="glass fixed top-0 w-full z-50">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <h1 class="font-semibold tracking-tight text-lg">
+      OpsLink Support
+    </h1>
+
+    <nav class="flex items-center gap-6 text-sm text-gray-300">
+      <a href="./legal/" class="hover:text-white transition">
+        Legal
+      </a>
+
+      <a href="/" class="hover:text-indigo-300 transition">
+        Home
+      </a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="min-h-screen flex items-center justify-center px-6">
+  <div class="max-w-3xl mx-auto text-center fade-in">
+
+    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm text-gray-300 mb-6">
+      OpsLink Support Portal
     </div>
-  </header>
 
-  <!-- Hero Section -->
-  <section class="bg-gray-800 py-16 text-center">
-    <h2 class="text-4xl font-bold mb-4">Need Help?</h2>
-    <p class="text-gray-300 max-w-2xl mx-auto mb-6">
-      Explore our documentation, submit a ticket, or check our legal guides. We're here to assist you 24/7.
+    <h2 class="text-5xl md:text-6xl font-bold leading-tight mb-6">
+      Need Help?
+    </h2>
+
+    <p class="text-gray-400 text-lg max-w-xl mx-auto mb-10">
+      Access the OpsLink Help Center for documentation, support articles, and assistance.
     </p>
-    <div class="flex justify-center gap-4">
-      <a href="./docs/" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded font-medium transition">Docs</a>
-      <a href="./tickets/" class="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded font-medium transition">Submit Ticket</a>
-      <a href="./legal/" class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded font-medium transition">Legal</a>
+
+    <div class="flex justify-center">
+      <a
+        href="https://help.opslinkservers.com"
+        class="group px-8 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 transition-all duration-300 font-semibold text-lg shadow-2xl shadow-indigo-500/20 hover:scale-105"
+      >
+        Help Center
+        <span class="inline-block transition-transform duration-300 group-hover:translate-x-1">
+          →
+        </span>
+      </a>
     </div>
-  </section>
 
-  <!-- Sections -->
-  <main class="max-w-7xl mx-auto px-4 py-16 space-y-16">
+  </div>
+</section>
 
-    <!-- Docs -->
-    <section id="docs">
-      <h3 class="text-3xl font-bold mb-6">Documentation</h3>
-      <div class="grid md:grid-cols-3 gap-6">
-        <div class="card bg-gray-800 p-6 rounded shadow hover:shadow-lg">
-          <h4 class="text-xl font-semibold mb-2">Getting Started</h4>
-          <p class="text-gray-300">Learn how to start using OpsLink efficiently and set up your first server.</p>
-          <a href="./docs/" class="text-indigo-400 mt-2 inline-block hover:underline">Read More →</a>
-        </div>
-        <div class="card bg-gray-800 p-6 rounded shadow hover:shadow-lg">
-          <h4 class="text-xl font-semibold mb-2">FAQ</h4>
-          <p class="text-gray-300">Find answers to the most commonly asked questions about our platform.</p>
-          <a href="./docs/" class="text-indigo-400 mt-2 inline-block hover:underline">Read More →</a>
-        </div>
-        <div class="card bg-gray-800 p-6 rounded shadow hover:shadow-lg">
-          <h4 class="text-xl font-semibold mb-2">Guides & Tutorials</h4>
-          <p class="text-gray-300">Step-by-step guides to master OpsLink features and integrations.</p>
-          <a href="./docs/" class="text-indigo-400 mt-2 inline-block hover:underline">Read More →</a>
-        </div>
+<!-- LEGAL -->
+<section class="max-w-5xl mx-auto px-6 pb-24">
+
+  <div class="glass rounded-3xl p-8 md:p-10 fade-in">
+
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+
+      <div>
+        <h3 class="text-2xl font-semibold mb-2">
+          Legal Information
+        </h3>
+
+        <p class="text-gray-400">
+          Review our Terms of Service and Privacy Policy.
+        </p>
       </div>
-    </section>
 
-    <!-- Submit a Ticket CTA -->
-    <section id="ticket">
-      <div class="bg-green-600 p-12 rounded shadow text-center">
-        <h3 class="text-3xl font-bold mb-4">Need Personal Support?</h3>
-        <p class="text-gray-200 mb-6">Can't find the answer in our docs? Submit a ticket and our team will help you directly.</p>
-        <a href="./tickets/" class="bg-white text-green-600 px-8 py-3 rounded font-semibold hover:bg-gray-100 transition">Submit a Ticket</a>
-      </div>
-    </section>
+      <a
+        href="./legal/"
+        class="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition font-medium text-center"
+      >
+        View Legal
+      </a>
 
-    <!-- Legal -->
-    <section id="legal">
-      <h3 class="text-3xl font-bold mb-6">Legal</h3>
-      <div class="grid md:grid-cols-2 gap-6">
-        <div class="bg-gray-800 p-6 rounded shadow hover:shadow-lg">
-          <h4 class="text-xl font-semibold mb-2">Terms of Service</h4>
-          <p class="text-gray-300">Review the rules and guidelines for using OpsLink services.</p>
-          <a href="./legal/" class="text-indigo-400 mt-2 inline-block hover:underline">Read More →</a>
-        </div>
-        <div class="bg-gray-800 p-6 rounded shadow hover:shadow-lg">
-          <h4 class="text-xl font-semibold mb-2">Privacy Policy</h4>
-          <p class="text-gray-300">Understand how we collect, use, and protect your data.</p>
-          <a href="./legal/" class="text-indigo-400 mt-2 inline-block hover:underline">Read More →</a>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Footer -->
-  <footer class="bg-gray-800 py-6 mt-16">
-    <div class="max-w-7xl mx-auto px-4 text-center text-gray-400">
-      &copy; 2026 OpsLink. All rights reserved.
     </div>
-  </footer>
 
-<div id="t" style="
-  position:fixed;
-  inset:0;
-  background:#000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .2s ease;
-  z-index:9999;
-">
-  <img id="tl" src="assets/opslinkservers.png" style="
-    opacity:0;
-    transform:scale(0.8);
-    filter:drop-shadow(0 0 0 rgba(80,200,255,0));
-    transition:opacity .3s ease, transform .6s ease, filter .6s ease;
-  ">
+  </div>
+
+</section>
+
+<!-- FOOTER -->
+<footer class="text-center text-gray-500 text-sm pb-10">
+  © 2026 OpsLink. All rights reserved.
+</footer>
+
+<!-- PAGE TRANSITION -->
+<div
+  id="t"
+  class="fixed inset-0 bg-black flex items-center justify-center opacity-0 pointer-events-none transition duration-300 z-[9999]"
+>
+  <img
+    id="tl"
+    src="assets/opslinkservers.png"
+    class="w-32 opacity-0 scale-90 transition-all duration-500"
+  />
 </div>
 
 <script>
-document.addEventListener('click', e => {
-  const a = e.target.closest('a');
-  if(!a) return;
-  const h = a.getAttribute('href');
-  if(!h || h.startsWith('#') || h.startsWith('http') || a.target) return;
+const overlay = document.getElementById("t");
+const logo = document.getElementById("tl");
+
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("a");
+  if (!a) return;
+
+  const href = a.getAttribute("href");
+
+  if (
+    !href ||
+    href.startsWith("#") ||
+    href.startsWith("http") ||
+    a.target
+  ) return;
 
   e.preventDefault();
 
-  t.style.opacity = 1;
-  t.style.pointerEvents = 'all';
+  overlay.style.opacity = "1";
+  overlay.style.pointerEvents = "all";
 
-  // Animate logo: scale up and glow
-  tl.style.opacity = 1;
-  tl.style.transform = 'scale(1.05)';
-  tl.style.filter = 'drop-shadow(0 0 25px rgba(80,200,255,0.8))';
+  logo.style.opacity = "1";
+  logo.style.transform = "scale(1.08)";
+  logo.style.filter = "drop-shadow(0 0 40px rgba(99,102,241,.8))";
 
-  // subtle pulse after first scale
   setTimeout(() => {
-    tl.style.transform = 'scale(1)';
-    tl.style.filter = 'drop-shadow(0 0 40px rgba(80,200,255,1))';
-  }, 300);
-
-  // go to next page after 1 second
-  setTimeout(() => location.href = h, 1000);
+    window.location.href = href;
+  }, 700);
 });
 </script>
-  
+
 </body>
 </html>
