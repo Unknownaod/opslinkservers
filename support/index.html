@@ -259,6 +259,11 @@ document.addEventListener("click", (e) => {
     a.target
   ) return;
 
+  // if transition elements don't exist, just navigate normally
+  if (!overlay || !logo) {
+    return;
+  }
+
   e.preventDefault();
 
   overlay.style.opacity = "1";
