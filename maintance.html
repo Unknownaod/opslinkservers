@@ -1,0 +1,182 @@
+```html id="m9xq2p"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpsLink Servers - Maintenance</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      overflow: hidden;
+      background: black;
+    }
+
+    .glow {
+      box-shadow:
+        0 0 35px rgba(239,68,68,0.20),
+        0 0 80px rgba(239,68,68,0.10);
+    }
+
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .pulse-ring {
+      animation: pulse 3s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 0.7;
+      }
+      70% {
+        transform: scale(1.15);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1.15);
+        opacity: 0;
+      }
+    }
+
+    .float {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%,100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen text-white flex items-center justify-center relative">
+
+  <!-- Background -->
+  <div class="absolute inset-0 bg-gradient-to-br from-red-950/40 via-black to-black"></div>
+  <div class="absolute inset-0 grid-bg"></div>
+
+  <!-- Blur Effects -->
+  <div class="absolute top-[-150px] left-[-100px] w-[400px] h-[400px] bg-red-600/20 rounded-full blur-3xl"></div>
+  <div class="absolute bottom-[-200px] right-[-100px] w-[450px] h-[450px] bg-red-500/15 rounded-full blur-3xl"></div>
+
+  <!-- Main Card -->
+  <div class="relative z-10 w-[95%] max-w-2xl">
+
+    <div class="bg-white/[0.03] border border-red-500/10 backdrop-blur-2xl rounded-3xl p-10 md:p-14 glow">
+
+      <!-- Logo -->
+      <div class="flex flex-col items-center text-center">
+
+        <div class="relative mb-8 float">
+
+          <!-- Pulse -->
+          <div class="absolute inset-0 rounded-3xl border border-red-400/30 pulse-ring"></div>
+
+          <!-- Logo Box -->
+          <div class="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center shadow-2xl">
+
+            <!-- Logo -->
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 class="w-12 h-12 text-white"
+                 fill="none"
+                 viewBox="0 0 24 24"
+                 stroke="currentColor"
+                 stroke-width="2.2">
+
+              <path stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M4 15l4-4 4 4 8-8" />
+
+              <path stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M16 7h4v4" />
+            </svg>
+
+          </div>
+        </div>
+
+        <!-- Brand -->
+        <div class="mb-4">
+          <h1 class="text-4xl md:text-5xl font-black tracking-tight">
+            OpsLink Servers
+          </h1>
+
+          <div class="mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-300 text-sm font-medium">
+            <span class="w-2 h-2 bg-red-400 rounded-full animate-pulse"></span>
+            Scheduled Maintenance
+          </div>
+        </div>
+
+        <!-- Message -->
+        <p class="text-zinc-400 text-lg leading-relaxed max-w-xl mt-4">
+          We’re currently performing infrastructure upgrades and server maintenance
+          to improve overall performance, security, and reliability.
+          Services will be restored shortly.
+        </p>
+
+        <!-- Status -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+
+          <div class="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
+            <div class="text-zinc-500 text-sm mb-1">Status</div>
+            <div class="text-white font-semibold">Maintenance Active</div>
+          </div>
+
+          <div class="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
+            <div class="text-zinc-500 text-sm mb-1">Estimated Return</div>
+            <div class="text-white font-semibold">Shortly</div>
+          </div>
+
+          <div class="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
+            <div class="text-zinc-500 text-sm mb-1">Systems</div>
+            <div class="text-white font-semibold">Upgrading</div>
+          </div>
+
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 mt-10 w-full justify-center">
+
+          <a href="/"
+             class="px-7 py-3 rounded-2xl bg-red-600 text-white font-semibold hover:bg-red-500 transition-all duration-300 shadow-lg shadow-red-500/20">
+            Return Home
+          </a>
+
+          <a href="#"
+             class="px-7 py-3 rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all duration-300">
+            System Status
+          </a>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-zinc-600 text-sm text-center">
+          © 2026 OpsLink Servers — Infrastructure & Hosting Solutions
+        </footer>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+```
