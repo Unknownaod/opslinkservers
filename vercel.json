@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/maintance", "destination": "/maintance.html" }
+    { "source": "/maintance", "destination": "/maintance.html" },
+    { "source": "/banned", "destination": "/banned.html" }
   ]
 }
