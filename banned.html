@@ -222,17 +222,23 @@ const API_URL = 'https://opslinkservers-backend.onrender.com';
 async function loadBan() {
   try {
 
-    const res = await fetch(`${API_URL}/api/auth/me`, {
-      credentials: 'include'
-    });
+    const token = localStorage.getItem('token');
 
-    if (!res.ok) {
-      document.body.innerHTML = "Failed to load user.";
-      return;
-    }
+    const res = await fetch(`${API_URL}/api/auth/me`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
 
     const data = await res.json();
 
+    if (!res.ok) {
+      document.body.innerHTML = data.error || "Failed to load user.";
+      return;
+    }
+
+    // not banned → send them away
     if (!data?.ban?.isBanned) {
       window.location.href = "/";
       return;
