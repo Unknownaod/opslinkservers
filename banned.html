@@ -216,55 +216,57 @@
     </div>
   </div>
 
-  <script>
-    async function loadBan() {
-      try {
+<script>
+const API_URL = 'https://opslinkservers-backend.onrender.com';
 
-        const res = await fetch('/api/me', {
-          credentials: 'include'
-        });
+async function loadBan() {
+  try {
 
-        if (!res.ok) {
-          document.body.innerHTML = "Failed to load user.";
-          return;
-        }
+    const res = await fetch(`${API_URL}/api/auth/me`, {
+      credentials: 'include'
+    });
 
-        const data = await res.json();
-
-        if (!data?.ban?.isBanned) {
-          window.location.href = "/";
-          return;
-        }
-
-        const ban = data.ban;
-
-        document.getElementById('reason').textContent =
-          ban.reason || "No reason provided";
-
-        document.getElementById('bannedBy').textContent =
-          ban.bannedBy || "Unknown";
-
-        document.getElementById('banDate').textContent =
-          ban.bannedAt
-            ? new Date(ban.bannedAt).toLocaleString()
-            : "Unknown";
-
-        document.getElementById('expires').textContent =
-          ban.expiresAt
-            ? new Date(ban.expiresAt).toLocaleString()
-            : "Permanent";
-
-        document.getElementById('banId').textContent =
-          "Ban ID: " + (ban.banId || "N/A");
-
-      } catch (err) {
-        console.error(err);
-        document.body.innerHTML = "Error loading ban data.";
-      }
+    if (!res.ok) {
+      document.body.innerHTML = "Failed to load user.";
+      return;
     }
 
-    loadBan();
-  </script>
+    const data = await res.json();
+
+    if (!data?.ban?.isBanned) {
+      window.location.href = "/";
+      return;
+    }
+
+    const ban = data.ban;
+
+    document.getElementById('reason').textContent =
+      ban.reason || "No reason provided";
+
+    document.getElementById('bannedBy').textContent =
+      ban.bannedBy || "Unknown";
+
+    document.getElementById('banDate').textContent =
+      ban.bannedAt
+        ? new Date(ban.bannedAt).toLocaleString()
+        : "Unknown";
+
+    document.getElementById('expires').textContent =
+      ban.expiresAt
+        ? new Date(ban.expiresAt).toLocaleString()
+        : "Permanent";
+
+    document.getElementById('banId').textContent =
+      "Ban ID: " + (ban.banId || "N/A");
+
+  } catch (err) {
+    console.error(err);
+    document.body.innerHTML = "Error loading ban data.";
+  }
+}
+
+loadBan();
+</script>
 
 </body>
 </html>
