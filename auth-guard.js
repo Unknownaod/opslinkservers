@@ -1,4 +1,4 @@
-const API_URL = "https://opslinkservers-backend.onrender.com";
+const MAIN_API = "https://opslinkservers-backend.onrender.com";
 
 async function authGuard() {
   const token = localStorage.getItem("token");
@@ -8,7 +8,7 @@ async function authGuard() {
   }
 
   try {
-    const res = await fetch(`${API_URL}/api/auth/me`, {
+    const res = await fetch(`${MAIN_API}/api/auth/me`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`
