@@ -154,10 +154,32 @@
       text-decoration: none;
       font-weight: 700;
     }
+
+    /* 🔴 LOGOUT BUTTON */
+    .logout {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      background: rgba(255, 59, 59, 0.12);
+      border: 1px solid rgba(255, 59, 59, 0.25);
+      color: #ff3b3b;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      z-index: 999;
+    }
+
+    .logout:hover {
+      background: rgba(255, 59, 59, 0.2);
+    }
   </style>
 </head>
 
 <body>
+
+  <button class="logout" onclick="logout()">Logout</button>
 
   <div class="glow"></div>
 
@@ -219,6 +241,11 @@
 <script>
 const API_URL = 'https://opslinkservers-backend.onrender.com';
 
+function logout() {
+  localStorage.removeItem('token');
+  window.location.href = "/";
+}
+
 async function loadBan() {
   try {
 
@@ -238,7 +265,6 @@ async function loadBan() {
       return;
     }
 
-    // not banned → send them away
     if (!data?.ban?.isBanned) {
       window.location.href = "/";
       return;
