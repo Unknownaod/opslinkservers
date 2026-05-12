@@ -40,6 +40,8 @@
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <script src="auth-guard.js"></script>
 </head>
 
 <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white overflow-x-hidden">
@@ -280,6 +282,5 @@ fetchLiveStats();
 setInterval(fetchLiveStats, 2.5 * 60 * 1000 + Math.random() * 2.5 * 60 * 1000);
 </script>
 
-<script src="auth-guard.js"></script>
 </body>
 </html>
