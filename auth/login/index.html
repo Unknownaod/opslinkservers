@@ -120,25 +120,6 @@ function showToast({ title = "Success!", message = "", type = "success", duratio
   }, duration);
 }
 
-<script>
-const API_URL = 'https://opslinkservers-backend.onrender.com';
-const toast = document.getElementById('toast');
-const toastTitle = document.getElementById('toastTitle');
-const toastMessage = document.getElementById('toastMessage');
-
-function showToast({ title = "Success!", message = "", type = "success", duration = 3000 }) {
-  toastTitle.textContent = title;
-  toastMessage.textContent = message;
-  toast.classList.remove("bg-green-500", "bg-red-500");
-  toast.classList.add(type === "success" ? "bg-green-500" : "bg-red-500");
-  toast.style.opacity = 1;
-  toast.style.pointerEvents = "all";
-  setTimeout(() => {
-    toast.style.opacity = 0;
-    toast.style.pointerEvents = "none";
-  }, duration);
-}
-
 // ======================
 // Login Form
 // ======================
