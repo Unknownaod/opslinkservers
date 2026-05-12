@@ -168,6 +168,11 @@ if (token && userStr) {
     window.location.reload();
   });
 
+if (user?.ban?.isBanned) {
+  localStorage.setItem('banData', JSON.stringify(user.ban));
+  window.location.href = '/banned';
+}
+  
   // Extract user ID from JWT (for profile link)
   let userId;
   try {
