@@ -120,31 +120,76 @@ function showToast({ title = "Success!", message = "", type = "success", duratio
   }, duration);
 }
 
+<script>
+const API_URL = 'https://opslinkservers-backend.onrender.com';
+const toast = document.getElementById('toast');
+const toastTitle = document.getElementById('toastTitle');
+const toastMessage = document.getElementById('toastMessage');
+
+function showToast({ title = "Success!", message = "", type = "success", duration = 3000 }) {
+  toastTitle.textContent = title;
+  toastMessage.textContent = message;
+  toast.classList.remove("bg-green-500", "bg-red-500");
+  toast.classList.add(type === "success" ? "bg-green-500" : "bg-red-500");
+  toast.style.opacity = 1;
+  toast.style.pointerEvents = "all";
+  setTimeout(() => {
+    toast.style.opacity = 0;
+    toast.style.pointerEvents = "none";
+  }, duration);
+}
+
 // ======================
-// Login Form
+// Login Form (UPDATED WITH BAN CHECK)
 // ======================
 document.getElementById('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
   const data = Object.fromEntries(new FormData(e.target));
+
   try {
     const res = await fetch(`${API_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
+
+    const result = await res.json();
+
+    if (res.status === 403 && result.banned) {
+      localStorage.setItem('banData', JSON.stringify(result.ban || {}));
+      window.location.href = '/banned.html';
+      return;
+    }
+
     if (res.ok) {
-      const { token, user } = await res.json();
+      const { token, user } = result;
+
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
+
       e.target.reset();
-      showToast({ title: "Success!", message: "Logged in! Redirecting...", type: "success" });
+
+      showToast({
+        title: "Success!",
+        message: "Logged in! Redirecting...",
+        type: "success"
+      });
+
       setTimeout(() => window.location.href = '/', 1500);
     } else {
-      const err = await res.json();
-      showToast({ title: "Error!", message: err.error || "Login failed", type: "error" });
+      showToast({
+        title: "Error!",
+        message: result.error || "Login failed",
+        type: "error"
+      });
     }
+
   } catch (err) {
-    showToast({ title: "Error!", message: "Login failed. Try again later.", type: "error" });
+    showToast({
+      title: "Error!",
+      message: "Login failed. Try again later.",
+      type: "error"
+    });
   }
 });
 
