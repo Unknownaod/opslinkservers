@@ -154,44 +154,7 @@ const loginBtn = document.getElementById('loginBtn');
 const adminBtn = document.getElementById('adminBtn');
 const adminBtnHero = document.getElementById('adminBtnHero');
 const navLinks = document.getElementById('navLinks');
-
-/* =========================
-   GLOBAL BAN CHECK (RUNS FIRST)
-========================= */
-(async () => {
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    const res = await fetch(`${API_URL}/api/auth/me`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) return;
-
-    if (data?.ban?.isBanned) {
-      localStorage.setItem('banData', JSON.stringify(data.ban));
-      window.location.replace('/banned');
-      return;
-    }
-
-    // keep user synced (important fix)
-    localStorage.setItem('user', JSON.stringify(data));
-
-  } catch (err) {
-    console.error("Ban check failed:", err);
-  }
-})();
-
-
-/* =========================
-   USER / UI SETUP
-========================= */
+  
 const token = localStorage.getItem('token');
 const userStr = localStorage.getItem('user');
 
@@ -317,6 +280,6 @@ fetchLiveStats();
 setInterval(fetchLiveStats, 2.5 * 60 * 1000 + Math.random() * 2.5 * 60 * 1000);
 </script>
 
-
+<script src="auth-guard.js"></script>
 </body>
 </html>
