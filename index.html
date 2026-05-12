@@ -149,11 +149,49 @@
 
 <script>
 const API_URL = "https://api.opslinkservers.com";
+
 const loginBtn = document.getElementById('loginBtn');
 const adminBtn = document.getElementById('adminBtn');
 const adminBtnHero = document.getElementById('adminBtnHero');
 const navLinks = document.getElementById('navLinks');
 
+/* =========================
+   GLOBAL BAN CHECK (RUNS FIRST)
+========================= */
+(async () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const res = await fetch(`${API_URL}/api/auth/me`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) return;
+
+    if (data?.ban?.isBanned) {
+      localStorage.setItem('banData', JSON.stringify(data.ban));
+      window.location.replace('/banned');
+      return;
+    }
+
+    // keep user synced (important fix)
+    localStorage.setItem('user', JSON.stringify(data));
+
+  } catch (err) {
+    console.error("Ban check failed:", err);
+  }
+})();
+
+
+/* =========================
+   USER / UI SETUP
+========================= */
 const token = localStorage.getItem('token');
 const userStr = localStorage.getItem('user');
 
@@ -162,92 +200,95 @@ if (token && userStr) {
 
   loginBtn.textContent = 'Logout';
   loginBtn.href = '#';
+
   loginBtn.addEventListener('click', () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     window.location.reload();
   });
 
-if (user?.ban?.isBanned) {
-  localStorage.setItem('banData', JSON.stringify(user.ban));
-  window.location.href = '/banned';
-}
-  
-  // Extract user ID from JWT (for profile link)
+  // Extract user ID from JWT
   let userId;
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
     userId = payload.id || payload._id;
   } catch {
-    userId = user._id; // fallback
+    userId = user._id;
   }
 
- // Create dropdown container
-const dropdownContainer = document.createElement('div');
-dropdownContainer.className = 'relative ml-2';
+  /* =========================
+     DROPDOWN UI
+  ========================= */
+  const dropdownContainer = document.createElement('div');
+  dropdownContainer.className = 'relative ml-2';
 
-// Create trigger button
-const welcomeBtn = document.createElement('button');
-welcomeBtn.textContent = `Welcome, ${user.discordUsername}`;
-welcomeBtn.className = 'text-sm text-zinc-300 mr-2 px-2 py-1 hover:bg-white/10 rounded transition';
-dropdownContainer.appendChild(welcomeBtn);
+  const welcomeBtn = document.createElement('button');
+  welcomeBtn.textContent = `Welcome, ${user.discordUsername}`;
+  welcomeBtn.className = 'text-sm text-zinc-300 mr-2 px-2 py-1 hover:bg-white/10 rounded transition';
+  dropdownContainer.appendChild(welcomeBtn);
 
-// Create dropdown menu
-const dropdownMenu = document.createElement('div');
-dropdownMenu.className = 'absolute right-0 mt-2 w-36 bg-zinc-900 border border-zinc-700 rounded shadow-lg text-sm text-white opacity-0 pointer-events-none transition-opacity z-50';dropdownMenu.innerHTML = `
-  <a href="/profile/?id=${userId}" class="block px-4 py-2 hover:bg-zinc-700">View Profile</a>
-  <a href="/settings/" class="block px-4 py-2 hover:bg-zinc-700">Settings</a>
-`;
-dropdownContainer.appendChild(dropdownMenu);
+  const dropdownMenu = document.createElement('div');
+  dropdownMenu.className =
+    'absolute right-0 mt-2 w-36 bg-zinc-900 border border-zinc-700 rounded shadow-lg text-sm text-white opacity-0 pointer-events-none transition-opacity z-50';
 
-// Toggle dropdown on button click
-welcomeBtn.addEventListener('click', (e) => {
-  e.stopPropagation(); // prevent document click from closing immediately
-  const isOpen = dropdownMenu.classList.contains('opacity-100');
-  if (isOpen) {
+  dropdownMenu.innerHTML = `
+    <a href="/profile/?id=${userId}" class="block px-4 py-2 hover:bg-zinc-700">View Profile</a>
+    <a href="/settings/" class="block px-4 py-2 hover:bg-zinc-700">Settings</a>
+  `;
+
+  dropdownContainer.appendChild(dropdownMenu);
+
+  welcomeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = dropdownMenu.classList.contains('opacity-100');
+
+    if (isOpen) {
+      dropdownMenu.classList.remove('opacity-100');
+      dropdownMenu.classList.add('opacity-0', 'pointer-events-none');
+    } else {
+      dropdownMenu.classList.remove('opacity-0', 'pointer-events-none');
+      dropdownMenu.classList.add('opacity-100');
+    }
+  });
+
+  document.addEventListener('click', () => {
     dropdownMenu.classList.remove('opacity-100');
     dropdownMenu.classList.add('opacity-0', 'pointer-events-none');
-  } else {
-    dropdownMenu.classList.remove('opacity-0', 'pointer-events-none');
-    dropdownMenu.classList.add('opacity-100');
+  });
+
+  navLinks.insertBefore(dropdownContainer, loginBtn);
+
+  if (user.role === 'admin' || user.role === 'management') {
+    adminBtn.classList.remove('hidden');
+    adminBtn.href = '/dashboard';
+    adminBtnHero.classList.remove('hidden');
+    adminBtnHero.href = '/dashboard';
   }
-});
-
-// Close dropdown when clicking outside
-document.addEventListener('click', () => {
-  dropdownMenu.classList.remove('opacity-100');
-  dropdownMenu.classList.add('opacity-0', 'pointer-events-none');
-});
-
-// Insert dropdown into nav
-navLinks.insertBefore(dropdownContainer, loginBtn);
-
-// Show admin links if applicable
-if (user.role === 'admin' || user.role === 'management') {
-  adminBtn.classList.remove('hidden');
-  adminBtn.href = '/dashboard';
-  adminBtnHero.classList.remove('hidden');
-  adminBtnHero.href = '/dashboard';
 }
 
-}
-// --------------------------
-// Live stats
-// --------------------------
+
+/* =========================
+   LIVE STATS
+========================= */
 function animateValue(el, start, end, duration = 1200) {
   const range = end - start;
   let startTime = null;
+
   function step(timestamp) {
     if (!startTime) startTime = timestamp;
     const progress = Math.min((timestamp - startTime) / duration, 1);
+
     el.textContent = Math.floor(start + range * progress).toLocaleString();
+
     if (progress < 1) requestAnimationFrame(step);
   }
+
   requestAnimationFrame(step);
 }
 
 const serverCountEl = document.getElementById('serverCount');
 const memberCountEl = document.getElementById('memberCount');
+
 let currentServers = 0;
 let currentMembers = 0;
 
@@ -257,6 +298,7 @@ async function fetchLiveStats() {
     const servers = await res.json();
 
     const approved = servers.filter(s => s.status === 'approved' || !s.status);
+
     const totalServers = approved.length;
     const totalMembers = approved.reduce((sum, s) => sum + (Number(s.members) || 0), 0);
 
@@ -265,12 +307,12 @@ async function fetchLiveStats() {
 
     currentServers = totalServers;
     currentMembers = totalMembers;
+
   } catch (err) {
     console.error("Error fetching live stats:", err);
   }
 }
 
-// Initial fetch + refresh every 2–5 minutes
 fetchLiveStats();
 setInterval(fetchLiveStats, 2.5 * 60 * 1000 + Math.random() * 2.5 * 60 * 1000);
 </script>
