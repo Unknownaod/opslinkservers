@@ -140,7 +140,7 @@ function showToast({ title = "Success!", message = "", type = "success", duratio
 }
 
 // ======================
-// Login Form (UPDATED WITH BAN CHECK)
+// Login Form
 // ======================
 document.getElementById('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -157,7 +157,7 @@ document.getElementById('loginForm').addEventListener('submit', async e => {
 
     if (res.status === 403 && result.banned) {
       localStorage.setItem('banData', JSON.stringify(result.ban || {}));
-      window.location.href = '/banned.html';
+      window.location.href = '/banned';
       return;
     }
 
