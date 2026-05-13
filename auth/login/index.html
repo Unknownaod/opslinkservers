@@ -15,7 +15,7 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="OpsLink Servers - Login">
 <meta property="og:description" content="Login to your OpsLink Servers Account!">
-<meta property="og:image" content="assets/opslink.png">
+<meta property="og:image" content="assets/opslinkservers.png">
 <meta property="og:url" content="https://opslinkservers.com/auth/login/">
 
 <meta name="twitter:card" content="summary_large_image">
@@ -233,7 +233,7 @@ qrBtn.addEventListener('click', async () => {
     qrModal.classList.remove('hidden');
     qrCanvas.style.display = 'block';
     spinLogo.classList.add('hidden');
-    qrMessage.textContent = 'Scan this code with your mobile OpsLink app to login. Visit https://opslinkservers.com/qrlogin.html for the scanner! You must be logged in on your mobile device to use the scanner!';
+    qrMessage.textContent = 'Scan this code with your mobile OpsLink app to login. Visit https://opslinkservers.com/connect for the scanner! You must be logged in on your mobile device to use the scanner!';
     new QRious({ element: qrCanvas, value: token, size: 200 });
 
     qrSocket = io(API_URL);
