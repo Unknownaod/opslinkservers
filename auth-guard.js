@@ -2,10 +2,9 @@ const MAIN_API = "https://opslinkservers-backend.onrender.com";
 
 async function authGuard() {
   const token = localStorage.getItem("token");
-  if (!token) {
-    window.location.replace("/auth/login/");
-    return;
-  }
+
+  // No token = do nothing (NO redirects)
+  if (!token) return;
 
   try {
     const res = await fetch(`${MAIN_API}/api/auth/me`, {
@@ -17,29 +16,25 @@ async function authGuard() {
 
     const data = await res.json().catch(() => null);
 
-    // token invalid / expired
-    if (!res.ok) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.replace("/auth/login/");
-      return;
-    }
+    // If request fails or token is invalid, just stop
+    // (do NOT redirect users anywhere)
+    if (!res.ok || !data) return;
 
-    // banned user → force banned page
+    // BAN ONLY LOGIC
     if (data?.ban?.isBanned) {
       localStorage.setItem("banData", JSON.stringify(data.ban));
       window.location.replace("/banned");
       return;
     }
 
-    // optional: keep fresh user in localStorage
+    // keep user fresh if available
     localStorage.setItem("user", JSON.stringify(data));
 
   } catch (err) {
     console.error("Auth guard failed:", err);
-    window.location.replace("/auth/login/");
+    // do nothing (no redirects)
   }
 }
 
-// run immediately on page load
+// run on load
 authGuard();
